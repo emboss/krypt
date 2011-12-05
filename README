@@ -1,16 +1,34 @@
 == krypt
 
 The goal of krypt is to provide a platform- and
-library-independent cryptography API for all C(++)-based Ruby
-implementations and JRuby.
+library-independent cryptography API for the Ruby
+language (http://www.ruby-lang.org). It can be used
+with all C(++)-based Ruby implementations as well as
+JRuby.
 
-Its major part is implemented in Ruby, and it additionally offers
-the possibility to integrate OS- or language-specific native
-libraries to implement cryptographic primitives. krypt aims at
-offering performance while still improving the security and
-features of the Ruby cryptography infrastructure. Its motto is to
-keep all the good parts of what exists today and to improve the parts
-that need improvement. It offers an idiomatic, modern API that
-cherry-picks the best features of other popular libraries and also
+The major part of krypt is implemented in Ruby, and it 
+additionally offers the possibility to integrate OS- 
+or language-specific native libraries to implement
+cryptographic primitives. krypt aims at offering 
+performance while still improving the security and
+features of the Ruby cryptography infrastructure. Its 
+motto is to keep all the good parts of what exists 
+today and to improve the parts that need improvement.
+It offers an idiomatic, modern API that cherry-picks
+the best features of other popular libraries and also
 offers new features that are not offered by others today.
 
+
+== krypt-core
+
+The C implementation of the krypt-core API to be used
+with all C-based Rubies. The repository can be found at
+
+https://github.com/emboss/krypt-core.
+
+== krypt-core-jruby
+
+Realizes the krypt-core API in Java to be used by Jruby 
+(http://www.jruby.org). The repository can be found at 
+
+https://github.com/emboss/krypt-core-jruby. 
