@@ -48,12 +48,51 @@ class Krypt::Asn1Test < Test::Unit::TestCase
     assert_equal(raw, asn1.to_der)
   end
 
+  def test_parse_infinite_length_sequence
+    raw = [%w{30 80 04 01 01 02 01 01 00 00}.join("")].pack("H*")
+    asn1 = Krypt::Asn1.decode(raw)
+    assert_universal(Krypt::Asn1::SEQUENCE, asn1, true)
+    seq = asn1.value
+    assert_equal(3, seq.size)
+    octet = seq[0]
+    assert_universal(Krypt::Asn1::OCTET_STRING, octet)
+    assert_equal("\1", octet.value)
+    integer = seq[1]
+    assert_universal(Krypt::Asn1::INTEGER, integer)
+    assert_equal(1, integer.value)
+    eoc = seq[2]
+    assert_universal(Krypt::Asn1::END_OF_CONTENTS, eoc)
+    assert_nil(eoc.value)
+    
+    assert_equal(raw, asn1.to_der)
+  end
+
+  def test_parse_infinite_length_octet_string
+    raw = [%w{24 80 04 01 01 04 01 02 00 00}.join("")].pack("H*")
+    asn1 = Krypt::Asn1.decode(raw)
+    assert_universal(Krypt::Asn1::OCTET_STRING, asn1, true)
+    assert_equal(true, asn1.is_a?(Krypt::Asn1::Constructive))
+    seq = asn1.value
+    assert_equal(3, seq.size)
+    octet1 = seq[0]
+    assert_universal(Krypt::Asn1::OCTET_STRING, octet1)
+    assert_equal("\1", octet1.value)
+    octet2 = seq[1]
+    assert_universal(Krypt::Asn1::OCTET_STRING, octet2)
+    assert_equal("\2", octet2.value)
+    eoc = seq[2]
+    assert_universal(Krypt::Asn1::END_OF_CONTENTS, eoc)
+    #assert_nil(eoc.value)
+    
+    assert_equal(raw, asn1.to_der)
+  end
+
   private
 
-  def assert_universal(tag, asn1)
+  def assert_universal(tag, asn1, inf_len=false)
     assert_equal(tag, asn1.tag)
     assert_equal(:UNIVERSAL, asn1.tag_class)
-    assert_equal(false, asn1.infinite_length)
+    assert_equal(inf_len, asn1.infinite_length)
   end
 
   def assert_equal_streaming(raw, asn1)
