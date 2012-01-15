@@ -82,9 +82,25 @@ class Krypt::Asn1Test < Test::Unit::TestCase
     assert_equal("\2", octet2.value)
     eoc = seq[2]
     assert_universal(Krypt::Asn1::END_OF_CONTENTS, eoc)
-    #assert_nil(eoc.value)
+    assert_nil(eoc.value)
     
     assert_equal(raw, asn1.to_der)
+  end
+
+  def test_each
+    [%w{30 06 04 01 01 02 01 01},
+     %w{31 06 04 01 01 02 01 01},
+     %w{24 80 04 01 01 04 01 02 00 00}].each do |raw|
+      val = [raw.join("")].pack("H*")
+      cons_header = Krypt::Asn1::Parser.new.next(StringIO.new(val))
+      io = StringIO.new
+      cons_header.encode_to(io)
+      asn1 = Krypt::Asn1.decode(val)
+      asn1.each do |val|
+        val.encode_to(io)
+      end
+      assert_equal(val, io.string.force_encoding("ASCII-8BIT"))
+    end
   end
 
   private
