@@ -1,0 +1,5 @@
+=== 0.1.0 / 2012-01-15 [emboss]
+* Add Asn1 tests 
+
+=== 0.1.0 / 2011-11-18 [emboss]
+* Birth

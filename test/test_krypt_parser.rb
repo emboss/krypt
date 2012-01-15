@@ -190,6 +190,8 @@ class Krypt::ParserTest < Test::Unit::TestCase
     assert_equal(Resources.certificate.size, header.header_size + header.size)
     header.skip_value
     assert_nil(parser.next(io))
+  ensure
+    io.close
   end
 
   def parse_and_skip(io)
@@ -202,6 +204,8 @@ class Krypt::ParserTest < Test::Unit::TestCase
       end
     end
     assert(num_tokens > 1)
+  ensure
+    io.close
   end
 
   def consume_top_level_streaming(io)
@@ -210,6 +214,8 @@ class Krypt::ParserTest < Test::Unit::TestCase
     stream = header.value_io
     consume_streaming(stream)
     assert_nil(parser.next(io))
+  ensure
+    io.close
   end
 
   def consume_top_level_at_once(io)
@@ -218,6 +224,8 @@ class Krypt::ParserTest < Test::Unit::TestCase
     stream = header.value_io
     stream.read
     assert_nil(parser.next(io))
+  ensure
+    io.close
   end
 
   def consume_all_streaming(io)
@@ -229,6 +237,8 @@ class Krypt::ParserTest < Test::Unit::TestCase
       end
     end
     assert_nil(parser.next(io))
+  ensure
+    io.close
   end
 
   def consume_all_at_once(io)
@@ -240,6 +250,8 @@ class Krypt::ParserTest < Test::Unit::TestCase
       end
     end
     assert_nil(parser.next(io))
+  ensure
+    io.close
   end
 
   def parse_tokens_test_methods(io)
@@ -261,6 +273,8 @@ class Krypt::ParserTest < Test::Unit::TestCase
         end
       end
     end
+  ensure
+    io.close
   end
 
   def inf_length_parsing_streaming_string_io(mode, values_only=false)
