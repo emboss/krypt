@@ -1,6 +1,4 @@
-require 'test/unit'
-require 'krypt-core'
-require_relative 'resources'
+require_relative 'helper'
 require 'stringio'
 
 class Krypt::ParserTest < Test::Unit::TestCase

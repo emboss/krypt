@@ -1,6 +1,4 @@
-require 'krypt'
-require 'test/unit'
-require_relative 'resources'
+require_relative 'helper'
 require 'stringio'
 
 class Krypt::Asn1Test < Test::Unit::TestCase
