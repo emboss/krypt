@@ -1,4 +1,13 @@
 === 0.1.0 / 2012-01-15 [emboss]
+* Add Asn1.decode benchmark
+
+=== 0.1.0 / 2012-01-15 [emboss]
+* Add test for Constructive#each
+
+=== 0.1.0 / 2012-01-15 [emboss]
+* Add infinite length tests 
+
+=== 0.1.0 / 2012-01-15 [emboss]
 * Add Asn1 tests 
 
 === 0.1.0 / 2011-11-18 [emboss]
