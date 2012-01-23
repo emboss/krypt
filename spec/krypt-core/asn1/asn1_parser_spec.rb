@@ -1,6 +1,7 @@
+require 'rspec'
 require 'krypt-core'
+require_relative '../resources'
 require 'stringio'
-require_relative 'resources'
 
 def do_and_close(io)
   yield io

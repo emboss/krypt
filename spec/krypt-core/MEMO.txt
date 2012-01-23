@@ -1,0 +1,73 @@
+This file should be deleted when specs are written
+
+
+== target class hierarchy
+
+I should write RDoc instead.
+
+module Krypt
+  class KryptError < StandardError; end
+
+  module Asn1
+    class Asn1Error < KryptError; end
+    class ParseError < Asn1Error; end
+    class SerializeError < Asn1Error; end
+
+    END_OF_CONTENTS = 0
+    BOOLEAN = 1
+    ...
+    BMP_STRING = 30
+
+    UNIVERSAL_TAG_NAME = ["END_OF_CONTENTS", "BOOLEAN", ... ]
+
+    def self.decode(str_or_file_or_readable)
+    end
+
+    class Asn1Data
+      attr_accessor :tag, :tag_class, :infinite_length, value
+
+      def initialize(value, tag, tag_class); end
+      def to_der; end
+      def encode_to(io); end #=> self
+    end
+
+    class Primitive < Asn1Data
+    end
+
+    class Constructive < Asn1Data
+      def each; end
+    end
+
+    class EndOfContents < Primitive; end
+    class Boolean < Primitive; end
+    ...
+    class GeneralizedTime < Primitive; end
+
+    class Sequence < Constructive; end
+    class Set < Constructive; end
+
+    class Parser
+      def next(io); end #=> Header
+    end
+
+    class Header
+      attr_reader :tag, :tag_class, :length, :header_length
+      def constructed?; end
+      def infinite?; end
+
+      def bytes; end #=> String
+      def encode_to(io); end #=> self
+
+      def skip_value; end
+      def value; end
+      def value_io; end # ?
+
+      def to_s; end
+    end
+
+    class Instream
+      def read(len = nil, buf = nil); end
+      def seek(offset, whence = SEEK_SET); end
+    end
+  end
+end
