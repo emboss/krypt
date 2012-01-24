@@ -7,18 +7,18 @@ def do_and_close(io)
   io.close
 end
 
-describe Krypt::Asn1::Parser do 
+describe Krypt::ASN1::Parser do 
 
   it "can be instantiated with default constructor" do 
-    Krypt::Asn1::Parser.new.should be_an_instance_of Krypt::Asn1::Parser
+    Krypt::ASN1::Parser.new.should be_an_instance_of Krypt::ASN1::Parser
   end
 
   it "takes no arguments in its constructor" do
-    lambda { Krypt::Asn1::Parser.new(Object.new) }.should raise_error(ArgumentError)
+    lambda { Krypt::ASN1::Parser.new(Object.new) }.should raise_error(ArgumentError)
   end
 
   it "should be reusable for several IOs" do
-    parser = Krypt::Asn1::Parser.new
+    parser = Krypt::ASN1::Parser.new
     io = Resources.certificate_io
     do_and_close(io) { |io| parser.next(io).should_not be_nil }
     io = Resources.certificate_io
@@ -27,9 +27,9 @@ describe Krypt::Asn1::Parser do
   
 end
 
-describe Krypt::Asn1::Parser, "#next" do
+describe Krypt::ASN1::Parser, "#next" do
 
-  subject { Krypt::Asn1::Parser.new }
+  subject { Krypt::ASN1::Parser.new }
 
   it "returns a Header when called on an IO representing an ASN.1" do
     io = Resources.certificate_io
@@ -43,7 +43,7 @@ describe Krypt::Asn1::Parser, "#next" do
   end
 
   def parse_next(io)
-    subject.next(io).should be_an_instance_of Krypt::Asn1::Header
+    subject.next(io).should be_an_instance_of Krypt::ASN1::Header
   end
 
   it "raises ArgumentError if anything other than an IO is passed. Rejection
@@ -121,19 +121,19 @@ describe Krypt::Asn1::Parser, "#next" do
 
 end
 
-describe Krypt::Asn1::Header do
+describe Krypt::ASN1::Header do
   
   it "cannot be instantiated" do
-    lambda { Krypt::Asn1::Header.new }.should raise_error
+    lambda { Krypt::ASN1::Header.new }.should raise_error
   end
   
 end
 
-describe Krypt::Asn1::Header, "#tag" do
+describe Krypt::ASN1::Header, "#tag" do
 
-  subject { Krypt::Asn1::Parser.new }
+  subject { Krypt::ASN1::Parser.new }
 
-  it "yields the tag of an Asn1 value, both for simple and complex tags" do
+  it "yields the tag of an ASN1 value, both for simple and complex tags" do
     simple = Resources.bytes_to_io( %w{05 00} )
     header = subject.next(simple)
     header.tag.should == 5
@@ -155,10 +155,10 @@ describe Krypt::Asn1::Header, "#tag" do
 
 end
 
-describe Krypt::Asn1::Header, "#tag_class" do
+describe Krypt::ASN1::Header, "#tag_class" do
 
   it "recognizes UNIVERSAL, CONTEXT_SPEICIFIC, APPLICATION and PRIVATE" do
-    subject = Krypt::Asn1::Parser.new
+    subject = Krypt::ASN1::Parser.new
     universal = Resources.bytes_to_io( %w{05 00} )
     header = subject.next(universal)
     header.tag_class.should == :UNIVERSAL
@@ -175,9 +175,9 @@ describe Krypt::Asn1::Header, "#tag_class" do
 
 end
 
-describe Krypt::Asn1::Header, "#constructed?" do
+describe Krypt::ASN1::Header, "#constructed?" do
 
-  subject { Krypt::Asn1::Parser.new }
+  subject { Krypt::ASN1::Parser.new }
 
   it "returns false for primitive values" do
     evaluate(%w{05 00}, false)
@@ -201,9 +201,9 @@ describe Krypt::Asn1::Header, "#constructed?" do
 
 end
 
-describe Krypt::Asn1::Header, "#infinite?" do
+describe Krypt::ASN1::Header, "#infinite?" do
   
-  subject { Krypt::Asn1::Parser.new }
+  subject { Krypt::ASN1::Parser.new }
 
   it "returns false for definite length values" do
     evaluate(%w{05 00}, false)
@@ -221,7 +221,7 @@ describe Krypt::Asn1::Header, "#infinite?" do
   end
 
   it "raises an error for infinite length primitive values" do
-    lambda { evaluate(%w{04 80 04 01 01 00 00}, true) }.should raise_error(Krypt::Asn1::ParseError)
+    lambda { evaluate(%w{04 80 04 01 01 00 00}, true) }.should raise_error(Krypt::ASN1::ParseError)
   end
 
   def evaluate(bytes, expectation)
@@ -232,9 +232,9 @@ describe Krypt::Asn1::Header, "#infinite?" do
 
 end
 
-describe Krypt::Asn1::Header, "#size" do
+describe Krypt::ASN1::Header, "#size" do
 
-  subject { Krypt::Asn1::Parser.new }
+  subject { Krypt::ASN1::Parser.new }
 
   it "returns the size of the value for single octet lengths" do
     simple = Resources.bytes_to_io( %w{02 01 01} )
@@ -262,9 +262,9 @@ describe Krypt::Asn1::Header, "#size" do
 
 end
 
-describe Krypt::Asn1::Header, "#header_size" do
+describe Krypt::ASN1::Header, "#header_size" do
 
-  subject { Krypt::Asn1::Parser.new }
+  subject { Krypt::ASN1::Parser.new }
 
   it "returns the size of the sum of tag plus length encoding
       for simple tags" do
@@ -297,7 +297,7 @@ describe Krypt::Asn1::Header, "#header_size" do
 
 end
 
-describe Krypt::Asn1::Header, "#skip_value" do
+describe Krypt::ASN1::Header, "#skip_value" do
 
   it "skips to the end of the file when asked to skip the value of a
       starting constructed value" do
@@ -306,7 +306,7 @@ describe Krypt::Asn1::Header, "#skip_value" do
   end
 
   def skip_value(io)
-    parser = Krypt::Asn1::Parser.new
+    parser = Krypt::ASN1::Parser.new
     header = parser.next(io)
     header.skip_value
     parser.next(io).should be_nil
@@ -314,9 +314,9 @@ describe Krypt::Asn1::Header, "#skip_value" do
 
 end
 
-describe Krypt::Asn1::Header, "#value" do
+describe Krypt::ASN1::Header, "#value" do
 
-  subject { Krypt::Asn1::Parser.new }
+  subject { Krypt::ASN1::Parser.new }
 
   it "caches the value of a header once it was read" do
     header = subject.next Resources.certificate_io
@@ -332,9 +332,9 @@ describe Krypt::Asn1::Header, "#value" do
 
 end
 
-describe Krypt::Asn1::Header, "#value_io" do
+describe Krypt::ASN1::Header, "#value_io" do
 
-  subject { Krypt::Asn1::Parser.new }
+  subject { Krypt::ASN1::Parser.new }
 
   it "returns an IO that reads the entire value of a definite sequence" do
     cert = Resources.certificate_io
@@ -395,7 +395,7 @@ describe Krypt::Asn1::Header, "#value_io" do
     io = Resources.certificate_io
     header = subject.next io
     header.value_io
-    lambda { header.value }.should raise_error(Krypt::Asn1::ParseError)
+    lambda { header.value }.should raise_error(Krypt::ASN1::ParseError)
     io.close
   end
 
@@ -403,7 +403,7 @@ describe Krypt::Asn1::Header, "#value_io" do
     io = Resources.certificate_io
     header = subject.next io
     header.value
-    lambda { header.value_io }.should raise_error(Krypt::Asn1::ParseError)
+    lambda { header.value_io }.should raise_error(Krypt::ASN1::ParseError)
     io.close
   end
 
@@ -424,9 +424,9 @@ describe Krypt::Asn1::Header, "#value_io" do
 
 end
 
-describe Krypt::Asn1::Header, "#bytes" do
+describe Krypt::ASN1::Header, "#bytes" do
 
-  subject { Krypt::Asn1::Parser.new }
+  subject { Krypt::ASN1::Parser.new }
 
   it "returns the encoding of a parsed header" do
     complex_two_octets = %w{5f 82 2c 01} 
@@ -465,12 +465,12 @@ describe Krypt::Asn1::Header, "#bytes" do
 
 end
 
-describe Krypt::Asn1::Header, "#encode_to" do
+describe Krypt::ASN1::Header, "#encode_to" do
 
   it "encodes the header to an IO" do
     null = %w{05 00}
     io = Resources.bytes_to_io(null)
-    header = Krypt::Asn1::Parser.new.next io
+    header = Krypt::ASN1::Parser.new.next io
     out = StringIO.new
     header.encode_to(out)
     out.string.should == header.bytes

@@ -61,10 +61,10 @@ class Krypt::ParserTest < Test::Unit::TestCase
 
   def test_parse_primitive
     raw = [%w{02 02 01 00}.join("")].pack("H*")
-    parser = Krypt::Asn1::Parser.new
+    parser = Krypt::ASN1::Parser.new
     io = StringIO.new(raw)
     header = parser.next(io)
-    assert_equal(Krypt::Asn1::INTEGER, header.tag)
+    assert_equal(Krypt::ASN1::INTEGER, header.tag)
     assert_equal(:UNIVERSAL, header.tag_class)
     assert_equal(false, header.constructed?)
     assert_equal(false, header.infinite?)
@@ -75,10 +75,10 @@ class Krypt::ParserTest < Test::Unit::TestCase
 
   def test_parse_constructed
     raw = [%w{30 06 04 01 01 04 01 02}.join("")].pack("H*")
-    parser = Krypt::Asn1::Parser.new
+    parser = Krypt::ASN1::Parser.new
     io = StringIO.new(raw)
     header = parser.next(io)
-    assert_equal(Krypt::Asn1::SEQUENCE, header.tag)
+    assert_equal(Krypt::ASN1::SEQUENCE, header.tag)
     assert_equal(:UNIVERSAL, header.tag_class)
     assert_equal(true, header.constructed?)
     assert_equal(false, header.infinite?)
@@ -89,10 +89,10 @@ class Krypt::ParserTest < Test::Unit::TestCase
 
   def test_parse_constructed
     raw = [%w{30 02 80 01 00}.join("")].pack("H*")
-    parser = Krypt::Asn1::Parser.new
+    parser = Krypt::ASN1::Parser.new
     io = StringIO.new(raw)
     header = parser.next(io)
-    assert_equal(Krypt::Asn1::SEQUENCE, header.tag)
+    assert_equal(Krypt::ASN1::SEQUENCE, header.tag)
     assert_equal(:UNIVERSAL, header.tag_class)
     assert_equal(true, header.constructed?)
     assert_equal(false, header.infinite?)
@@ -113,9 +113,9 @@ class Krypt::ParserTest < Test::Unit::TestCase
     raw = [%w{04 82 03 e8}.join("")].pack("H*")
     raw << "\0" * 1000
     io = StringIO.new(raw)
-    parser = Krypt::Asn1::Parser.new
+    parser = Krypt::ASN1::Parser.new
     header = parser.next(io)
-    assert_equal(Krypt::Asn1::OCTET_STRING, header.tag)
+    assert_equal(Krypt::ASN1::OCTET_STRING, header.tag)
     assert_equal(:UNIVERSAL, header.tag_class)
     assert_equal(false, header.constructed?)
     assert_equal(false, header.infinite?)
@@ -126,7 +126,7 @@ class Krypt::ParserTest < Test::Unit::TestCase
 
   def test_complex_length_single_octet
     raw = [%w{df 2a 01 00}.join("")].pack("H*")
-    parser = Krypt::Asn1::Parser.new
+    parser = Krypt::ASN1::Parser.new
     io = StringIO.new(raw)
     header = parser.next(io)
     assert_equal(42, header.tag)
@@ -140,7 +140,7 @@ class Krypt::ParserTest < Test::Unit::TestCase
 
   def test_complex_tag_two_octets
     raw = [%w{5f 82 2c 01 00}.join("")].pack("H*")
-    parser = Krypt::Asn1::Parser.new
+    parser = Krypt::ASN1::Parser.new
     io = StringIO.new(raw)
     header = parser.next(io)
     assert_equal(300, header.tag)
@@ -179,9 +179,9 @@ class Krypt::ParserTest < Test::Unit::TestCase
   private
 
   def parse_and_skip_top_level(io)
-    parser = Krypt::Asn1::Parser.new
+    parser = Krypt::ASN1::Parser.new
     header = parser.next(io)
-    assert_equal(Krypt::Asn1::SEQUENCE, header.tag)
+    assert_equal(Krypt::ASN1::SEQUENCE, header.tag)
     assert_equal(:UNIVERSAL, header.tag_class)
     assert(header.constructed?)
     assert(!header.infinite?)
@@ -193,7 +193,7 @@ class Krypt::ParserTest < Test::Unit::TestCase
   end
 
   def parse_and_skip(io)
-    parser = Krypt::Asn1::Parser.new
+    parser = Krypt::ASN1::Parser.new
     num_tokens = 0
     while header = parser.next(io)
       num_tokens += 1
@@ -207,7 +207,7 @@ class Krypt::ParserTest < Test::Unit::TestCase
   end
 
   def consume_top_level_streaming(io)
-    parser = Krypt::Asn1::Parser.new
+    parser = Krypt::ASN1::Parser.new
     header = parser.next(io)
     stream = header.value_io
     consume_streaming(stream)
@@ -217,7 +217,7 @@ class Krypt::ParserTest < Test::Unit::TestCase
   end
 
   def consume_top_level_at_once(io)
-    parser = Krypt::Asn1::Parser.new
+    parser = Krypt::ASN1::Parser.new
     header = parser.next(io)
     stream = header.value_io
     stream.read
@@ -227,7 +227,7 @@ class Krypt::ParserTest < Test::Unit::TestCase
   end
 
   def consume_all_streaming(io)
-    parser = Krypt::Asn1::Parser.new
+    parser = Krypt::ASN1::Parser.new
     while header = parser.next(io)
       unless header.constructed?
         stream = header.value_io
@@ -240,7 +240,7 @@ class Krypt::ParserTest < Test::Unit::TestCase
   end
 
   def consume_all_at_once(io)
-    parser = Krypt::Asn1::Parser.new
+    parser = Krypt::ASN1::Parser.new
     while header = parser.next(io)
       unless header.constructed?
         stream = header.value_io
@@ -253,7 +253,7 @@ class Krypt::ParserTest < Test::Unit::TestCase
   end
 
   def parse_tokens_test_methods(io)
-    parser = Krypt::Asn1::Parser.new
+    parser = Krypt::ASN1::Parser.new
     while header = parser.next(io)
       assert_not_nil(header.tag)
       assert_not_nil(header.tag_class)
@@ -264,7 +264,7 @@ class Krypt::ParserTest < Test::Unit::TestCase
       assert_not_nil(header.constructed?)
       assert_not_nil(header.infinite?)
       unless header.constructed?
-        if (header.tag == Krypt::Asn1::NULL || header.tag == Krypt::Asn1::END_OF_CONTENTS)
+        if (header.tag == Krypt::ASN1::NULL || header.tag == Krypt::ASN1::END_OF_CONTENTS)
           assert_nil(header.value)
         else
           assert_not_nil(header.value)
@@ -278,9 +278,9 @@ class Krypt::ParserTest < Test::Unit::TestCase
   def inf_length_parsing_streaming_string_io(mode, values_only=false)
     raw = [%w{24 80 04 01 01 04 01 02 00 00}.join("")].pack("H*")
     io = StringIO.new(raw)
-    parser = Krypt::Asn1::Parser.new
+    parser = Krypt::ASN1::Parser.new
     header = parser.next(io)
-    assert_equal(Krypt::Asn1::OCTET_STRING, header.tag)
+    assert_equal(Krypt::ASN1::OCTET_STRING, header.tag)
     assert_equal(:UNIVERSAL, header.tag_class)
     assert_equal(true, header.constructed?)
     assert_equal(true, header.infinite?)
