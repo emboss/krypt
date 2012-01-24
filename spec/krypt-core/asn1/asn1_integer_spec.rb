@@ -90,6 +90,16 @@ describe Krypt::Asn1::Integer do
         it { should == "\x02\x01\x00" }
       end
 
+      context 1 do
+        let(:value) { 1 }
+        it { should == "\x02\x01\x01" }
+      end
+
+      context -1 do
+        let(:value) { -1 }
+        it { should == "\x02\x01\xFF" }
+      end
+
       context 72 do
         let(:value) { 72 }
         it { should == "\x02\x01\x48" }
@@ -123,6 +133,16 @@ describe Krypt::Asn1::Integer do
       context 'max Fixnum on 64bit box' do
         let(:value) { 2**62-1 }
         it { should == "\x02\x08\x3F\xFF\xFF\xFF\xFF\xFF\xFF\xFF" }
+      end
+
+      context 'positive Bignum' do
+        let(:value) { 2**12345 }
+        it { should == "\x02\x82\x06\x08\x02" + "\x00" * 1543 }
+      end
+
+      context 'negative Bignum' do
+        let(:value) { -(2**12345) }
+        it { should == "\x02\x82\x06\x08\xFE" + "\x00" * 1543 }
       end
     end
 
@@ -174,6 +194,20 @@ describe Krypt::Asn1::Integer do
         its(:class) { should == klass }
         its(:tag) { should == 2 }
         its(:value) { should == 0 }
+      end
+
+      context 1 do
+        let(:der) { "\x02\x01\x01" }
+        its(:class) { should == klass }
+        its(:tag) { should == 2 }
+        its(:value) { should == 1 }
+      end
+
+      context -1 do
+        let(:der) { "\x02\x01\xFF" }
+        its(:class) { should == klass }
+        its(:tag) { should == 2 }
+        its(:value) { should == -1 }
       end
 
       context 72 do
