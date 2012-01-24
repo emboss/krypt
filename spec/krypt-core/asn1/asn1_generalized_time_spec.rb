@@ -132,8 +132,12 @@ describe Krypt::Asn1::GeneralizedTime do
         it { should == "\x18\x0F19991231235959Z" }
       end
 
+      context 'second fraction' do
+        pending 'ossl does not support this'
+      end
+
       context 'timezone' do
-        pending 'supported?'
+        pending 'ossl does not support this'
       end
 
       context '(empty)' do
@@ -195,6 +199,13 @@ describe Krypt::Asn1::GeneralizedTime do
         its(:class) { should == klass }
         its(:tag) { should == 24 }
         its(:value) { should == Time.mktime(2012, 1, 24, 0, 0, 0) }
+      end
+
+      context 'with fraction' do
+        let(:der) { "\x18\x1620120123150000.012345Z" }
+        its(:class) { should == klass }
+        its(:tag) { should == 24 }
+        its(:value) { subject.usec.should == 12345 } # TODO: ossl does not support decoding usec
       end
 
       context 'Min time representation' do
