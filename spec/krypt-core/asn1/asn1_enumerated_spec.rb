@@ -2,10 +2,10 @@ require 'rspec'
 require 'krypt-core'
 require 'openssl'
 
-# Almost similar to the spec for Krypt::Asn1::Enumerated
-describe Krypt::Asn1::Enumerated do 
-  let(:klass) { Krypt::Asn1::Enumerated }
-  let(:decoder) { Krypt::Asn1 }
+# Almost similar to the spec for Krypt::ASN1::Enumerated
+describe Krypt::ASN1::Enumerated do 
+  let(:klass) { Krypt::ASN1::Enumerated }
+  let(:decoder) { Krypt::ASN1 }
 
   # For test against OpenSSL
   #

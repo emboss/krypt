@@ -2,9 +2,9 @@ require 'rspec'
 require 'krypt-core'
 require 'openssl'
 
-describe Krypt::Asn1::Boolean do 
-  let(:klass) { Krypt::Asn1::Boolean }
-  let(:decoder) { Krypt::Asn1 }
+describe Krypt::ASN1::Boolean do 
+  let(:klass) { Krypt::ASN1::Boolean }
+  let(:decoder) { Krypt::ASN1 }
 
   # For test against OpenSSL
   #
