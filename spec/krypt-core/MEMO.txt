@@ -1,10 +1,3 @@
-This file should be deleted when specs are written
-
-
-== target class hierarchy
-
-I should write RDoc instead.
-
 module Krypt
   class KryptError < StandardError; end
 
@@ -24,7 +17,8 @@ module Krypt
     end
 
     class Asn1Data
-      attr_accessor :tag, :tag_class, :infinite_length, value
+      attr_accessor :tag, :tag_class, :value
+      attr_reader :infinite_length
 
       def initialize(value, tag, tag_class); end
       def to_der; end
@@ -35,12 +29,30 @@ module Krypt
     end
 
     class Constructive < Asn1Data
+      attr_writer :infinite_length # ?
       def each; end
     end
 
     class EndOfContents < Primitive; end
     class Boolean < Primitive; end
-    ...
+    class Integer < Primitive; end
+    class Enumerated < Primitive; end
+    class BitString < Primitive; end
+    class OctetString < Primitive; end
+    class Utf8String < Primitive; end
+    class NumericString < Primitive; end
+    class PrintableString < Primitive; end
+    class T61String < Primitive; end
+    class VideotexString < Primitive; end
+    class Ia5String < Primitive; end
+    class GraphicString < Primitive; end
+    class Iso64String < Primitive; end
+    class GeneralString < Primitive; end
+    class UniversalString < Primitive; end
+    class BmpString < Primitive; end
+    class Null < Primitive; end
+    class ObjectId < Primitive; end
+    class UtcTime < Primitive; end
     class GeneralizedTime < Primitive; end
 
     class Sequence < Constructive; end
@@ -60,7 +72,7 @@ module Krypt
 
       def skip_value; end
       def value; end
-      def value_io; end # ?
+      def value_io; end # get value (V of TLV) stream
 
       def to_s; end
     end
