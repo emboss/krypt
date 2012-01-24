@@ -229,22 +229,22 @@ describe Krypt::Asn1::Enumerated do
 
     context 'tag_class handling' do
       context 'UNIVERSAL' do
-        let(:der) { "\x01\x01\xFF" }
+        let(:der) { "\x0A\x02\x00\x80" }
         its(:tag_class) { should == :UNIVERSAL }
       end
 
       context 'APPLICATION' do
-        let(:der) { "\x41\x01\xFF" }
+        let(:der) { "\x4A\x02\x00\x80" }
         its(:tag_class) { should == :APPLICATION }
       end
 
       context 'CONTEXT_SPECIFIC' do
-        let(:der) { "\x81\x01\xFF" }
+        let(:der) { "\x8A\x02\x00\x80" }
         its(:tag_class) { should == :CONTEXT_SPECIFIC }
       end
 
       context 'PRIVATE' do
-        let(:der) { "\xC1\x01\xFF" }
+        let(:der) { "\xCA\x02\x00\x80" }
         its(:tag_class) { should == :PRIVATE }
       end
     end

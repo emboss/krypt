@@ -3,13 +3,13 @@ require 'krypt-core'
 require 'openssl'
 
 describe Krypt::Asn1::ObjectId do 
-  #let(:klass) { Krypt::Asn1::ObjectId }
-  #let(:decoder) { Krypt::Asn1 }
+  let(:klass) { Krypt::Asn1::ObjectId }
+  let(:decoder) { Krypt::Asn1 }
 
   # For test against OpenSSL
   #
-  let(:klass) { OpenSSL::ASN1::ObjectId }
-  let(:decoder) { OpenSSL::ASN1 }
+  #let(:klass) { OpenSSL::ASN1::ObjectId }
+  #let(:decoder) { OpenSSL::ASN1 }
   #
   # OpenSSL stub for signature mismatch
   class OpenSSL::ASN1::ObjectId
@@ -243,22 +243,22 @@ describe Krypt::Asn1::ObjectId do
 
     context 'tag_class handling' do
       context 'UNIVERSAL' do
-        let(:der) { "\x01\x01\xFF" }
+        let(:der) { "\x06\x04\x28\xC2\x7B\x02" }
         its(:tag_class) { should == :UNIVERSAL }
       end
 
       context 'APPLICATION' do
-        let(:der) { "\x41\x01\xFF" }
+        let(:der) { "\x46\x04\x28\xC2\x7B\x02" }
         its(:tag_class) { should == :APPLICATION }
       end
 
       context 'CONTEXT_SPECIFIC' do
-        let(:der) { "\x81\x01\xFF" }
+        let(:der) { "\x86\x04\x28\xC2\x7B\x02" }
         its(:tag_class) { should == :CONTEXT_SPECIFIC }
       end
 
       context 'PRIVATE' do
-        let(:der) { "\xC1\x01\xFF" }
+        let(:der) { "\xC6\x04\x28\xC2\x7B\x02" }
         its(:tag_class) { should == :PRIVATE }
       end
     end

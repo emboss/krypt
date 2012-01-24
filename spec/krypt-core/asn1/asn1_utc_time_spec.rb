@@ -57,11 +57,11 @@ describe Krypt::Asn1::UtcTime do
     end
 
     context 'explicit construct' do
-      subject { klass.new('hello,world!', 23, :UNIVERSAL) }
+      subject { klass.new(0, 23, :UNIVERSAL) }
 
       its(:tag) { should == 23 }
       its(:tag_class) { should == :UNIVERSAL }
-      its(:value) { should == 'hello,world!' }
+      its(:value) { should == 0 } # TODO: Should be a Time?
     end
 
     context 'private tag handling' do
@@ -244,22 +244,22 @@ describe Krypt::Asn1::UtcTime do
 
     context 'tag_class handling' do
       context 'UNIVERSAL' do
-        let(:der) { "\x01\x01\xFF" }
+        let(:der) { "\x17\x0D991231235959Z" }
         its(:tag_class) { should == :UNIVERSAL }
       end
 
       context 'APPLICATION' do
-        let(:der) { "\x41\x01\xFF" }
+        let(:der) { "\x47\x0D991231235959Z" }
         its(:tag_class) { should == :APPLICATION }
       end
 
       context 'CONTEXT_SPECIFIC' do
-        let(:der) { "\x81\x01\xFF" }
+        let(:der) { "\x87\x0D991231235959Z" }
         its(:tag_class) { should == :CONTEXT_SPECIFIC }
       end
 
       context 'PRIVATE' do
-        let(:der) { "\xC1\x01\xFF" }
+        let(:der) { "\xC7\x0D991231235959Z" }
         its(:tag_class) { should == :PRIVATE }
       end
     end

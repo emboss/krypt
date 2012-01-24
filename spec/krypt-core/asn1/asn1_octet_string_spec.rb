@@ -202,22 +202,22 @@ describe Krypt::Asn1::OctetString do
 
     context 'tag_class handling' do
       context 'UNIVERSAL' do
-        let(:der) { "\x01\x01\xFF" }
+        let(:der) { "\x04\x0Chello,world!" }
         its(:tag_class) { should == :UNIVERSAL }
       end
 
       context 'APPLICATION' do
-        let(:der) { "\x41\x01\xFF" }
+        let(:der) { "\x44\x0Chello,world!" }
         its(:tag_class) { should == :APPLICATION }
       end
 
       context 'CONTEXT_SPECIFIC' do
-        let(:der) { "\x81\x01\xFF" }
+        let(:der) { "\x84\x0Chello,world!" }
         its(:tag_class) { should == :CONTEXT_SPECIFIC }
       end
 
       context 'PRIVATE' do
-        let(:der) { "\xC1\x01\xFF" }
+        let(:der) { "\xC4\x0Chello,world!" }
         its(:tag_class) { should == :PRIVATE }
       end
     end
