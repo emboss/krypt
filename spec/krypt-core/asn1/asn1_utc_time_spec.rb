@@ -2,7 +2,7 @@ require 'rspec'
 require 'krypt-core'
 require 'openssl'
 
-describe Krypt::ASN1::UtcTime do 
+describe Krypt::ASN1::UTCTime do 
   let(:klass) { Krypt::ASN1::UtcTime }
   let(:decoder) { Krypt::ASN1 }
 
