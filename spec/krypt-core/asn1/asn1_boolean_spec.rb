@@ -91,6 +91,20 @@ describe Krypt::Asn1::Boolean do
   end
 
   describe '#to_der' do
+    subject { klass.new(value).to_der }
+
+    context 'value' do
+      context 'true' do
+        let(:value) { true }
+        it { should == "\x01\x01\xFF" }
+      end
+
+      context 'false' do
+        let(:value) { false }
+        it { should == "\x01\x01\x00" }
+      end
+    end
+
     context 'private tag handling' do
       subject { klass.new(true, tag, :PRIVATE).to_der }
 

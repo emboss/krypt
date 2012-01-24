@@ -16,7 +16,9 @@ describe Krypt::Asn1::Null do
     class << self
       alias old_new new
       def new(*args)
-        if args.size > 0
+        if args.size == 1
+          # nothing to do
+        elsif args.size > 0
           args = [args[0], args[1], :IMPLICIT, args[2]]
         else
           args = [nil]
@@ -94,6 +96,12 @@ describe Krypt::Asn1::Null do
   end
 
   describe '#to_der' do
+    context 'values' do
+      subject { klass.new.to_der }
+
+      it { should == "\x05\x00" }
+    end
+
     context 'private tag handling' do
       subject { klass.new(nil, tag, :PRIVATE).to_der }
 
