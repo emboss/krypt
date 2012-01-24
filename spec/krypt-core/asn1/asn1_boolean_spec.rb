@@ -91,9 +91,9 @@ describe Krypt::Asn1::Boolean do
   end
 
   describe '#to_der' do
-    subject { klass.new(value).to_der }
-
     context 'value' do
+      subject { klass.new(value).to_der }
+
       context 'true' do
         let(:value) { true }
         it { should == "\x01\x01\xFF" }
