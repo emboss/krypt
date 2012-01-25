@@ -31,7 +31,7 @@ describe Krypt::ASN1::BitString do
       context '01010101' do
         let(:value) { '01010101' }
 
-        its(:tag) { should == 3 }
+        its(:tag) { should == Krypt::ASN1::BIT_STRING }
         its(:tag_class) { should == :UNIVERSAL }
         its(:value) { should == "\x55" }
         its(:infinite_length) { should == false }
@@ -45,9 +45,9 @@ describe Krypt::ASN1::BitString do
     end
 
     context 'explicit construct' do
-      subject { klass.new("\x55", 3, :UNIVERSAL) }
+      subject { klass.new("\x55", Krypt::ASN1::BIT_STRING, :UNIVERSAL) }
 
-      its(:tag) { should == 3 }
+      its(:tag) { should == Krypt::ASN1::BIT_STRING }
       its(:tag_class) { should == :UNIVERSAL }
       its(:value) { should == "\x55" }
     end
@@ -56,7 +56,7 @@ describe Krypt::ASN1::BitString do
       subject { klass.new("0x55", tag, :PRIVATE) }
 
       context 'default tag' do
-        let(:tag) { 4 }
+        let(:tag) { Krypt::ASN1::BIT_STRING }
         its(:tag) { should == tag }
       end
 
@@ -67,7 +67,7 @@ describe Krypt::ASN1::BitString do
     end
 
     context 'tag_class handling' do
-      subject { klass.new("0x55", 4, tag_class) }
+      subject { klass.new("0x55", Krypt::ASN1::BIT_STRING, tag_class) }
 
       context 'UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -130,7 +130,7 @@ describe Krypt::ASN1::BitString do
       subject { klass.new("\x55", tag, :PRIVATE).to_der }
 
       context 'default tag' do
-        let(:tag) { 3 }
+        let(:tag) { Krypt::ASN1::BIT_STRING }
         it { should == "\xC3\x02\x00\x55" }
       end
 
@@ -141,7 +141,7 @@ describe Krypt::ASN1::BitString do
     end
 
     context 'tag_class handling' do
-      subject { klass.new("\x55", 3, tag_class).to_der }
+      subject { klass.new("\x55", Krypt::ASN1::BIT_STRING, tag_class).to_der }
 
       context 'UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -172,42 +172,42 @@ describe Krypt::ASN1::BitString do
       context '01010101' do
         let(:der) { "\x03\x02\x00\x55" }
         its(:class) { should == klass }
-        its(:tag) { should == 3 }
+        its(:tag) { should == Krypt::ASN1::BIT_STRING }
         its(:value) { should == "\x55" }
       end
 
       context '010101010' do
         let(:der) { "\x03\x03\x00\x00\xAA" }
         its(:class) { should == klass }
-        its(:tag) { should == 3 }
+        its(:tag) { should == Krypt::ASN1::BIT_STRING }
         its(:value) { should == "\x00\xAA" }
       end
 
       context '(empty)' do
         let(:der) { "\x03\x01\x00" }
         its(:class) { should == klass }
-        its(:tag) { should == 3 }
+        its(:tag) { should == Krypt::ASN1::BIT_STRING }
         its(:value) { should == '' }
       end
 
       context '999 octets' do
         let(:der) { "\x03\x82\x03\xE8\x00" + "\xFF" * 999 }
         its(:class) { should == klass }
-        its(:tag) { should == 3 }
+        its(:tag) { should == Krypt::ASN1::BIT_STRING }
         its(:value) { should == "\xFF" * 999 }
       end
 
       context '1000 octets' do
         let(:der) { "\x03\x82\x03\xE9\x00" + "\x00" * 1000 }
         its(:class) { should == klass }
-        its(:tag) { should == 3 }
+        its(:tag) { should == Krypt::ASN1::BIT_STRING }
         its(:value) { should == "\x00" * 1000 }
       end
 
       context '1001 octets' do
         let(:der) { "\x03\x82\x03\xEA\x00" + "\xFF" * 1001 }
         its(:class) { should == klass }
-        its(:tag) { should == 3 }
+        its(:tag) { should == Krypt::ASN1::BIT_STRING }
         its(:value) { should == "\xFF" * 1001 }
       end
     end

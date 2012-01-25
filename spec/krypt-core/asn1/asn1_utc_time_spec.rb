@@ -3,7 +3,7 @@ require 'krypt-core'
 require 'openssl'
 
 describe Krypt::ASN1::UTCTime do 
-  let(:klass) { Krypt::ASN1::UtcTime }
+  let(:klass) { Krypt::ASN1::UTCTime }
   let(:decoder) { Krypt::ASN1 }
 
   # For test against OpenSSL
@@ -31,7 +31,7 @@ describe Krypt::ASN1::UTCTime do
       context 'Time' do
         let(:value) { Time.now }
 
-        its(:tag) { should == 23 }
+        its(:tag) { should == Krypt::ASN1::UTC_TIME }
         its(:tag_class) { should == :UNIVERSAL }
         its(:value) { should == value }
         its(:infinite_length) { should == false }
@@ -40,7 +40,7 @@ describe Krypt::ASN1::UTCTime do
       context 'Numeric' do
         let(:value) { 0 + Time.now.to_i }
 
-        its(:tag) { should == 23 }
+        its(:tag) { should == Krypt::ASN1::UTC_TIME }
         its(:tag_class) { should == :UNIVERSAL }
         its(:value) { should == value } # TODO: Should be a Time?
         its(:infinite_length) { should == false }
@@ -49,7 +49,7 @@ describe Krypt::ASN1::UTCTime do
       context 'String' do
         let(:value) { '' + Time.now.to_i.to_s }
 
-        its(:tag) { should == 23 }
+        its(:tag) { should == Krypt::ASN1::UTC_TIME }
         its(:tag_class) { should == :UNIVERSAL }
         its(:value) { should == value } # TODO: Should be a Time?
         its(:infinite_length) { should == false }
@@ -57,9 +57,9 @@ describe Krypt::ASN1::UTCTime do
     end
 
     context 'explicit construct' do
-      subject { klass.new(0, 23, :UNIVERSAL) }
+      subject { klass.new(0, Krypt::ASN1::UTC_TIME, :UNIVERSAL) }
 
-      its(:tag) { should == 23 }
+      its(:tag) { should == Krypt::ASN1::UTC_TIME }
       its(:tag_class) { should == :UNIVERSAL }
       its(:value) { should == 0 } # TODO: Should be a Time?
     end
@@ -68,7 +68,7 @@ describe Krypt::ASN1::UTCTime do
       subject { klass.new('hello,world!', tag, :PRIVATE) }
 
       context 'default tag' do
-        let(:tag) { 23 }
+        let(:tag) { Krypt::ASN1::UTC_TIME }
         its(:tag) { should == tag }
       end
 
@@ -79,7 +79,7 @@ describe Krypt::ASN1::UTCTime do
     end
 
     context 'tag_class handling' do
-      subject { klass.new('hello,world!', 23, tag_class) }
+      subject { klass.new('hello,world!', Krypt::ASN1::UTC_TIME, tag_class) }
 
       context 'UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -108,27 +108,27 @@ describe Krypt::ASN1::UTCTime do
       subject { klass.new(value).to_der }
 
       context 'Time' do
-        let(:value) { Time.mktime(2012, 1, 24, 0, 0, 0) }
-        it { should == "\x17\x0D120123150000Z" }
+        let(:value) { Time.utc(2012, 1, 24, 0, 0, 0) }
+        it { should == "\x17\x0D120124000000Z" }
       end
 
       context 'Numeric' do
-        let(:value) { Time.mktime(2012, 1, 24, 0, 0, 0).to_i }
-        it { should == "\x17\x0D120123150000Z" }
+        let(:value) { Time.utc(2012, 1, 24, 0, 0, 0).to_i }
+        it { should == "\x17\x0D120124000000Z" }
       end
 
       context 'String' do
-        let(:value) { Time.mktime(2012, 1, 24, 0, 0, 0).to_i }
-        it { should == "\x17\x0D120123150000Z" }
+        let(:value) { Time.utc(2012, 1, 24, 0, 0, 0).to_i }
+        it { should == "\x17\x0D120124000000Z" }
       end
 
       context 'Min time representation' do
-        let(:value) { Time.mktime(2000, 1, 1, 9, 0, 0).to_i }
+        let(:value) { Time.utc(2000, 1, 1, 0, 0, 0).to_i }
         it { should == "\x17\x0D000101000000Z" }
       end
 
       context 'Max time representation' do
-        let(:value) { Time.mktime(2000, 1, 1, 8, 59, 59).to_i }
+        let(:value) { Time.utc(1999, 12, 31, 23, 59, 59).to_i }
         it { should == "\x17\x0D991231235959Z" }
       end
 
@@ -155,7 +155,7 @@ describe Krypt::ASN1::UTCTime do
       subject { klass.new(1327330800, tag, :PRIVATE).to_der }
 
       context 'default tag' do
-        let(:tag) { 23 }
+        let(:tag) { Krypt::ASN1::UTC_TIME }
         it { should == "\xD7\x0D120123150000Z" }
       end
 
@@ -166,7 +166,7 @@ describe Krypt::ASN1::UTCTime do
     end
 
     context 'tag_class handling' do
-      subject { klass.new(1327330800, 23, tag_class).to_der }
+      subject { klass.new(1327330800, Krypt::ASN1::UTC_TIME, tag_class).to_der }
 
       context 'UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -197,58 +197,58 @@ describe Krypt::ASN1::UTCTime do
       context 'Time' do
         let(:der) { "\x17\x0D120123150000Z" }
         its(:class) { should == klass }
-        its(:tag) { should == 23 }
-        its(:value) { should == Time.mktime(2012, 1, 24, 0, 0, 0) }
+        its(:tag) { should == Krypt::ASN1::UTC_TIME }
+        its(:value) { should == Time.utc(2012, 1, 23, 15, 0, 0) }
       end
 
       context 'with fraction' do
         let(:der) { "\x17\x12120123150000.0001Z" }
         its(:class) { should == klass }
-        its(:tag) { should == 23 }
+        its(:tag) { should == Krypt::ASN1::UTC_TIME }
         its(:value) { subject.usec.should == 100 } # TODO: ossl does not support decoding usec
       end
 
       context 'Min time representation' do
         let(:der) { "\x17\x0D000101000000Z" }
         its(:class) { should == klass }
-        its(:tag) { should == 23 }
-        its(:value) { should == Time.mktime(2000, 1, 1, 9, 0, 0) }
+        its(:tag) { should == Krypt::ASN1::UTC_TIME }
+        its(:value) { should == Time.utc(2000, 1, 1, 0, 0, 0) }
       end
 
       context 'Max time representation' do
         let(:der) { "\x17\x0D991231235959Z" }
         its(:class) { should == klass }
-        its(:tag) { should == 23 }
-        its(:value) { Time.mktime(2000, 1, 1, 8, 59, 59) }
+        its(:tag) { should == Krypt::ASN1::UTC_TIME }
+        its(:value) { Time.utc(1999, 12, 31, 23, 59, 59) }
       end
 
       context 'timezone' do
         context '+' do
           let(:der) { "\x17\x11000101085959+0900" }
           its(:class) { should == klass }
-          its(:tag) { should == 23 }
-          its(:value) { Time.mktime(2000, 1, 1, 8, 59, 59) }
+          its(:tag) { should == Krypt::ASN1::UTC_TIME }
+          its(:value) { Time.utc(1999, 12, 31, 23, 59, 59) }
         end
 
         context '-' do
           let(:der) { "\x17\x11991231145959-0900" }
           its(:class) { should == klass }
-          its(:tag) { should == 23 }
-          its(:value) { Time.mktime(2000, 1, 1, 8, 59, 59) }
+          its(:tag) { should == Krypt::ASN1::UTC_TIME }
+          its(:value) { Time.utc(1999, 12, 31, 23, 59, 59) }
         end
 
         context '+0' do
           let(:der) { "\x17\x11991231235959+0000" }
           its(:class) { should == klass }
-          its(:tag) { should == 23 }
-          its(:value) { Time.mktime(2000, 1, 1, 8, 59, 59) }
+          its(:tag) { should == Krypt::ASN1::UTC_TIME }
+          its(:value) { Time.utc(1999, 12, 31, 23, 59, 59) }
         end
 
         context '-0' do
           let(:der) { "\x17\x11991231235959-0000" }
           its(:class) { should == klass }
-          its(:tag) { should == 23 }
-          its(:value) { Time.mktime(2000, 1, 1, 8, 59, 59) }
+          its(:tag) { should == Krypt::ASN1::UTC_TIME }
+          its(:value) { Time.utc(1999, 12, 31, 23, 59, 59) }
         end
       end
     end

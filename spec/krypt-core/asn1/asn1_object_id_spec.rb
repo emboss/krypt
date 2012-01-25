@@ -31,7 +31,7 @@ describe Krypt::ASN1::ObjectId do
       context '1.0.8571.2' do
         let(:value) { '1.0.8571.2' }
 
-        its(:tag) { should == 6 }
+        its(:tag) { should == Krypt::ASN1::OBJECT_ID }
         its(:tag_class) { should == :UNIVERSAL }
         its(:value) { should == '1.0.8571.2' }
         its(:infinite_length) { should == false }
@@ -45,9 +45,9 @@ describe Krypt::ASN1::ObjectId do
     end
 
     context 'explicit construct' do
-      subject { klass.new('1.0.8571.2', 6, :UNIVERSAL) }
+      subject { klass.new('1.0.8571.2', Krypt::ASN1::OBJECT_ID, :UNIVERSAL) }
 
-      its(:tag) { should == 6 }
+      its(:tag) { should == Krypt::ASN1::OBJECT_ID }
       its(:tag_class) { should == :UNIVERSAL }
       its(:value) { should == '1.0.8571.2' }
     end
@@ -56,7 +56,7 @@ describe Krypt::ASN1::ObjectId do
       subject { klass.new('1.0.8571.2', tag, :PRIVATE) }
 
       context 'default tag' do
-        let(:tag) { 6 }
+        let(:tag) { Krypt::ASN1::OBJECT_ID }
         its(:tag) { should == tag }
       end
 
@@ -67,7 +67,7 @@ describe Krypt::ASN1::ObjectId do
     end
 
     context 'tag_class handling' do
-      subject { klass.new('1.0.8571.2', 6, tag_class) }
+      subject { klass.new('1.0.8571.2', Krypt::ASN1::OBJECT_ID, tag_class) }
 
       context 'UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -161,7 +161,7 @@ describe Krypt::ASN1::ObjectId do
     end
 
     context 'tag_class handling' do
-      subject { klass.new('1.0.8571.2', 6, tag_class).to_der }
+      subject { klass.new('1.0.8571.2', Krypt::ASN1::OBJECT_ID, tag_class).to_der }
 
       context 'UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -192,7 +192,7 @@ describe Krypt::ASN1::ObjectId do
       context '1.0.8571.2' do
         let(:der) { "\x06\x04\x28\xC2\x7B\x02" }
         its(:class) { should == klass }
-        its(:tag) { should == 6 }
+        its(:tag) { should == Krypt::ASN1::OBJECT_ID }
         its(:value) { should == '1.0.8571.2' }
       end
 
@@ -200,28 +200,28 @@ describe Krypt::ASN1::ObjectId do
         context '0.0' do
           let(:der) { "\x06\x01\x00" }
           its(:class) { should == klass }
-          its(:tag) { should == 6 }
+          its(:tag) { should == Krypt::ASN1::OBJECT_ID }
           its(:value) { should == '0.0' } # "ITU-T" in OpenSSL
         end
 
         context '0.3' do
           let(:der) { "\x06\x01\x03" }
           its(:class) { should == klass }
-          its(:tag) { should == 6 }
+          its(:tag) { should == Krypt::ASN1::OBJECT_ID }
           its(:value) { should == '0.3' }
         end
 
         context '1.0' do
           let(:der) { "\x06\x01\x28" }
           its(:class) { should == klass }
-          its(:tag) { should == 6 }
+          its(:tag) { should == Krypt::ASN1::OBJECT_ID }
           its(:value) { should == '1.0' } # "ISO" in OpenSSL
         end
 
         context '1.3' do
           let(:der) { "\x06\x01\x2B" }
           its(:class) { should == klass }
-          its(:tag) { should == 6 }
+          its(:tag) { should == Krypt::ASN1::OBJECT_ID }
           its(:value) { should == '1.3' } # "identified-organization" in OpenSSL
         end
       end
@@ -229,14 +229,14 @@ describe Krypt::ASN1::ObjectId do
       context '0.0.0.....0' do
         let(:der) { "\x06\x82\x03\xE6\x00" + "\x00" * 997 }
         its(:class) { should == klass }
-        its(:tag) { should == 6 }
+        its(:tag) { should == Krypt::ASN1::OBJECT_ID }
         its(:value) { should == (['0'] * 999).join('.') }
       end
 
       context '1.1.1.....1' do
         let(:der) { "\x06\x82\x03\xE7\x29" + "\x01" * 998 }
         its(:class) { should == klass }
-        its(:tag) { should == 6 }
+        its(:tag) { should == Krypt::ASN1::OBJECT_ID }
         its(:value) { should == (['1'] * 1000).join('.') }
       end
     end

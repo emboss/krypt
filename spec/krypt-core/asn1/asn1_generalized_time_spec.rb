@@ -31,7 +31,7 @@ describe Krypt::ASN1::GeneralizedTime do
       context 'Time' do
         let(:value) { Time.now }
 
-        its(:tag) { should == 24 }
+        its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
         its(:tag_class) { should == :UNIVERSAL }
         its(:value) { should == value }
         its(:infinite_length) { should == false }
@@ -40,35 +40,35 @@ describe Krypt::ASN1::GeneralizedTime do
       context 'Numeric' do
         let(:value) { 0 + Time.now.to_i }
 
-        its(:tag) { should == 24 }
+        its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
         its(:tag_class) { should == :UNIVERSAL }
-        its(:value) { should == value } # TODO: Should be a Time?
+        its(:value) { should == value }  # TODO: should be time?
         its(:infinite_length) { should == false }
       end
 
       context 'String' do
         let(:value) { '' + Time.now.to_i.to_s }
 
-        its(:tag) { should == 24 }
+        its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
         its(:tag_class) { should == :UNIVERSAL }
-        its(:value) { should == value } # TODO: Should be a Time?
+        its(:value) { should == value } # TODO: should be time?
         its(:infinite_length) { should == false }
       end
     end
 
     context 'explicit construct' do
-      subject { klass.new(0, 24, :UNIVERSAL) }
+      subject { klass.new(0, Krypt::ASN1::GENERALIZED_TIME, :UNIVERSAL) }
 
-      its(:tag) { should == 24 }
+      its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
       its(:tag_class) { should == :UNIVERSAL }
-      its(:value) { should == 0 } # TODO: Should be a Time?
+      its(:value) { should == 0 } # TODO: should be time?
     end
 
     context 'private tag handling' do
       subject { klass.new(Time.now, tag, :PRIVATE) }
 
       context 'default tag' do
-        let(:tag) { 24 }
+        let(:tag) { Krypt::ASN1::GENERALIZED_TIME }
         its(:tag) { should == tag }
       end
 
@@ -79,7 +79,7 @@ describe Krypt::ASN1::GeneralizedTime do
     end
 
     context 'tag_class handling' do
-      subject { klass.new(Time.now, 24, tag_class) }
+      subject { klass.new(Time.now, Krypt::ASN1::GENERALIZED_TIME, tag_class) }
 
       context 'UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -108,27 +108,27 @@ describe Krypt::ASN1::GeneralizedTime do
       subject { klass.new(value).to_der }
 
       context 'Time' do
-        let(:value) { Time.mktime(2012, 1, 24, 0, 0, 0) }
-        it { should == "\x18\x0F20120123150000Z" }
+        let(:value) { Time.utc(2012, 1, 24, 0, 0, 0) }
+        it { should == "\x18\x0F20120124000000Z" }
       end
 
       context 'Numeric' do
-        let(:value) { Time.mktime(2012, 1, 24, 0, 0, 0).to_i }
-        it { should == "\x18\x0F20120123150000Z" }
+        let(:value) { Time.utc(2012, 1, 24, 0, 0, 0).to_i }
+        it { should == "\x18\x0F20120124000000Z" }
       end
 
       context 'String' do
-        let(:value) { Time.mktime(2012, 1, 24, 0, 0, 0).to_i }
-        it { should == "\x18\x0F20120123150000Z" }
+        let(:value) { Time.utc(2012, 1, 24, 0, 0, 0).to_i }
+        it { should == "\x18\x0F20120124000000Z" }
       end
 
       context 'Min time representation' do
-        let(:value) { Time.mktime(2000, 1, 1, 9, 0, 0).to_i }
+        let(:value) { Time.utc(2000, 1, 1, 0, 0, 0).to_i }
         it { should == "\x18\x0F20000101000000Z" }
       end
 
       context 'Max time representation' do
-        let(:value) { Time.mktime(2000, 1, 1, 8, 59, 59).to_i }
+        let(:value) { Time.utc(1999, 12, 31, 23, 59, 59).to_i }
         it { should == "\x18\x0F19991231235959Z" }
       end
 
@@ -155,7 +155,7 @@ describe Krypt::ASN1::GeneralizedTime do
       subject { klass.new(1327330800, tag, :PRIVATE).to_der }
 
       context 'default tag' do
-        let(:tag) { 24 }
+        let(:tag) { Krypt::ASN1::GENERALIZED_TIME }
         it { should == "\xD8\x0F20120123150000Z" }
       end
 
@@ -166,7 +166,7 @@ describe Krypt::ASN1::GeneralizedTime do
     end
 
     context 'tag_class handling' do
-      subject { klass.new(1327330800, 24, tag_class).to_der }
+      subject { klass.new(1327330800, Krypt::ASN1::GENERALIZED_TIME, tag_class).to_der }
 
       context 'UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -195,60 +195,60 @@ describe Krypt::ASN1::GeneralizedTime do
 
     context 'value' do
       context 'Time' do
-        let(:der) { "\x18\x0F20120123150000Z" }
+        let(:der) { "\x18\x0F20120124000000Z" }
         its(:class) { should == klass }
-        its(:tag) { should == 24 }
-        its(:value) { should == Time.mktime(2012, 1, 24, 0, 0, 0) }
+        its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
+        its(:value) { should == Time.utc(2012, 1, 24, 0, 0, 0) }
       end
 
       context 'with fraction' do
-        let(:der) { "\x18\x1620120123150000.012345Z" }
+        let(:der) { "\x18\x1620120124000000.012345Z" }
         its(:class) { should == klass }
-        its(:tag) { should == 24 }
+        its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
         its(:value) { subject.usec.should == 12345 } # TODO: ossl does not support decoding usec
       end
 
       context 'Min time representation' do
         let(:der) { "\x18\x0F20000101000000Z" }
         its(:class) { should == klass }
-        its(:tag) { should == 24 }
-        its(:value) { should == Time.mktime(2000, 1, 1, 9, 0, 0) }
+        its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
+        its(:value) { should == Time.utc(2000, 1, 1, 0, 0, 0) }
       end
 
       context 'Max time representation' do
         let(:der) { "\x18\x0F19991231235959Z" }
         its(:class) { should == klass }
-        its(:tag) { should == 24 }
-        its(:value) { Time.mktime(2000, 1, 1, 8, 59, 59) }
+        its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
+        its(:value) { Time.utc(1999, 12, 31, 23, 59, 59) }
       end
 
       context 'timezone' do
         context '+' do
           let(:der) { "\x18\x1320000101085959+0900" }
           its(:class) { should == klass }
-          its(:tag) { should == 24 }
-          its(:value) { Time.mktime(2000, 1, 1, 8, 59, 59) }
+          its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
+          its(:value) { Time.utc(1999, 12, 31, 23, 59, 59) }
         end
 
         context '-' do
           let(:der) { "\x18\x1319991231145959-0900" }
           its(:class) { should == klass }
-          its(:tag) { should == 24 }
-          its(:value) { Time.mktime(2000, 1, 1, 8, 59, 59) }
+          its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
+          its(:value) { Time.utc(1999, 12, 31, 23, 59, 59) }
         end
 
         context '+0' do
           let(:der) { "\x18\x1319991231235959+0000" }
           its(:class) { should == klass }
-          its(:tag) { should == 24 }
-          its(:value) { Time.mktime(2000, 1, 1, 8, 59, 59) }
+          its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
+          its(:value) { Time.utc(1999, 12, 31, 23, 59, 59) }
         end
 
         context '-0' do
           let(:der) { "\x18\x1319991231235959-0000" }
           its(:class) { should == klass }
-          its(:tag) { should == 24 }
-          its(:value) { Time.mktime(2000, 1, 1, 8, 59, 59) }
+          its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
+          its(:value) { Time.utc(1999, 12, 31, 23, 59, 59) }
         end
       end
     end

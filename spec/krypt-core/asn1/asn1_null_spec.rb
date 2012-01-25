@@ -32,27 +32,27 @@ describe Krypt::ASN1::Null do
     context 'constructs' do
       subject { klass.new(nil) }
 
-      its(:tag) { should == 5 }
+      its(:tag) { should == Krypt::ASN1::NULL }
       its(:tag_class) { should == :UNIVERSAL }
-      # SEGV its(:value) { should == nil }
+      its(:value) { should == nil }
       its(:infinite_length) { should == false }
     end
 
     context 'constructs without value' do
       subject { klass.new }
 
-      its(:tag) { should == 5 }
+      its(:tag) { should == Krypt::ASN1::NULL }
       its(:tag_class) { should == :UNIVERSAL }
-      # SEGV its(:value) { should == nil }
+      its(:value) { should == nil }
       its(:infinite_length) { should == false }
     end
 
     context 'explicit construct' do
-      subject { klass.new(nil, 5, :UNIVERSAL) }
+      subject { klass.new(nil,  Krypt::ASN1::NULL, :UNIVERSAL) }
 
-      its(:tag) { should == 5 }
+      its(:tag) { should == Krypt::ASN1::NULL }
       its(:tag_class) { should == :UNIVERSAL }
-      # SEGV its(:value) { should == nil }
+      its(:value) { should == nil }
       its(:infinite_length) { should == false }
     end
 
@@ -60,7 +60,7 @@ describe Krypt::ASN1::Null do
       subject { klass.new(nil, tag, :PRIVATE) }
 
       context 'default tag' do
-        let(:tag) { 5 }
+        let(:tag) { Krypt::ASN1::NULL }
         its(:tag) { should == tag }
       end
 
@@ -71,7 +71,7 @@ describe Krypt::ASN1::Null do
     end
 
     context 'tag_class handling' do
-      subject { klass.new(nil, 5, tag_class) }
+      subject { klass.new(nil, Krypt::ASN1::NULL, tag_class) }
 
       context 'UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -106,7 +106,7 @@ describe Krypt::ASN1::Null do
       subject { klass.new(nil, tag, :PRIVATE).to_der }
 
       context 'default tag' do
-        let(:tag) { 5 }
+        let(:tag) { Krypt::ASN1::NULL }
         it { should == "\xC5\x00" }
       end
 
@@ -117,7 +117,7 @@ describe Krypt::ASN1::Null do
     end
 
     context 'tag_class handling' do
-      subject { klass.new(nil, 5, tag_class).to_der }
+      subject { klass.new(nil, Krypt::ASN1::NULL, tag_class).to_der }
 
       context 'UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -147,7 +147,7 @@ describe Krypt::ASN1::Null do
     context 'value' do
       let(:der) { "\x05\x00" }
       its(:class) { should == klass }
-      its(:tag) { should == 5 }
+      its(:tag) { should == Krypt::ASN1::NULL }
       its(:value) { should == nil }
     end
 

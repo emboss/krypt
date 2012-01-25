@@ -29,16 +29,16 @@ describe Krypt::ASN1::Enumerated do
     context 'constructs with value' do
       subject { klass.new(72) }
 
-      its(:tag) { should == 10 }
+      its(:tag) { should == Krypt::ASN1::ENUMERATED }
       its(:tag_class) { should == :UNIVERSAL }
       its(:value) { should == 72 }
       its(:infinite_length) { should == false }
     end
 
     context 'explicit construct' do
-      subject { klass.new(72, 10, :UNIVERSAL) }
+      subject { klass.new(72, Krypt::ASN1::ENUMERATED, :UNIVERSAL) }
 
-      its(:tag) { should == 10 }
+      its(:tag) { should == Krypt::ASN1::ENUMERATED }
       its(:tag_class) { should == :UNIVERSAL }
       its(:value) { should == 72 }
     end
@@ -47,7 +47,7 @@ describe Krypt::ASN1::Enumerated do
       subject { klass.new(72, tag, :PRIVATE) }
 
       context 'default tag' do
-        let(:tag) { 1 }
+        let(:tag) { Krypt::ASN1::ENUMERATED }
         its(:tag) { should == tag }
       end
 
@@ -58,7 +58,7 @@ describe Krypt::ASN1::Enumerated do
     end
 
     context 'tag_class handling' do
-      subject { klass.new(72, 10, tag_class) }
+      subject { klass.new(72, Krypt::ASN1::ENUMERATED, tag_class) }
 
       context 'UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -131,7 +131,7 @@ describe Krypt::ASN1::Enumerated do
       subject { klass.new(72, tag, :PRIVATE).to_der }
 
       context 'default tag' do
-        let(:tag) { 10 }
+        let(:tag) { Krypt::ASN1::ENUMERATED }
         it { should == "\xCA\x01\x48" }
       end
 
@@ -142,7 +142,7 @@ describe Krypt::ASN1::Enumerated do
     end
 
     context 'tag_class handling' do
-      subject { klass.new(72, 10, tag_class).to_der }
+      subject { klass.new(72, Krypt::ASN1::ENUMERATED, tag_class).to_der }
 
       context 'UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -173,56 +173,56 @@ describe Krypt::ASN1::Enumerated do
       context 0 do
         let(:der) { "\x0A\x01\x00" }
         its(:class) { should == klass }
-        its(:tag) { should == 10 }
+        its(:tag) { should == Krypt::ASN1::ENUMERATED }
         its(:value) { should == 0 }
       end
 
       context 72 do
         let(:der) { "\x0A\x01\x48" }
         its(:class) { should == klass }
-        its(:tag) { should == 10 }
+        its(:tag) { should == Krypt::ASN1::ENUMERATED }
         its(:value) { should == 72 }
       end
 
       context 127 do
         let(:der) { "\x0A\x01\x7F" }
         its(:class) { should == klass }
-        its(:tag) { should == 10 }
+        its(:tag) { should == Krypt::ASN1::ENUMERATED }
         its(:value) { should == 127 }
       end
 
       context -128 do
         let(:der) { "\x0A\x01\x80" }
         its(:class) { should == klass }
-        its(:tag) { should == 10 }
+        its(:tag) { should == Krypt::ASN1::ENUMERATED }
         its(:value) { should == -128 } # TODO: ossl returns 128 (positive value)
       end
 
       context 128 do
         let(:der) { "\x0A\x02\x00\x80" }
         its(:class) { should == klass }
-        its(:tag) { should == 10 }
+        its(:tag) { should == Krypt::ASN1::ENUMERATED }
         its(:value) { should == 128 }
       end
 
       context -27066 do
         let(:der) { "\x0A\x02\x96\x46" }
         its(:class) { should == klass }
-        its(:tag) { should == 10 }
+        its(:tag) { should == Krypt::ASN1::ENUMERATED }
         its(:value) { should == -27066 } # TODO: ossl returns 27066 (positive value)
       end
 
       context 'max Fixnum on 32bit box' do
         let(:der) { "\x0A\x04\x3F\xFF\xFF\xFF" }
         its(:class) { should == klass }
-        its(:tag) { should == 10 }
+        its(:tag) { should == Krypt::ASN1::ENUMERATED }
         its(:value) { should == 2**30-1 }
       end
 
       context 'max Fixnum on 64bit box' do
         let(:der) { "\x0A\x08\x3F\xFF\xFF\xFF\xFF\xFF\xFF\xFF" }
         its(:class) { should == klass }
-        its(:tag) { should == 10 }
+        its(:tag) { should == Krypt::ASN1::ENUMERATED }
         its(:value) { should == 2**62-1 }
       end
     end

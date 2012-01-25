@@ -28,16 +28,16 @@ describe Krypt::ASN1::Integer do
     context 'constructs with value' do
       subject { klass.new(72) }
 
-      its(:tag) { should == 2 }
+      its(:tag) { should == Krypt::ASN1::INTEGER }
       its(:tag_class) { should == :UNIVERSAL }
       its(:value) { should == 72 }
       its(:infinite_length) { should == false }
     end
 
     context 'explicit construct' do
-      subject { klass.new(72, 2, :UNIVERSAL) }
+      subject { klass.new(72, Krypt::ASN1::INTEGER, :UNIVERSAL) }
 
-      its(:tag) { should == 2 }
+      its(:tag) { should == Krypt::ASN1::INTEGER }
       its(:tag_class) { should == :UNIVERSAL }
       its(:value) { should == 72 }
     end
@@ -46,7 +46,7 @@ describe Krypt::ASN1::Integer do
       subject { klass.new(72, tag, :PRIVATE) }
 
       context 'default tag' do
-        let(:tag) { 1 }
+        let(:tag) { Krypt::ASN1::INTEGER }
         its(:tag) { should == tag }
       end
 
@@ -57,7 +57,7 @@ describe Krypt::ASN1::Integer do
     end
 
     context 'tag_class handling' do
-      subject { klass.new(72, 2, tag_class) }
+      subject { klass.new(72, Krypt::ASN1::INTEGER, tag_class) }
 
       context 'UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -150,7 +150,7 @@ describe Krypt::ASN1::Integer do
       subject { klass.new(72, tag, :PRIVATE).to_der }
 
       context 'default tag' do
-        let(:tag) { 2 }
+        let(:tag) { Krypt::ASN1::INTEGER }
         it { should == "\xC2\x01\x48" }
       end
 
@@ -161,7 +161,7 @@ describe Krypt::ASN1::Integer do
     end
 
     context 'tag_class handling' do
-      subject { klass.new(72, 2, tag_class).to_der }
+      subject { klass.new(72, Krypt::ASN1::INTEGER, tag_class).to_der }
 
       context 'UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -192,70 +192,70 @@ describe Krypt::ASN1::Integer do
       context 0 do
         let(:der) { "\x02\x01\x00" }
         its(:class) { should == klass }
-        its(:tag) { should == 2 }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
         its(:value) { should == 0 }
       end
 
       context 1 do
         let(:der) { "\x02\x01\x01" }
         its(:class) { should == klass }
-        its(:tag) { should == 2 }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
         its(:value) { should == 1 }
       end
 
       context -1 do
         let(:der) { "\x02\x01\xFF" }
         its(:class) { should == klass }
-        its(:tag) { should == 2 }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
         its(:value) { should == -1 }
       end
 
       context 72 do
         let(:der) { "\x02\x01\x48" }
         its(:class) { should == klass }
-        its(:tag) { should == 2 }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
         its(:value) { should == 72 }
       end
 
       context 127 do
         let(:der) { "\x02\x01\x7F" }
         its(:class) { should == klass }
-        its(:tag) { should == 2 }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
         its(:value) { should == 127 }
       end
 
       context -128 do
         let(:der) { "\x02\x01\x80" }
         its(:class) { should == klass }
-        its(:tag) { should == 2 }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
         its(:value) { should == -128 }
       end
 
       context 128 do
         let(:der) { "\x02\x02\x00\x80" }
         its(:class) { should == klass }
-        its(:tag) { should == 2 }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
         its(:value) { should == 128 }
       end
 
       context -27066 do
         let(:der) { "\x02\x02\x96\x46" }
         its(:class) { should == klass }
-        its(:tag) { should == 2 }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
         its(:value) { should == -27066 }
       end
 
       context 'max Fixnum on 32bit box' do
         let(:der) { "\x02\x04\x3F\xFF\xFF\xFF" }
         its(:class) { should == klass }
-        its(:tag) { should == 2 }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
         its(:value) { should == 2**30-1 }
       end
 
       context 'max Fixnum on 64bit box' do
         let(:der) { "\x02\x08\x3F\xFF\xFF\xFF\xFF\xFF\xFF\xFF" }
         its(:class) { should == klass }
-        its(:tag) { should == 2 }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
         its(:value) { should == 2**62-1 }
       end
     end
