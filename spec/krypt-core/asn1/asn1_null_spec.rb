@@ -48,7 +48,7 @@ describe Krypt::ASN1::Null do
     end
 
     it "only accepts nil as the value argument" do
-      lambda { klass.new(1) }.should raise_error(ArgumentError)
+      -> { klass.new(1) }.should raise_error(ArgumentError)
     end
 
     context 'gets explicit tag number as the 2nd argument' do
@@ -86,6 +86,18 @@ describe Krypt::ASN1::Null do
       context 'PRIVATE' do
         let(:tag_class) { :PRIVATE }
         its(:tag_class) { should == tag_class }
+      end
+
+      context 'unknown tag_class' do
+        context nil do
+          let(:tag_class) { nil }
+          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        end
+
+        context :no_such_class do
+          let(:tag_class) { :no_such_class }
+          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        end
       end
     end
 

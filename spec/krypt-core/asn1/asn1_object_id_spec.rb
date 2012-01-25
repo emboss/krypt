@@ -78,6 +78,18 @@ describe Krypt::ASN1::ObjectId do
         let(:tag_class) { :PRIVATE }
         its(:tag_class) { should == tag_class }
       end
+
+      context 'unknown tag_class' do
+        context nil do
+          let(:tag_class) { nil }
+          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        end
+
+        context :no_such_class do
+          let(:tag_class) { :no_such_class }
+          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        end
+      end
     end
 
     context 'when the 2nd argument is given but 3rd argument is omitted' do

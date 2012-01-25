@@ -44,8 +44,8 @@ describe Krypt::ASN1::Boolean do
         its(:infinite_length) { should == false }
       end
 
-      it { lambda { klass.new(nil) }.should raise_error ArgumentError } # TODO: ossl does not check value
-      it { lambda { klass.new('hi!') }.should raise_error ArgumentError } # TODO: ossl does not check value
+      it { -> { klass.new(nil) }.should raise_error ArgumentError } # TODO: ossl does not check value
+      it { -> { klass.new('hi!') }.should raise_error ArgumentError } # TODO: ossl does not check value
     end
 
     context 'gets explicit tag number as the 2nd argument' do
@@ -83,6 +83,18 @@ describe Krypt::ASN1::Boolean do
       context 'PRIVATE' do
         let(:tag_class) { :PRIVATE }
         its(:tag_class) { should == tag_class }
+      end
+
+      context 'unknown tag_class' do
+        context nil do
+          let(:tag_class) { nil }
+          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        end
+
+        context :no_such_class do
+          let(:tag_class) { :no_such_class }
+          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        end
       end
     end
 
