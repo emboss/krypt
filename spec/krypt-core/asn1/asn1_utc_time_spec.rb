@@ -25,10 +25,10 @@ describe Krypt::ASN1::UTCTime do
   end
 
   describe '#new' do
-    context 'constructs with value' do
+    context 'gets value for construct' do
       subject { klass.new(value) }
 
-      context 'Time' do
+      context 'with Time' do
         let(:value) { Time.now }
 
         its(:tag) { should == Krypt::ASN1::UTC_TIME }
@@ -37,7 +37,7 @@ describe Krypt::ASN1::UTCTime do
         its(:infinite_length) { should == false }
       end
 
-      context 'Numeric' do
+      context 'with Numeric' do
         let(:value) { 0 + Time.now.to_i }
 
         its(:tag) { should == Krypt::ASN1::UTC_TIME }
@@ -46,7 +46,7 @@ describe Krypt::ASN1::UTCTime do
         its(:infinite_length) { should == false }
       end
 
-      context 'String' do
+      context 'with String' do
         let(:value) { '' + Time.now.to_i.to_s }
 
         its(:tag) { should == Krypt::ASN1::UTC_TIME }
@@ -56,16 +56,8 @@ describe Krypt::ASN1::UTCTime do
       end
     end
 
-    context 'explicit construct' do
-      subject { klass.new(0, Krypt::ASN1::UTC_TIME, :UNIVERSAL) }
-
-      its(:tag) { should == Krypt::ASN1::UTC_TIME }
-      its(:tag_class) { should == :UNIVERSAL }
-      its(:value) { should == 0 } # TODO: Should be a Time?
-    end
-
-    context 'private tag handling' do
-      subject { klass.new('hello,world!', tag, :PRIVATE) }
+    context 'gets explicit tag number as the 2nd argument' do
+      subject { klass.new(Time.now, tag, :PRIVATE) }
 
       context 'default tag' do
         let(:tag) { Krypt::ASN1::UTC_TIME }
@@ -78,8 +70,8 @@ describe Krypt::ASN1::UTCTime do
       end
     end
 
-    context 'tag_class handling' do
-      subject { klass.new('hello,world!', Krypt::ASN1::UTC_TIME, tag_class) }
+    context 'gets tag class symbol as the 3rd argument' do
+      subject { klass.new(Time.now, Krypt::ASN1::UTC_TIME, tag_class) }
 
       context 'UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -101,10 +93,15 @@ describe Krypt::ASN1::UTCTime do
         its(:tag_class) { should == tag_class }
       end
     end
+
+    context 'when the 2nd argument is given but 3rd argument is omitted' do
+      subject { klass.new(Time.now, Krypt::ASN1::UTC_TIME) }
+      its(:tag_class) { should == :CONTEXT_SPECIFIC }
+    end
   end
 
   describe '#to_der' do
-    context 'value' do
+    context 'encodes a given value' do
       subject { klass.new(value).to_der }
 
       context 'Time' do
@@ -151,7 +148,7 @@ describe Krypt::ASN1::UTCTime do
       end
     end
 
-    context 'private tag handling' do
+    context 'encodes tag number' do
       subject { klass.new(1327330800, tag, :PRIVATE).to_der }
 
       context 'default tag' do
@@ -165,7 +162,7 @@ describe Krypt::ASN1::UTCTime do
       end
     end
 
-    context 'tag_class handling' do
+    context 'encodes tag class' do
       subject { klass.new(1327330800, Krypt::ASN1::UTC_TIME, tag_class).to_der }
 
       context 'UNIVERSAL' do
@@ -190,10 +187,10 @@ describe Krypt::ASN1::UTCTime do
     end
   end
 
-  describe 'decoding' do
+  describe 'extracted from ASN1.decode' do
     subject { decoder.decode(der) }
 
-    context 'value' do
+    context 'extracted value' do
       context 'Time' do
         let(:der) { "\x17\x0D120123150000Z" }
         its(:class) { should == klass }
@@ -253,7 +250,7 @@ describe Krypt::ASN1::UTCTime do
       end
     end
 
-    context 'tag_class handling' do
+    context 'extracted tag class' do
       context 'UNIVERSAL' do
         let(:der) { "\x17\x0D991231235959Z" }
         its(:tag_class) { should == :UNIVERSAL }

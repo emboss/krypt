@@ -25,12 +25,11 @@ describe Krypt::ASN1::BitString do
   end
 
   describe '#new' do
-    context 'constructs with value' do
+    context 'gets value for construct' do
       subject { klass.new([value.reverse].pack('b*').reverse) }
 
       context '01010101' do
         let(:value) { '01010101' }
-
         its(:tag) { should == Krypt::ASN1::BIT_STRING }
         its(:tag_class) { should == :UNIVERSAL }
         its(:value) { should == "\x55" }
@@ -39,21 +38,15 @@ describe Krypt::ASN1::BitString do
 
       context '(empty)' do
         let(:value) { '' }
-
+        its(:tag) { should == Krypt::ASN1::BIT_STRING }
+        its(:tag_class) { should == :UNIVERSAL }
         its(:value) { should == '' }
+        its(:infinite_length) { should == false }
       end
     end
 
-    context 'explicit construct' do
-      subject { klass.new("\x55", Krypt::ASN1::BIT_STRING, :UNIVERSAL) }
-
-      its(:tag) { should == Krypt::ASN1::BIT_STRING }
-      its(:tag_class) { should == :UNIVERSAL }
-      its(:value) { should == "\x55" }
-    end
-
-    context 'private tag handling' do
-      subject { klass.new("0x55", tag, :PRIVATE) }
+    context 'gets explicit tag number as the 2nd argument' do
+      subject { klass.new("\x55", tag, :PRIVATE) }
 
       context 'default tag' do
         let(:tag) { Krypt::ASN1::BIT_STRING }
@@ -66,8 +59,8 @@ describe Krypt::ASN1::BitString do
       end
     end
 
-    context 'tag_class handling' do
-      subject { klass.new("0x55", Krypt::ASN1::BIT_STRING, tag_class) }
+    context 'gets tag class symbol as the 3rd argument' do
+      subject { klass.new("\x55", Krypt::ASN1::BIT_STRING, tag_class) }
 
       context 'UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -89,10 +82,15 @@ describe Krypt::ASN1::BitString do
         its(:tag_class) { should == tag_class }
       end
     end
+
+    context 'when the 2nd argument is given but 3rd argument is omitted' do
+      subject { klass.new("\x55", Krypt::ASN1::BIT_STRING) }
+      its(:tag_class) { should == :CONTEXT_SPECIFIC }
+    end
   end
 
   describe '#to_der' do
-    context 'value' do
+    context 'encodes a given value' do
       subject { klass.new([value.reverse].pack('b*').reverse).to_der }
 
       context '01010101' do
@@ -126,7 +124,7 @@ describe Krypt::ASN1::BitString do
       end
     end
 
-    context 'private tag handling' do
+    context 'encodes tag number' do
       subject { klass.new("\x55", tag, :PRIVATE).to_der }
 
       context 'default tag' do
@@ -140,7 +138,7 @@ describe Krypt::ASN1::BitString do
       end
     end
 
-    context 'tag_class handling' do
+    context 'encodes tag class' do
       subject { klass.new("\x55", Krypt::ASN1::BIT_STRING, tag_class).to_der }
 
       context 'UNIVERSAL' do
@@ -165,10 +163,10 @@ describe Krypt::ASN1::BitString do
     end
   end
 
-  describe 'decoding' do
+  describe 'extracted from ASN1.decode' do
     subject { decoder.decode(der) }
 
-    context 'value' do
+    context 'extracted value' do
       context '01010101' do
         let(:der) { "\x03\x02\x00\x55" }
         its(:class) { should == klass }
@@ -212,7 +210,7 @@ describe Krypt::ASN1::BitString do
       end
     end
 
-    context 'tag_class handling' do
+    context 'extracted tag class' do
       context 'UNIVERSAL' do
         let(:der) { "\x03\x03\x00\x00\xAA" }
         its(:tag_class) { should == :UNIVERSAL }

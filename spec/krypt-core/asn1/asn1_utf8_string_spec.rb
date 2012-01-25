@@ -31,7 +31,7 @@ describe Krypt::ASN1::UTF8String do
   end
 
   describe '#new' do
-    context 'constructs with value' do
+    context 'gets value for construct' do
       subject { klass.new(value) }
 
       context 'こんにちは、世界！' do
@@ -50,15 +50,7 @@ describe Krypt::ASN1::UTF8String do
       end
     end
 
-    context 'explicit construct' do
-      subject { klass.new('こんにちは、世界！', Krypt::ASN1::UTF8_STRING, :UNIVERSAL) }
-
-      its(:tag) { should == Krypt::ASN1::UTF8_STRING }
-      its(:tag_class) { should == :UNIVERSAL }
-      its(:value) { should == 'こんにちは、世界！' }
-    end
-
-    context 'private tag handling' do
+    context 'gets explicit tag number as the 2nd argument' do
       subject { klass.new('こんにちは、世界！', tag, :PRIVATE) }
 
       context 'default tag' do
@@ -72,7 +64,7 @@ describe Krypt::ASN1::UTF8String do
       end
     end
 
-    context 'tag_class handling' do
+    context 'gets tag class symbol as the 3rd argument' do
       subject { klass.new('こんにちは、世界！', Krypt::ASN1::UTF8_STRING, tag_class) }
 
       context 'UNIVERSAL' do
@@ -95,10 +87,15 @@ describe Krypt::ASN1::UTF8String do
         its(:tag_class) { should == tag_class }
       end
     end
+
+    context 'when the 2nd argument is given but 3rd argument is omitted' do
+      subject { klass.new('こんにちは、世界！', Krypt::ASN1::UTF8_STRING) }
+      its(:tag_class) { should == :CONTEXT_SPECIFIC }
+    end
   end
 
   describe '#to_der' do
-    context 'value' do
+    context 'encodes a given value' do
       subject { klass.new(value).to_der }
 
       context 'こんにちは、世界！' do
@@ -117,7 +114,7 @@ describe Krypt::ASN1::UTF8String do
       end
     end
 
-    context 'private tag handling' do
+    context 'encodes tag number' do
       let(:value) { 'こんにちは、世界！' }
       subject { klass.new(value, tag, :PRIVATE).to_der }
 
@@ -132,7 +129,7 @@ describe Krypt::ASN1::UTF8String do
       end
     end
 
-    context 'tag_class handling' do
+    context 'encodes tag class' do
       let(:value) { 'こんにちは、世界！' }
       subject { klass.new(value, Krypt::ASN1::UTF8_STRING, tag_class).to_der }
 
@@ -158,10 +155,10 @@ describe Krypt::ASN1::UTF8String do
     end
   end
 
-  describe 'decoding' do
+  describe 'extracted from ASN1.decode' do
     subject { decoder.decode(der) }
 
-    context 'value' do
+    context 'extracted value' do
       context 'こんにちは、世界！' do
         let(:value) { 'こんにちは、世界！' }
         let(:der) { _A("\x0C\x18" + value) }
@@ -187,7 +184,7 @@ describe Krypt::ASN1::UTF8String do
       end
     end
 
-    context 'tag_class handling' do
+    context 'extracted tag class' do
       let(:value) { 'こんにちは、世界！' }
 
       context 'UNIVERSAL' do

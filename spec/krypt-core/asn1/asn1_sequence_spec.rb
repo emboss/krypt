@@ -29,10 +29,10 @@ describe Krypt::ASN1::Sequence do
   end
 
   describe '#new' do
-    context 'constructs with value' do
+    context 'gets value for construct' do
       subject { klass.new(value) }
 
-      context 'SEQUENCE' do
+      context 'for SEQUENCE' do
         let(:value) { [s('hello'), i(42), s('world')] }
 
         its(:tag) { should == Krypt::ASN1::SEQUENCE }
@@ -41,7 +41,7 @@ describe Krypt::ASN1::Sequence do
         its(:infinite_length) { should == false }
       end
 
-      context 'SEQUENCE OF' do
+      context 'for SEQUENCE OF' do
         let(:value) { [s('hello'), s(','), s('world')] }
 
         its(:tag) { should == Krypt::ASN1::SEQUENCE }
@@ -57,16 +57,7 @@ describe Krypt::ASN1::Sequence do
       end
     end
 
-    context 'explicit construct' do
-      let(:value) { [s('hello')] }
-      subject { klass.new(value, Krypt::ASN1::SEQUENCE, :UNIVERSAL) }
-
-      its(:tag) { should == Krypt::ASN1::SEQUENCE }
-      its(:tag_class) { should == :UNIVERSAL }
-      its(:value) { should == value }
-    end
-
-    context 'private tag handling' do
+    context 'gets explicit tag number as the 2nd argument' do
       let(:value) { [s('hello')] }
       subject { klass.new(value, tag, :PRIVATE) }
 
@@ -81,7 +72,7 @@ describe Krypt::ASN1::Sequence do
       end
     end
 
-    context 'tag_class handling' do
+    context 'gets tag class symbol as the 3rd argument' do
       let(:value) { [s('hello')] }
       subject { klass.new(value, Krypt::ASN1::SEQUENCE, tag_class) }
 
@@ -105,10 +96,15 @@ describe Krypt::ASN1::Sequence do
         its(:tag_class) { should == tag_class }
       end
     end
+
+    context 'when the 2nd argument is given but 3rd argument is omitted' do
+      subject { klass.new([s('hello')], Krypt::ASN1::SEQUENCE) }
+      its(:tag_class) { should == :CONTEXT_SPECIFIC }
+    end
   end
 
   describe '#to_der' do
-    context 'value' do
+    context 'encodes a given value' do
       subject { klass.new(value).to_der }
 
       context 'SEQUENCE' do
@@ -137,7 +133,7 @@ describe Krypt::ASN1::Sequence do
       end
     end
 
-    context 'private tag handling' do
+    context 'encodes tag number' do
       let(:value) { [s(''), s(''), s('')] }
       subject { klass.new(value, tag, :PRIVATE).to_der }
 
@@ -152,7 +148,7 @@ describe Krypt::ASN1::Sequence do
       end
     end
 
-    context 'tag_class handling' do
+    context 'encodes tag class' do
       let(:value) { [s(''), s(''), s('')] }
       subject { klass.new(value, Krypt::ASN1::SEQUENCE, tag_class).to_der }
 
@@ -178,10 +174,10 @@ describe Krypt::ASN1::Sequence do
     end
   end
 
-  describe 'decoding' do
+  describe 'extracted from ASN1.decode' do
     subject { decoder.decode(der) }
 
-    context 'value' do
+    context 'extracted value' do
       context 'SEQUENCE' do
         let(:der) { "\x30\x11\x04\x05hello\x02\x01\x2A\x04\x05world" }
         its(:class) { should == klass }
@@ -229,7 +225,7 @@ describe Krypt::ASN1::Sequence do
       end
     end
 
-    context 'tag_class handling' do
+    context 'extracted tag class' do
       context 'UNIVERSAL' do
         let(:der) { "\x30\x11\x04\x05hello\x02\x01\x2A\x04\x05world" }
         its(:tag_class) { should == :UNIVERSAL }

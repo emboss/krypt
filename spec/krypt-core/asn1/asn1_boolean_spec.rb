@@ -25,33 +25,27 @@ describe Krypt::ASN1::Boolean do
   end
 
   describe '#new' do
-    context 'constructs as true' do
-      subject { klass.new(true) }
+    context 'gets value for construct' do
+      subject { klass.new(value) }
 
-      its(:tag) { should == Krypt::ASN1::BOOLEAN }
-      its(:tag_class) { should == :UNIVERSAL }
-      its(:value) { should == true }
-      its(:infinite_length) { should == false }
+      context 'true' do
+        let(:value) { true }
+        its(:tag) { should == Krypt::ASN1::BOOLEAN }
+        its(:tag_class) { should == :UNIVERSAL }
+        its(:value) { should == true }
+        its(:infinite_length) { should == false }
+      end
+
+      context 'false' do
+        let(:value) { false }
+        its(:tag) { should == Krypt::ASN1::BOOLEAN }
+        its(:tag_class) { should == :UNIVERSAL }
+        its(:value) { should == false }
+        its(:infinite_length) { should == false }
+      end
     end
 
-    context 'constructs as false' do
-      subject { klass.new(false) }
-
-      its(:tag) { should == Krypt::ASN1::BOOLEAN }
-      its(:tag_class) { should == :UNIVERSAL }
-      its(:value) { should == false }
-      its(:infinite_length) { should == false }
-    end
-
-    context 'explicit construct' do
-      subject { klass.new(true, Krypt::ASN1::BOOLEAN, :UNIVERSAL) }
-
-      its(:tag) { should == Krypt::ASN1::BOOLEAN }
-      its(:tag_class) { should == :UNIVERSAL }
-      its(:value) { should == true }
-    end
-
-    context 'private tag handling' do
+    context 'gets explicit tag number as the 2nd argument' do
       subject { klass.new(true, tag, :PRIVATE) }
 
       context 'default tag' do
@@ -65,7 +59,7 @@ describe Krypt::ASN1::Boolean do
       end
     end
 
-    context 'tag_class handling' do
+    context 'gets tag class symbol as the 3rd argument' do
       subject { klass.new(true, Krypt::ASN1::BOOLEAN, tag_class) }
 
       context 'UNIVERSAL' do
@@ -88,10 +82,15 @@ describe Krypt::ASN1::Boolean do
         its(:tag_class) { should == tag_class }
       end
     end
+
+    context 'when the 2nd argument is given but 3rd argument is omitted' do
+      subject { klass.new(true, Krypt::ASN1::BOOLEAN) }
+      its(:tag_class) { should == :CONTEXT_SPECIFIC }
+    end
   end
 
   describe '#to_der' do
-    context 'value' do
+    context 'encodes a given value' do
       subject { klass.new(value).to_der }
 
       context 'true' do
@@ -105,7 +104,7 @@ describe Krypt::ASN1::Boolean do
       end
     end
 
-    context 'private tag handling' do
+    context 'encodes tag number' do
       subject { klass.new(true, tag, :PRIVATE).to_der }
 
       context 'default tag' do
@@ -119,7 +118,7 @@ describe Krypt::ASN1::Boolean do
       end
     end
 
-    context 'tag_class handling' do
+    context 'encodes tag class' do
       subject { klass.new(true, Krypt::ASN1::BOOLEAN, tag_class).to_der }
 
       context 'UNIVERSAL' do
@@ -149,10 +148,10 @@ describe Krypt::ASN1::Boolean do
     end
   end
 
-  describe 'decoding' do
+  describe 'extracted from ASN1.decode' do
     subject { decoder.decode(der) }
 
-    context 'value' do
+    context 'extracted value' do
       context 'true' do
         let(:der) { "\x01\x01\xFF" }
         its(:class) { should == klass }
@@ -174,7 +173,7 @@ describe Krypt::ASN1::Boolean do
       end
     end
 
-    context 'tag_class handling' do
+    context 'extracted tag class' do
       context 'UNIVERSAL' do
         let(:der) { "\x01\x01\xFF" }
         its(:tag_class) { should == :UNIVERSAL }
