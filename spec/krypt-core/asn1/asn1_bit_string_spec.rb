@@ -24,84 +24,164 @@ describe Krypt::ASN1::BitString do
     end
   end
 
+  def _B(bin_encode)
+    [bin_encode.reverse].pack('b*').reverse
+  end
+
   describe '#new' do
-    context 'constructs with value' do
-      subject { klass.new([value.reverse].pack('b*').reverse) }
+    context 'gets value for construct' do
+      subject { klass.new(value) }
 
-      context '01010101' do
-        let(:value) { '01010101' }
-
+      context 'accepts binary packed 01010101 := "\x55"' do
+        let(:value) { _B('01010101') }
         its(:tag) { should == Krypt::ASN1::BIT_STRING }
         its(:tag_class) { should == :UNIVERSAL }
-        its(:value) { should == "\x55" }
+        its(:value) { should == value }
         its(:infinite_length) { should == false }
       end
 
-      context '(empty)' do
+      context 'accepts (empty)' do
         let(:value) { '' }
-
+        its(:tag) { should == Krypt::ASN1::BIT_STRING }
+        its(:tag_class) { should == :UNIVERSAL }
         its(:value) { should == '' }
+        its(:infinite_length) { should == false }
       end
     end
 
-    context 'explicit construct' do
-      subject { klass.new("\x55", Krypt::ASN1::BIT_STRING, :UNIVERSAL) }
+    context 'gets explicit tag number as the 2nd argument' do
+      subject { klass.new(_B('01010101'), tag, :PRIVATE) }
 
-      its(:tag) { should == Krypt::ASN1::BIT_STRING }
-      its(:tag_class) { should == :UNIVERSAL }
-      its(:value) { should == "\x55" }
-    end
-
-    context 'private tag handling' do
-      subject { klass.new("0x55", tag, :PRIVATE) }
-
-      context 'default tag' do
+      context 'accepts default tag' do
         let(:tag) { Krypt::ASN1::BIT_STRING }
         its(:tag) { should == tag }
       end
 
-      context 'custom tag (allowed?)' do
+      context 'accepts custom tag (TODO: allowed?)' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
     end
 
-    context 'tag_class handling' do
-      subject { klass.new("0x55", Krypt::ASN1::BIT_STRING, tag_class) }
+    context 'gets tag class symbol as the 3rd argument' do
+      subject { klass.new(_B('01010101'), Krypt::ASN1::BIT_STRING, tag_class) }
 
-      context 'UNIVERSAL' do
+      context 'accepts :UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
         its(:tag_class) { should == tag_class }
       end
 
-      context 'APPLICATION' do
+      context 'accepts :APPLICATION' do
         let(:tag_class) { :APPLICATION }
         its(:tag_class) { should == tag_class }
       end
 
-      context 'CONTEXT_SPECIFIC' do
+      context 'accepts :CONTEXT_SPECIFIC' do
         let(:tag_class) { :CONTEXT_SPECIFIC }
         its(:tag_class) { should == tag_class }
       end
 
-      context 'PRIVATE' do
+      context 'accepts :PRIVATE' do
         let(:tag_class) { :PRIVATE }
         its(:tag_class) { should == tag_class }
+      end
+
+      context 'does not accept unknown tag_class' do
+        context nil do
+          let(:tag_class) { nil }
+          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        end
+
+        context :no_such_class do
+          let(:tag_class) { :no_such_class }
+          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        end
+      end
+    end
+
+    context 'when the 2nd argument is given but 3rd argument is omitted' do
+      subject { klass.new(_B('01010101'), Krypt::ASN1::BIT_STRING) }
+      its(:tag_class) { should == :CONTEXT_SPECIFIC }
+    end
+  end
+
+  describe 'accessors' do
+    describe '#value' do
+      subject { o = klass.new(nil); o.value = value; o }
+
+      context 'accepts binary packed 01010101 := "\x55"' do
+        let(:value) { _B('01010101') }
+        its(:value) { should == value }
+      end
+
+      context 'accepts (empty)' do
+        let(:value) { '' }
+        its(:value) { should == '' }
+      end
+    end
+
+    describe '#tag' do
+      subject { o = klass.new(nil); o.tag = tag; o }
+
+      context 'accepts default tag' do
+        let(:tag) { Krypt::ASN1::BIT_STRING }
+        its(:tag) { should == tag }
+      end
+
+      context 'accepts custom tag (TODO: allowed?)' do
+        let(:tag) { 14 }
+        its(:tag) { should == tag }
+      end
+    end
+
+    describe '#tag_class' do
+      subject { o = klass.new(nil); o.tag_class = tag_class; o }
+
+      context 'accepts :UNIVERSAL' do
+        let(:tag_class) { :UNIVERSAL }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :APPLICATION' do
+        let(:tag_class) { :APPLICATION }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :CONTEXT_SPECIFIC' do
+        let(:tag_class) { :CONTEXT_SPECIFIC }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :PRIVATE' do
+        let(:tag_class) { :PRIVATE }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'does not accept unknown tag_class' do
+        context nil do
+          let(:tag_class) { nil }
+          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        end
+
+        context :no_such_class do
+          let(:tag_class) { :no_such_class }
+          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        end
       end
     end
   end
 
   describe '#to_der' do
-    context 'value' do
-      subject { klass.new([value.reverse].pack('b*').reverse).to_der }
+    context 'encodes a given value' do
+      subject { klass.new(value).to_der }
 
       context '01010101' do
-        let(:value) { '01010101' }
+        let(:value) { _B('01010101') }
         it { should == "\x03\x02\x00\x55" }
       end
 
       context '010101010' do
-        let(:value) { '010101010' }
+        let(:value) { _B('010101010') }
         it { should == "\x03\x03\x00\x00\xAA" }
       end
 
@@ -111,23 +191,23 @@ describe Krypt::ASN1::BitString do
       end
 
       context '999 octets' do
-        let(:value) { '1' * 8 * 999 }
+        let(:value) { _B('1' * 8 * 999) }
         it { should == "\x03\x82\x03\xE8\x00" + "\xFF" * 999 }
       end
 
       context '1000 octets' do
-        let(:value) { '0' * 8 * 1000 }
+        let(:value) { _B('0' * 8 * 1000) }
         it { should == "\x03\x82\x03\xE9\x00" + "\x00" * 1000 }
       end
 
       context '1001 octets' do
-        let(:value) { '1' * 8 * 1001 }
+        let(:value) { _B('1' * 8 * 1001) }
         it { should == "\x03\x82\x03\xEA\x00" + "\xFF" * 1001 }
       end
     end
 
-    context 'private tag handling' do
-      subject { klass.new("\x55", tag, :PRIVATE).to_der }
+    context 'encodes tag number' do
+      subject { klass.new(_B('01010101'), tag, :PRIVATE).to_der }
 
       context 'default tag' do
         let(:tag) { Krypt::ASN1::BIT_STRING }
@@ -140,8 +220,8 @@ describe Krypt::ASN1::BitString do
       end
     end
 
-    context 'tag_class handling' do
-      subject { klass.new("\x55", Krypt::ASN1::BIT_STRING, tag_class).to_der }
+    context 'encodes tag class' do
+      subject { klass.new(_B('01010101'), Krypt::ASN1::BIT_STRING, tag_class).to_der }
 
       context 'UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -165,15 +245,15 @@ describe Krypt::ASN1::BitString do
     end
   end
 
-  describe 'decoding' do
+  describe 'extracted from ASN1.decode' do
     subject { decoder.decode(der) }
 
-    context 'value' do
+    context 'extracted value' do
       context '01010101' do
         let(:der) { "\x03\x02\x00\x55" }
         its(:class) { should == klass }
         its(:tag) { should == Krypt::ASN1::BIT_STRING }
-        its(:value) { should == "\x55" }
+        its(:value) { should == _B('01010101') }
       end
 
       context '010101010' do
@@ -212,7 +292,7 @@ describe Krypt::ASN1::BitString do
       end
     end
 
-    context 'tag_class handling' do
+    context 'extracted tag class' do
       context 'UNIVERSAL' do
         let(:der) { "\x03\x03\x00\x00\xAA" }
         its(:tag_class) { should == :UNIVERSAL }

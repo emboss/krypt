@@ -25,64 +25,160 @@ describe Krypt::ASN1::Integer do
   end
 
   describe '#new' do
-    context 'constructs with value' do
-      subject { klass.new(72) }
+    context 'gets value for construct' do
+      subject { klass.new(value) }
 
-      its(:tag) { should == Krypt::ASN1::INTEGER }
-      its(:tag_class) { should == :UNIVERSAL }
-      its(:value) { should == 72 }
-      its(:infinite_length) { should == false }
+      context 'accepts Integer' do
+        let(:value) { 72 }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
+        its(:tag_class) { should == :UNIVERSAL }
+        its(:value) { should == 72 }
+        its(:infinite_length) { should == false }
+      end
+
+      context 'accepts 0' do
+        let(:value) { 0 }
+        its(:value) { should == 0 }
+      end
+
+      context 'accepts negative Integer' do
+        let(:value) { -72 }
+        its(:value) { should == -72 }
+      end
     end
 
-    context 'explicit construct' do
-      subject { klass.new(72, Krypt::ASN1::INTEGER, :UNIVERSAL) }
-
-      its(:tag) { should == Krypt::ASN1::INTEGER }
-      its(:tag_class) { should == :UNIVERSAL }
-      its(:value) { should == 72 }
-    end
-
-    context 'private tag handling' do
+    context 'gets explicit tag number as the 2nd argument' do
       subject { klass.new(72, tag, :PRIVATE) }
 
-      context 'default tag' do
+      context 'accepts default tag' do
         let(:tag) { Krypt::ASN1::INTEGER }
         its(:tag) { should == tag }
       end
 
-      context 'custom tag (allowed?)' do
+      context 'accepts custom tag (allowed?)' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
     end
 
-    context 'tag_class handling' do
+    context 'gets tag class symbol as the 3rd argument' do
       subject { klass.new(72, Krypt::ASN1::INTEGER, tag_class) }
 
-      context 'UNIVERSAL' do
+      context 'accepts :UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
         its(:tag_class) { should == tag_class }
       end
 
-      context 'APPLICATION' do
+      context 'accepts :APPLICATION' do
         let(:tag_class) { :APPLICATION }
         its(:tag_class) { should == tag_class }
       end
 
-      context 'CONTEXT_SPECIFIC' do
+      context 'accepts :CONTEXT_SPECIFIC' do
         let(:tag_class) { :CONTEXT_SPECIFIC }
         its(:tag_class) { should == tag_class }
       end
 
-      context 'PRIVATE' do
+      context 'accepts :PRIVATE' do
         let(:tag_class) { :PRIVATE }
         its(:tag_class) { should == tag_class }
+      end
+
+      context 'does not accept unknown tag_class' do
+        context nil do
+          let(:tag_class) { nil }
+          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        end
+
+        context :no_such_class do
+          let(:tag_class) { :no_such_class }
+          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        end
+      end
+    end
+
+    context 'when the 2nd argument is given but 3rd argument is omitted' do
+      subject { klass.new(true, Krypt::ASN1::INTEGER) }
+      its(:tag_class) { should == :CONTEXT_SPECIFIC }
+    end
+  end
+
+  describe 'accessors' do
+    describe '#value' do
+      subject { o = klass.new(nil); o.value = value; o }
+
+      context 'accepts Integer' do
+        let(:value) { 72 }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
+        its(:tag_class) { should == :UNIVERSAL }
+        its(:value) { should == 72 }
+        its(:infinite_length) { should == false }
+      end
+
+      context 'accepts 0' do
+        let(:value) { 0 }
+        its(:value) { should == 0 }
+      end
+
+      context 'accepts negative Integer' do
+        let(:value) { -72 }
+        its(:value) { should == -72 }
+      end
+    end
+
+    describe '#tag' do
+      subject { o = klass.new(nil); o.tag = tag; o }
+
+      context 'accepts default tag' do
+        let(:tag) { Krypt::ASN1::INTEGER }
+        its(:tag) { should == tag }
+      end
+
+      context 'accepts custom tag (allowed?)' do
+        let(:tag) { 14 }
+        its(:tag) { should == tag }
+      end
+    end
+
+    describe '#tag_class' do
+      subject { o = klass.new(nil); o.tag_class = tag_class; o }
+
+      context 'accepts :UNIVERSAL' do
+        let(:tag_class) { :UNIVERSAL }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :APPLICATION' do
+        let(:tag_class) { :APPLICATION }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :CONTEXT_SPECIFIC' do
+        let(:tag_class) { :CONTEXT_SPECIFIC }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :PRIVATE' do
+        let(:tag_class) { :PRIVATE }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'does not accept unknown tag_class' do
+        context nil do
+          let(:tag_class) { nil }
+          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        end
+
+        context :no_such_class do
+          let(:tag_class) { :no_such_class }
+          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        end
       end
     end
   end
 
   describe '#to_der' do
-    context 'value' do
+    context 'encodes a given value' do
       subject { klass.new(value).to_der }
 
       context 0 do
@@ -146,7 +242,7 @@ describe Krypt::ASN1::Integer do
       end
     end
 
-    context 'private tag handling' do
+    context 'encodes tag number' do
       subject { klass.new(72, tag, :PRIVATE).to_der }
 
       context 'default tag' do
@@ -160,7 +256,7 @@ describe Krypt::ASN1::Integer do
       end
     end
 
-    context 'tag_class handling' do
+    context 'encodes tag class' do
       subject { klass.new(72, Krypt::ASN1::INTEGER, tag_class).to_der }
 
       context 'UNIVERSAL' do
@@ -185,10 +281,10 @@ describe Krypt::ASN1::Integer do
     end
   end
 
-  describe 'decoding' do
+  describe 'extracted from ASN1.decode' do
     subject { decoder.decode(der) }
 
-    context 'value' do
+    context 'extracted value' do
       context 0 do
         let(:der) { "\x02\x01\x00" }
         its(:class) { should == klass }
@@ -260,7 +356,7 @@ describe Krypt::ASN1::Integer do
       end
     end
 
-    context 'tag_class handling' do
+    context 'extracted tag class' do
       context 'UNIVERSAL' do
         let(:der) { "\x02\x01\x80" }
         its(:tag_class) { should == :UNIVERSAL }

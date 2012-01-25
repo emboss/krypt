@@ -1,18 +1,20 @@
+# -*- encoding: utf-8 -*-
+
 require 'rspec'
 require 'krypt-core'
 require 'openssl'
 
-describe Krypt::ASN1::Enumerated do 
-  let(:klass) { Krypt::ASN1::Enumerated }
+describe Krypt::ASN1::UTF8String do 
+  let(:klass) { Krypt::ASN1::UTF8String }
   let(:decoder) { Krypt::ASN1 }
 
   # For test against OpenSSL
   #
-  #let(:klass) { OpenSSL::ASN1::Enumerated }
+  #let(:klass) { OpenSSL::ASN1::UTF8String }
   #let(:decoder) { OpenSSL::ASN1 }
   #
   # OpenSSL stub for signature mismatch
-  class OpenSSL::ASN1::Enumerated
+  class OpenSSL::ASN1::UTF8String
     class << self
       alias old_new new
       def new(*args)
@@ -23,35 +25,39 @@ describe Krypt::ASN1::Enumerated do
       end
     end
   end
+  
+  def _A(str)
+    str.force_encoding("ASCII-8BIT")
+  end
 
   describe '#new' do
     context 'gets value for construct' do
       subject { klass.new(value) }
 
-      context 'Integer' do
-        let(:value) { 72 }
-        its(:tag) { should == Krypt::ASN1::ENUMERATED }
+      context 'accepts Japanese UTF-8 string' do
+        let(:value) { 'こんにちは、世界！' }
+        its(:tag) { should == Krypt::ASN1::UTF8_STRING }
         its(:tag_class) { should == :UNIVERSAL }
-        its(:value) { should == 72 }
+        its(:value) { should == value }
         its(:infinite_length) { should == false }
       end
 
-      context '0' do
-        let(:value) { 0 }
-        its(:value) { should == 0 }
+      context 'accepts Japanese EUC-JP string' do
+        let(:value) { 'こんにちは、世界！'.encode("EUC-JP") }
+        its(:value) { should == value } # TODO: auto convert to UTF-8? raise?
       end
 
-      context 'negative Integer' do
-        let(:value) { -72 }
-        its(:value) { should == -72 }
+      context 'accepts empty String' do
+        let(:value) { '' }
+        its(:value) { should == value }
       end
     end
 
     context 'gets explicit tag number as the 2nd argument' do
-      subject { klass.new(72, tag, :PRIVATE) }
+      subject { klass.new('こんにちは、世界！', tag, :PRIVATE) }
 
       context 'accepts default tag' do
-        let(:tag) { Krypt::ASN1::ENUMERATED }
+        let(:tag) { Krypt::ASN1::UTF8_STRING }
         its(:tag) { should == tag }
       end
 
@@ -62,7 +68,7 @@ describe Krypt::ASN1::Enumerated do
     end
 
     context 'gets tag class symbol as the 3rd argument' do
-      subject { klass.new(72, Krypt::ASN1::ENUMERATED, tag_class) }
+      subject { klass.new('こんにちは、世界！', Krypt::ASN1::UTF8_STRING, tag_class) }
 
       context 'accepts :UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -98,7 +104,7 @@ describe Krypt::ASN1::Enumerated do
     end
 
     context 'when the 2nd argument is given but 3rd argument is omitted' do
-      subject { klass.new(72, Krypt::ASN1::ENUMERATED) }
+      subject { klass.new('こんにちは、世界！', Krypt::ASN1::UTF8_STRING) }
       its(:tag_class) { should == :CONTEXT_SPECIFIC }
     end
   end
@@ -107,22 +113,22 @@ describe Krypt::ASN1::Enumerated do
     describe '#value' do
       subject { o = klass.new(nil); o.value = value; o }
 
-      context 'Integer' do
-        let(:value) { 72 }
-        its(:tag) { should == Krypt::ASN1::ENUMERATED }
+      context 'accepts Japanese UTF-8 string' do
+        let(:value) { 'こんにちは、世界！' }
+        its(:tag) { should == Krypt::ASN1::UTF8_STRING }
         its(:tag_class) { should == :UNIVERSAL }
-        its(:value) { should == 72 }
+        its(:value) { should == value }
         its(:infinite_length) { should == false }
       end
 
-      context '0' do
-        let(:value) { 0 }
-        its(:value) { should == 0 }
+      context 'accepts Japanese EUC-JP string' do
+        let(:value) { 'こんにちは、世界！'.encode("EUC-JP") }
+        its(:value) { should == value } # TODO: auto convert to UTF-8? raise?
       end
 
-      context 'negative Integer' do
-        let(:value) { -72 }
-        its(:value) { should == -72 }
+      context 'accepts empty String' do
+        let(:value) { '' }
+        its(:value) { should == value }
       end
     end
 
@@ -130,7 +136,7 @@ describe Krypt::ASN1::Enumerated do
       subject { o = klass.new(nil); o.tag = tag; o }
 
       context 'accepts default tag' do
-        let(:tag) { Krypt::ASN1::ENUMERATED }
+        let(:tag) { Krypt::ASN1::UTF8_STRING }
         its(:tag) { should == tag }
       end
 
@@ -181,82 +187,59 @@ describe Krypt::ASN1::Enumerated do
     context 'encodes a given value' do
       subject { klass.new(value).to_der }
 
-      context 0 do
-        let(:value) { 0 }
-        it { should == "\x0A\x01\x00" }
+      context 'こんにちは、世界！' do
+        let(:value) { 'こんにちは、世界！' }
+        it { should == _A("\x0C\x18" + value) }
       end
 
-      context 72 do
-        let(:value) { 72 }
-        it { should == "\x0A\x01\x48" }
+      context '(empty)' do
+        let(:value) { '' }
+        it { should == "\x0C\x00" }
       end
 
-      context 127 do
-        let(:value) { 127 }
-        it { should == "\x0A\x01\x7F" }
-      end
-
-      context -128 do
-        let(:value) { -128 }
-        it { should == "\x0A\x01\x80" }
-      end
-
-      context 128 do
-        let(:value) { 128 }
-        it { should == "\x0A\x02\x00\x80" }
-      end
-
-      context -27066 do
-        let(:value) { -27066 }
-        it { should == "\x0A\x02\x96\x46" }
-      end
-
-      context 'max Fixnum on 32bit box' do
-        let(:value) { 2**30-1 }
-        it { should == "\x0A\x04\x3F\xFF\xFF\xFF" }
-      end
-
-      context 'max Fixnum on 64bit box' do
-        let(:value) { 2**62-1 }
-        it { should == "\x0A\x08\x3F\xFF\xFF\xFF\xFF\xFF\xFF\xFF" }
+      context '1000 octets' do
+        let(:value) { 'あ' * 1000 }
+        it { should == _A("\x0C\x82\x1F\x40" + value) }
       end
     end
 
     context 'encodes tag number' do
-      subject { klass.new(72, tag, :PRIVATE).to_der }
+      let(:value) { 'こんにちは、世界！' }
+      subject { klass.new(value, tag, :PRIVATE).to_der }
 
       context 'default tag' do
-        let(:tag) { Krypt::ASN1::ENUMERATED }
-        it { should == "\xCA\x01\x48" }
+        let(:tag) { Krypt::ASN1::UTF8_STRING }
+        it { should == _A("\xCC\x18" + value) }
       end
 
       context 'custom tag (TODO: allowed?)' do
         let(:tag) { 14 }
-        it { should == "\xCE\x01\x48" }
+        it { should == _A("\xCE\x18" + value) }
       end
     end
 
     context 'encodes tag class' do
-      subject { klass.new(72, Krypt::ASN1::ENUMERATED, tag_class).to_der }
+      let(:value) { 'こんにちは、世界！' }
+      subject { klass.new(value, Krypt::ASN1::UTF8_STRING, tag_class).to_der }
 
       context 'UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
-        it { should == "\x0A\x01\x48" }
+        it { should == _A("\x0C\x18" + value) }
       end
 
       context 'APPLICATION' do
         let(:tag_class) { :APPLICATION }
-        it { should == "\x4A\x01\x48" }
+        it { should == _A("\x4C\x18" + value) }
       end
 
       context 'CONTEXT_SPECIFIC' do
         let(:tag_class) { :CONTEXT_SPECIFIC }
-        it { should == "\x8A\x01\x48" }
+        it { should == _A("\x8C\x18" + value) }
       end
 
       context 'PRIVATE' do
         let(:tag_class) { :PRIVATE }
-        it { should == "\xCA\x01\x48" }
+        it { should == _A("\xCC\x18" + value) }
       end
     end
   end
@@ -265,81 +248,51 @@ describe Krypt::ASN1::Enumerated do
     subject { decoder.decode(der) }
 
     context 'extracted value' do
-      context 0 do
-        let(:der) { "\x0A\x01\x00" }
+      context 'こんにちは、世界！' do
+        let(:value) { 'こんにちは、世界！' }
+        let(:der) { _A("\x0C\x18" + value) }
         its(:class) { should == klass }
-        its(:tag) { should == Krypt::ASN1::ENUMERATED }
-        its(:value) { should == 0 }
+        its(:tag) { should == Krypt::ASN1::UTF8_STRING }
+        its(:value) { should == value }
       end
 
-      context 72 do
-        let(:der) { "\x0A\x01\x48" }
+      context '(empty)' do
+        let(:der) { "\x0C\x00" }
         its(:class) { should == klass }
-        its(:tag) { should == Krypt::ASN1::ENUMERATED }
-        its(:value) { should == 72 }
+        its(:tag) { should == Krypt::ASN1::UTF8_STRING }
+        #its(:value) { should == '' }
+        its(:value) { should == nil } #TODO: discuss
       end
 
-      context 127 do
-        let(:der) { "\x0A\x01\x7F" }
+      context '1000 octets' do
+        let(:value) { 'あ' * 1000 }
+        let(:der) { _A("\x0C\x82\x1F\x40" + value) }
         its(:class) { should == klass }
-        its(:tag) { should == Krypt::ASN1::ENUMERATED }
-        its(:value) { should == 127 }
-      end
-
-      context -128 do
-        let(:der) { "\x0A\x01\x80" }
-        its(:class) { should == klass }
-        its(:tag) { should == Krypt::ASN1::ENUMERATED }
-        its(:value) { should == -128 } # TODO: ossl returns 128 (positive value)
-      end
-
-      context 128 do
-        let(:der) { "\x0A\x02\x00\x80" }
-        its(:class) { should == klass }
-        its(:tag) { should == Krypt::ASN1::ENUMERATED }
-        its(:value) { should == 128 }
-      end
-
-      context -27066 do
-        let(:der) { "\x0A\x02\x96\x46" }
-        its(:class) { should == klass }
-        its(:tag) { should == Krypt::ASN1::ENUMERATED }
-        its(:value) { should == -27066 } # TODO: ossl returns 27066 (positive value)
-      end
-
-      context 'max Fixnum on 32bit box' do
-        let(:der) { "\x0A\x04\x3F\xFF\xFF\xFF" }
-        its(:class) { should == klass }
-        its(:tag) { should == Krypt::ASN1::ENUMERATED }
-        its(:value) { should == 2**30-1 }
-      end
-
-      context 'max Fixnum on 64bit box' do
-        let(:der) { "\x0A\x08\x3F\xFF\xFF\xFF\xFF\xFF\xFF\xFF" }
-        its(:class) { should == klass }
-        its(:tag) { should == Krypt::ASN1::ENUMERATED }
-        its(:value) { should == 2**62-1 }
+        its(:tag) { should == Krypt::ASN1::UTF8_STRING }
+        its(:value) { should == value }
       end
     end
 
     context 'extracted tag class' do
+      let(:value) { 'こんにちは、世界！' }
+
       context 'UNIVERSAL' do
-        let(:der) { "\x0A\x02\x00\x80" }
+        let(:der) { _A("\x0C\x18" + value) }
         its(:tag_class) { should == :UNIVERSAL }
       end
 
       context 'APPLICATION' do
-        let(:der) { "\x4A\x02\x00\x80" }
+        let(:der) { _A("\x4C\x18" + value) }
         its(:tag_class) { should == :APPLICATION }
       end
 
       context 'CONTEXT_SPECIFIC' do
-        let(:der) { "\x8A\x02\x00\x80" }
+        let(:der) { _A("\x8C\x18" + value) }
         its(:tag_class) { should == :CONTEXT_SPECIFIC }
       end
 
       context 'PRIVATE' do
-        let(:der) { "\xCA\x02\x00\x80" }
+        let(:der) { _A("\xCC\x18" + value) }
         its(:tag_class) { should == :PRIVATE }
       end
     end
