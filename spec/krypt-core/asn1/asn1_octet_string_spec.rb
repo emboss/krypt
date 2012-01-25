@@ -167,7 +167,7 @@ describe Krypt::ASN1::OctetString do
       context 'hello,world!' do
         let(:der) { "\x04\x0Chello,world!" }
         its(:class) { should == klass }
-        its(:tag) { should == 4 }
+        its(:tag) { should == Krypt::ASN1::OCTET_STRING }
         its(:value) { should == 'hello,world!' }
       end
 
