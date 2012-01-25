@@ -56,12 +56,12 @@ describe Krypt::ASN1::UTF8String do
     context 'gets explicit tag number as the 2nd argument' do
       subject { klass.new('こんにちは、世界！', tag, :PRIVATE) }
 
-      context 'default tag' do
+      context 'accepts default tag' do
         let(:tag) { Krypt::ASN1::UTF8_STRING }
         its(:tag) { should == tag }
       end
 
-      context 'custom tag (allowed?)' do
+      context 'accepts custom tag (allowed?)' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -70,27 +70,27 @@ describe Krypt::ASN1::UTF8String do
     context 'gets tag class symbol as the 3rd argument' do
       subject { klass.new('こんにちは、世界！', Krypt::ASN1::UTF8_STRING, tag_class) }
 
-      context 'UNIVERSAL' do
+      context 'accepts :UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
         its(:tag_class) { should == tag_class }
       end
 
-      context 'APPLICATION' do
+      context 'accepts :APPLICATION' do
         let(:tag_class) { :APPLICATION }
         its(:tag_class) { should == tag_class }
       end
 
-      context 'CONTEXT_SPECIFIC' do
+      context 'accepts :CONTEXT_SPECIFIC' do
         let(:tag_class) { :CONTEXT_SPECIFIC }
         its(:tag_class) { should == tag_class }
       end
 
-      context 'PRIVATE' do
+      context 'accepts :PRIVATE' do
         let(:tag_class) { :PRIVATE }
         its(:tag_class) { should == tag_class }
       end
 
-      context 'unknown tag_class' do
+      context 'does not accept unknown tag_class' do
         context nil do
           let(:tag_class) { nil }
           it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
@@ -106,6 +106,80 @@ describe Krypt::ASN1::UTF8String do
     context 'when the 2nd argument is given but 3rd argument is omitted' do
       subject { klass.new('こんにちは、世界！', Krypt::ASN1::UTF8_STRING) }
       its(:tag_class) { should == :CONTEXT_SPECIFIC }
+    end
+  end
+
+  describe 'accessors' do
+    describe '#value' do
+      subject { o = klass.new(nil); o.value = value; o }
+
+      context 'accepts Japanese UTF-8 string' do
+        let(:value) { 'こんにちは、世界！' }
+        its(:tag) { should == Krypt::ASN1::UTF8_STRING }
+        its(:tag_class) { should == :UNIVERSAL }
+        its(:value) { should == value }
+        its(:infinite_length) { should == false }
+      end
+
+      context 'accepts Japanese EUC-JP string' do
+        let(:value) { 'こんにちは、世界！'.encode("EUC-JP") }
+        its(:value) { should == value } # TODO: auto convert to UTF-8? raise?
+      end
+
+      context 'accepts empty String' do
+        let(:value) { '' }
+        its(:value) { should == value }
+      end
+    end
+
+    describe '#tag' do
+      subject { o = klass.new(nil); o.tag = tag; o }
+
+      context 'accepts default tag' do
+        let(:tag) { Krypt::ASN1::UTF8_STRING }
+        its(:tag) { should == tag }
+      end
+
+      context 'accepts custom tag (allowed?)' do
+        let(:tag) { 14 }
+        its(:tag) { should == tag }
+      end
+    end
+
+    describe '#tag_class' do
+      subject { o = klass.new(nil); o.tag_class = tag_class; o }
+
+      context 'accepts :UNIVERSAL' do
+        let(:tag_class) { :UNIVERSAL }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :APPLICATION' do
+        let(:tag_class) { :APPLICATION }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :CONTEXT_SPECIFIC' do
+        let(:tag_class) { :CONTEXT_SPECIFIC }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :PRIVATE' do
+        let(:tag_class) { :PRIVATE }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'does not accept unknown tag_class' do
+        context nil do
+          let(:tag_class) { nil }
+          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        end
+
+        context :no_such_class do
+          let(:tag_class) { :no_such_class }
+          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        end
+      end
     end
   end
 

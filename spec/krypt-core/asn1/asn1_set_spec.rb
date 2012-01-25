@@ -58,12 +58,12 @@ describe Krypt::ASN1::Set do
       let(:value) { [s('hello')] }
       subject { klass.new(value, tag, :PRIVATE) }
 
-      context 'default tag' do
+      context 'accepts default tag' do
         let(:tag) { Krypt::ASN1::SET }
         its(:tag) { should == tag }
       end
 
-      context 'custom tag (allowed?)' do
+      context 'accepts custom tag (allowed?)' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -73,27 +73,27 @@ describe Krypt::ASN1::Set do
       let(:value) { [s('hello')] }
       subject { klass.new(value, Krypt::ASN1::SET, tag_class) }
 
-      context 'UNIVERSAL' do
+      context 'accepts :UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
         its(:tag_class) { should == tag_class }
       end
 
-      context 'APPLICATION' do
+      context 'accepts :APPLICATION' do
         let(:tag_class) { :APPLICATION }
         its(:tag_class) { should == tag_class }
       end
 
-      context 'CONTEXT_SPECIFIC' do
+      context 'accepts :CONTEXT_SPECIFIC' do
         let(:tag_class) { :CONTEXT_SPECIFIC }
         its(:tag_class) { should == tag_class }
       end
 
-      context 'PRIVATE' do
+      context 'accepts :PRIVATE' do
         let(:tag_class) { :PRIVATE }
         its(:tag_class) { should == tag_class }
       end
 
-      context 'unknown tag_class' do
+      context 'does not accept unknown tag_class' do
         context nil do
           let(:tag_class) { nil }
           it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
@@ -109,6 +109,83 @@ describe Krypt::ASN1::Set do
     context 'when the 2nd argument is given but 3rd argument is omitted' do
       subject { klass.new([s('hello')], Krypt::ASN1::SET) }
       its(:tag_class) { should == :CONTEXT_SPECIFIC }
+    end
+  end
+
+  describe 'accessors' do
+    describe '#value' do
+      subject { o = klass.new(nil); o.value = value; o }
+
+      context 'accepts SET as Array' do
+        let(:value) { [s('hello'), i(42), s('world')] }
+        its(:tag) { should == Krypt::ASN1::SET }
+        its(:tag_class) { should == :UNIVERSAL }
+        its(:value) { should == value }
+        its(:infinite_length) { should == false }
+      end
+
+      context 'accepts SET OF as Array' do
+        let(:value) { [s('hello'), s(','), s('world')] }
+        its(:tag) { should == Krypt::ASN1::SET }
+        its(:tag_class) { should == :UNIVERSAL }
+        its(:value) { should == value }
+        its(:infinite_length) { should == false }
+      end
+
+      context 'accepts empty Array' do
+        let(:value) { [] }
+        its(:value) { should == [] }
+      end
+    end
+
+    describe '#tag' do
+      subject { o = klass.new(nil); o.tag = tag; o }
+
+      context 'accepts default tag' do
+        let(:tag) { Krypt::ASN1::SET }
+        its(:tag) { should == tag }
+      end
+
+      context 'accepts custom tag (allowed?)' do
+        let(:tag) { 14 }
+        its(:tag) { should == tag }
+      end
+    end
+
+    describe '#tag_class' do
+      subject { o = klass.new(nil); o.tag_class = tag_class; o }
+
+      context 'accepts :UNIVERSAL' do
+        let(:tag_class) { :UNIVERSAL }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :APPLICATION' do
+        let(:tag_class) { :APPLICATION }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :CONTEXT_SPECIFIC' do
+        let(:tag_class) { :CONTEXT_SPECIFIC }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :PRIVATE' do
+        let(:tag_class) { :PRIVATE }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'does not accept unknown tag_class' do
+        context nil do
+          let(:tag_class) { nil }
+          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        end
+
+        context :no_such_class do
+          let(:tag_class) { :no_such_class }
+          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        end
+      end
     end
   end
 
