@@ -8,8 +8,8 @@ describe Krypt::ASN1::Boolean do
 
   # For test against OpenSSL
   #
-  #let(:klass) { OpenSSL::ASN1::Boolean }
-  #let(:decoder) { OpenSSL::ASN1 }
+  let(:klass) { OpenSSL::ASN1::Boolean }
+  let(:decoder) { OpenSSL::ASN1 }
   #
   # OpenSSL stub for signature mismatch
   class OpenSSL::ASN1::Boolean
@@ -43,6 +43,9 @@ describe Krypt::ASN1::Boolean do
         its(:value) { should == false }
         its(:infinite_length) { should == false }
       end
+
+      it { lambda { klass.new(nil) }.should raise_error ArgumentError } # TODO: ossl does not check value
+      it { lambda { klass.new('hi!') }.should raise_error ArgumentError } # TODO: ossl does not check value
     end
 
     context 'gets explicit tag number as the 2nd argument' do
