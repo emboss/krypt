@@ -1,10 +1,10 @@
 module Krypt
   class KryptError < StandardError; end
 
-  module Asn1
-    class Asn1Error < KryptError; end
-    class ParseError < Asn1Error; end
-    class SerializeError < Asn1Error; end
+  module ASN1
+    class ASN1Error < KryptError; end
+    class ParseError < ASN1Error; end
+    class SerializeError < ASN1Error; end
 
     END_OF_CONTENTS = 0
     BOOLEAN = 1
@@ -16,7 +16,7 @@ module Krypt
     def self.decode(str_or_file_or_readable)
     end
 
-    class Asn1Data
+    class ASN1Data
       attr_accessor :tag, :tag_class, :value
       attr_reader :infinite_length
 
@@ -25,10 +25,10 @@ module Krypt
       def encode_to(io); end #=> self
     end
 
-    class Primitive < Asn1Data
+    class Primitive < ASN1Data
     end
 
-    class Constructive < Asn1Data
+    class Constructive < ASN1Data
       attr_writer :infinite_length # ?
       def each; end
     end
@@ -39,20 +39,20 @@ module Krypt
     class Enumerated < Primitive; end
     class BitString < Primitive; end
     class OctetString < Primitive; end
-    class Utf8String < Primitive; end
+    class UTF8String < Primitive; end
     class NumericString < Primitive; end
     class PrintableString < Primitive; end
     class T61String < Primitive; end
     class VideotexString < Primitive; end
-    class Ia5String < Primitive; end
+    class IA5String < Primitive; end
     class GraphicString < Primitive; end
-    class Iso64String < Primitive; end
+    class ISO64String < Primitive; end
     class GeneralString < Primitive; end
     class UniversalString < Primitive; end
-    class BmpString < Primitive; end
+    class BMPString < Primitive; end
     class Null < Primitive; end
     class ObjectId < Primitive; end
-    class UtcTime < Primitive; end
+    class UTCTime < Primitive; end
     class GeneralizedTime < Primitive; end
 
     class Sequence < Constructive; end
