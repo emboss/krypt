@@ -3,7 +3,7 @@ require 'krypt-core'
 require 'openssl'
 
 describe Krypt::ASN1::UTCTime do 
-  let(:klass) { Krypt::ASN1::UtcTime }
+  let(:klass) { Krypt::ASN1::UTCTime }
   let(:decoder) { Krypt::ASN1 }
 
   # For test against OpenSSL
