@@ -26,12 +26,25 @@ describe Krypt::ASN1::Enumerated do
 
   describe '#new' do
     context 'gets value for construct' do
-      subject { klass.new(72) }
+      subject { klass.new(value) }
 
-      its(:tag) { should == Krypt::ASN1::ENUMERATED }
-      its(:tag_class) { should == :UNIVERSAL }
-      its(:value) { should == 72 }
-      its(:infinite_length) { should == false }
+      context 'Integer' do
+        let(:value) { 72 }
+        its(:tag) { should == Krypt::ASN1::ENUMERATED }
+        its(:tag_class) { should == :UNIVERSAL }
+        its(:value) { should == 72 }
+        its(:infinite_length) { should == false }
+      end
+
+      context '0' do
+        let(:value) { 0 }
+        its(:value) { should == 0 }
+      end
+
+      context 'negative Integer' do
+        let(:value) { -72 }
+        its(:value) { should == -72 }
+      end
     end
 
     context 'gets explicit tag number as the 2nd argument' do

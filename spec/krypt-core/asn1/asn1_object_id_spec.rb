@@ -28,7 +28,7 @@ describe Krypt::ASN1::ObjectId do
     context 'gets value for construct' do
       subject { klass.new(value) }
 
-      context '1.0.8571.2' do
+      context 'accepts 1.0.8571.2' do
         let(:value) { '1.0.8571.2' }
         its(:tag) { should == Krypt::ASN1::OBJECT_ID }
         its(:tag_class) { should == :UNIVERSAL }
@@ -36,9 +36,29 @@ describe Krypt::ASN1::ObjectId do
         its(:infinite_length) { should == false }
       end
 
-      context '(empty)' do
+      context 'does not accept (empty)' do
         let(:value) { '' }
-        its(:value) { should == '' }
+        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+      end
+
+      context 'does not accept non OID format' do
+        let(:value) { '1,0:1' }
+        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+      end
+
+      context 'does not accept non number id' do
+        let(:value) { '1.0.ABC' }
+        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+      end
+
+      context 'does not accept illegal first octet (must be 0..2)' do
+        let(:value) { '3.0.8571.2' }
+        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+      end
+
+      context 'does not accept illegal second octet (must be 0..3)' do
+        let(:value) { '1.4.8571.2' }
+        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
       end
     end
 

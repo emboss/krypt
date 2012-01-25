@@ -28,7 +28,7 @@ describe Krypt::ASN1::OctetString do
     context 'gets value for construct' do
       subject { klass.new(value) }
 
-      context 'hello,world!' do
+      context 'accepts "hello,world!"' do
         let(:value) { 'hello,world!' }
 
         its(:tag) { should == Krypt::ASN1::OCTET_STRING }
@@ -37,9 +37,8 @@ describe Krypt::ASN1::OctetString do
         its(:infinite_length) { should == false }
       end
 
-      context '(empty)' do
+      context 'accepts (empty)' do
         let(:value) { '' }
-
         its(:value) { should == '' }
       end
     end

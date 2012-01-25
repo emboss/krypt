@@ -32,27 +32,24 @@ describe Krypt::ASN1::Set do
     context 'gets value for construct' do
       subject { klass.new(value) }
 
-      context 'for SET' do
+      context 'accepts SET as Array' do
         let(:value) { [s('hello'), i(42), s('world')] }
-
         its(:tag) { should == Krypt::ASN1::SET }
         its(:tag_class) { should == :UNIVERSAL }
         its(:value) { should == value }
         its(:infinite_length) { should == false }
       end
 
-      context 'for SET OF' do
+      context 'accepts SET OF as Array' do
         let(:value) { [s('hello'), s(','), s('world')] }
-
         its(:tag) { should == Krypt::ASN1::SET }
         its(:tag_class) { should == :UNIVERSAL }
         its(:value) { should == value }
         its(:infinite_length) { should == false }
       end
 
-      context '(empty)' do
+      context 'accepts empty Array' do
         let(:value) { [] }
-
         its(:value) { should == [] }
       end
     end

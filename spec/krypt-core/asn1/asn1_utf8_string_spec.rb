@@ -34,19 +34,22 @@ describe Krypt::ASN1::UTF8String do
     context 'gets value for construct' do
       subject { klass.new(value) }
 
-      context 'こんにちは、世界！' do
+      context 'accepts Japanese UTF-8 string' do
         let(:value) { 'こんにちは、世界！' }
-
         its(:tag) { should == Krypt::ASN1::UTF8_STRING }
         its(:tag_class) { should == :UNIVERSAL }
-        its(:value) { should == 'こんにちは、世界！' }
+        its(:value) { should == value }
         its(:infinite_length) { should == false }
       end
 
-      context '(empty)' do
-        let(:value) { '' }
+      context 'accepts Japanese EUC-JP string' do
+        let(:value) { 'こんにちは、世界！'.encode("EUC-JP") }
+        its(:value) { should == value } # TODO: auto convert to UTF-8? raise?
+      end
 
-        its(:value) { should == '' }
+      context 'accepts empty String' do
+        let(:value) { '' }
+        its(:value) { should == value }
       end
     end
 

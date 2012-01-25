@@ -28,31 +28,43 @@ describe Krypt::ASN1::GeneralizedTime do
     context 'gets value for construct' do
       subject { klass.new(value) }
 
-      context 'with Time' do
+      context 'accepts Time' do
         let(:value) { Time.now }
-
         its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
         its(:tag_class) { should == :UNIVERSAL }
         its(:value) { should == value }
         its(:infinite_length) { should == false }
       end
 
-      context 'with Numeric' do
+      context 'accepts Integer' do
         let(:value) { 0 + Time.now.to_i }
-
         its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
         its(:tag_class) { should == :UNIVERSAL }
         its(:value) { should == value }  # TODO: should be time?
         its(:infinite_length) { should == false }
       end
 
-      context 'with String' do
+      context 'accepts String' do
         let(:value) { '' + Time.now.to_i.to_s }
-
         its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
         its(:tag_class) { should == :UNIVERSAL }
         its(:value) { should == value } # TODO: should be time?
         its(:infinite_length) { should == false }
+      end
+
+      context 'accepts 0' do
+        let(:value) { 0 }
+        its(:value) { should == value }  # TODO: should be time?
+      end
+
+      context 'does not accept negative Integer' do
+        let(:value) { -1 }
+        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+      end
+
+      context 'does not accept a String that Integer(str) barks' do
+        let(:value) { "ABC" }
+        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
       end
     end
 

@@ -32,7 +32,7 @@ describe Krypt::ASN1::BitString do
     context 'gets value for construct' do
       subject { klass.new(value) }
 
-      context '01010101' do
+      context 'accepts binary packed 01010101 := "\x55"' do
         let(:value) { _B('01010101') }
         its(:tag) { should == Krypt::ASN1::BIT_STRING }
         its(:tag_class) { should == :UNIVERSAL }
@@ -40,7 +40,7 @@ describe Krypt::ASN1::BitString do
         its(:infinite_length) { should == false }
       end
 
-      context '(empty)' do
+      context 'accepts (empty)' do
         let(:value) { '' }
         its(:tag) { should == Krypt::ASN1::BIT_STRING }
         its(:tag_class) { should == :UNIVERSAL }

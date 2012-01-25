@@ -32,27 +32,21 @@ describe Krypt::ASN1::Sequence do
     context 'gets value for construct' do
       subject { klass.new(value) }
 
-      context 'for SEQUENCE' do
+      context 'accepts SEQUENCE as Array' do
         let(:value) { [s('hello'), i(42), s('world')] }
-
         its(:tag) { should == Krypt::ASN1::SEQUENCE }
         its(:tag_class) { should == :UNIVERSAL }
         its(:value) { should == value }
         its(:infinite_length) { should == false }
       end
 
-      context 'for SEQUENCE OF' do
+      context 'accepts SEQUENCE OF as Array' do
         let(:value) { [s('hello'), s(','), s('world')] }
-
-        its(:tag) { should == Krypt::ASN1::SEQUENCE }
-        its(:tag_class) { should == :UNIVERSAL }
         its(:value) { should == value }
-        its(:infinite_length) { should == false }
       end
 
-      context '(empty)' do
+      context 'accepts empty Array' do
         let(:value) { [] }
-
         its(:value) { should == [] }
       end
     end

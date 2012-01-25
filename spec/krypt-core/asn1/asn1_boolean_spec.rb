@@ -28,7 +28,7 @@ describe Krypt::ASN1::Boolean do
     context 'gets value for construct' do
       subject { klass.new(value) }
 
-      context 'true' do
+      context 'accepts true' do
         let(:value) { true }
         its(:tag) { should == Krypt::ASN1::BOOLEAN }
         its(:tag_class) { should == :UNIVERSAL }
@@ -36,7 +36,7 @@ describe Krypt::ASN1::Boolean do
         its(:infinite_length) { should == false }
       end
 
-      context 'false' do
+      context 'accepts false' do
         let(:value) { false }
         its(:tag) { should == Krypt::ASN1::BOOLEAN }
         its(:tag_class) { should == :UNIVERSAL }
@@ -44,8 +44,10 @@ describe Krypt::ASN1::Boolean do
         its(:infinite_length) { should == false }
       end
 
-      it { -> { klass.new(nil) }.should raise_error ArgumentError } # TODO: ossl does not check value
-      it { -> { klass.new('hi!') }.should raise_error ArgumentError } # TODO: ossl does not check value
+      context 'does not accept non true/false' do
+        let(:value) { 'hi!' }
+        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+      end
     end
 
     context 'gets explicit tag number as the 2nd argument' do
