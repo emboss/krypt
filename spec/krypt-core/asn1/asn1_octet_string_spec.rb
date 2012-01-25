@@ -175,8 +175,7 @@ describe Krypt::ASN1::OctetString do
         let(:der) { "\x04\x00" }
         its(:class) { should == klass }
         its(:tag) { should == Krypt::ASN1::OCTET_STRING }
-        #its(:value) { should == '' }
-        its(:value) { should == nil } #TODO: discuss
+        its(:value) { should == '' }
       end
 
       context '999 octets' do
