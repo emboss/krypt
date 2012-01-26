@@ -1,8 +1,11 @@
 require 'rspec'
 require 'krypt-core'
 require 'openssl'
+require_relative './resources'
 
 describe Krypt::ASN1::GeneralizedTime do 
+  include Krypt::ASN1::Resources
+
   let(:mod) { Krypt::ASN1 }
   let(:klass) { mod::GeneralizedTime }
   let(:decoder) { mod }
@@ -313,6 +316,35 @@ describe Krypt::ASN1::GeneralizedTime do
         let(:tag_class) { :APPLICATION }
         it { should == "\x58\x0F20120124000000Z" }
       end
+    end
+  end
+
+  describe '#encode_to' do
+    context 'encodes to an IO' do
+      subject { klass.new(value).encode_to(io); io }
+
+      context "StringIO" do
+        let(:value) { 1327330800 }
+        let(:io) { string_io_object }
+        its(:written_bytes) { should == "\x18\x0F20120123150000Z" }
+      end
+
+      context "Object responds to :write" do
+        let(:value) { 1327330800 }
+        let(:io) { writable_object }
+        its(:written_bytes) { should == "\x18\x0F20120123150000Z" }
+      end
+
+      context "raise IO error transparently" do
+        let(:value) { 1327330800 }
+        let(:io) { io_error_object }
+        it { -> { subject }.should raise_error EOFError }
+      end
+    end
+
+    it 'returns self' do
+      obj = klass.new(1327330800)
+      obj.encode_to(string_io_object).should == obj
     end
   end
 

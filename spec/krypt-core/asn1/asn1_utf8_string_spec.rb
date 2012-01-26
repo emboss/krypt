@@ -3,8 +3,11 @@
 require 'rspec'
 require 'krypt-core'
 require 'openssl'
+require_relative './resources'
 
 describe Krypt::ASN1::UTF8String do 
+  include Krypt::ASN1::Resources
+
   let(:mod) { Krypt::ASN1 }
   let(:klass) { mod::UTF8String }
   let(:decoder) { mod }
@@ -266,6 +269,35 @@ describe Krypt::ASN1::UTF8String do
         let(:tag_class) { :APPLICATION }
         it { should == _A("\x4C\x18" + value) }
       end
+    end
+  end
+
+  describe '#encode_to' do
+    context 'encodes to an IO' do
+      subject { klass.new(value).encode_to(io); io }
+
+      context "StringIO" do
+        let(:value) { 'こんにちは、世界！' }
+        let(:io) { string_io_object }
+        its(:written_bytes) { should == _A("\x0C\x18" + value) }
+      end
+
+      context "Object responds to :write" do
+        let(:value) { 'こんにちは、世界！' }
+        let(:io) { writable_object }
+        its(:written_bytes) { should == _A("\x0C\x18" + value) }
+      end
+
+      context "raise IO error transparently" do
+        let(:value) { 'こんにちは、世界！' }
+        let(:io) { io_error_object }
+        it { -> { subject }.should raise_error EOFError }
+      end
+    end
+
+    it 'returns self' do
+      obj = klass.new('こんにちは、世界！')
+      obj.encode_to(string_io_object).should == obj
     end
   end
 

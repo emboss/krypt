@@ -1,8 +1,11 @@
 require 'rspec'
 require 'krypt-core'
 require 'openssl'
+require_relative './resources'
 
 describe Krypt::ASN1::Sequence do 
+  include Krypt::ASN1::Resources
+
   let(:mod) { Krypt::ASN1 }
   let(:klass) { mod::Sequence }
   let(:decoder) { mod }
@@ -23,13 +26,6 @@ describe Krypt::ASN1::Sequence do
         old_new(*args)
       end
     end
-  end
-
-  def s(str)
-    Krypt::ASN1::OctetString.new(str)
-  end
-  def i(num)
-    Krypt::ASN1::Integer.new(num)
   end
 
   describe '#new' do
@@ -297,6 +293,35 @@ describe Krypt::ASN1::Sequence do
         let(:tag_class) { :APPLICATION }
         it { should == "\x70\x11\x04\x05hello\x02\x01\x2A\x04\x05world" }
       end
+    end
+  end
+
+  describe '#encode_to' do
+    context 'encodes to an IO' do
+      subject { klass.new(value).encode_to(io); io }
+
+      context "StringIO" do
+        let(:value) { [s(''), s(''), s('')] }
+        let(:io) { string_io_object }
+        its(:written_bytes) { should == "\x30\x06\x04\x00\x04\x00\x04\x00" }
+      end
+
+      context "Object responds to :write" do
+        let(:value) { [s(''), s(''), s('')] }
+        let(:io) { writable_object }
+        its(:written_bytes) { should == "\x30\x06\x04\x00\x04\x00\x04\x00" }
+      end
+
+      context "raise IO error transparently" do
+        let(:value) { [s(''), s(''), s('')] }
+        let(:io) { io_error_object }
+        it { -> { subject }.should raise_error EOFError }
+      end
+    end
+
+    it 'returns self' do
+      obj = klass.new([s(''), s(''), s('')])
+      obj.encode_to(string_io_object).should == obj
     end
   end
 

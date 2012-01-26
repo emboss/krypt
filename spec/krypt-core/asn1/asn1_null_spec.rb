@@ -1,8 +1,11 @@
 require 'rspec'
 require 'krypt-core'
 require 'openssl'
+require_relative './resources'
 
 describe Krypt::ASN1::Null do 
+  include Krypt::ASN1::Resources
+
   let(:mod) { Krypt::ASN1 }
   let(:klass) { mod::Null }
   let(:decoder) { mod }
@@ -234,6 +237,35 @@ describe Krypt::ASN1::Null do
         let(:tag_class) { :APPLICATION }
         it { should == "\x45\x00" }
       end
+    end
+  end
+
+  describe '#encode_to' do
+    context 'encodes to an IO' do
+      subject { klass.new(value).encode_to(io); io }
+
+      context "StringIO" do
+        let(:value) { nil }
+        let(:io) { string_io_object }
+        its(:written_bytes) { should == "\x05\x00" }
+      end
+
+      context "Object responds to :write" do
+        let(:value) { nil }
+        let(:io) { writable_object }
+        its(:written_bytes) { should == "\x05\x00" }
+      end
+
+      context "raise IO error transparently" do
+        let(:value) { nil }
+        let(:io) { io_error_object }
+        it { -> { subject }.should raise_error EOFError }
+      end
+    end
+
+    it 'returns self' do
+      obj = klass.new(nil)
+      obj.encode_to(string_io_object).should == obj
     end
   end
 

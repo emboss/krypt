@@ -1,8 +1,11 @@
 require 'rspec'
 require 'krypt-core'
 require 'openssl'
+require_relative './resources'
 
 describe Krypt::ASN1::Enumerated do 
+  include Krypt::ASN1::Resources
+
   let(:mod) { Krypt::ASN1 }
   let(:klass) { mod::Enumerated }
   let(:decoder) { mod }
@@ -288,6 +291,35 @@ describe Krypt::ASN1::Enumerated do
         let(:tag_class) { :APPLICATION }
         it { should == "\x4A\x01\x48" }
       end
+    end
+  end
+
+  describe '#encode_to' do
+    context 'encodes to an IO' do
+      subject { klass.new(value).encode_to(io); io }
+
+      context "StringIO" do
+        let(:value) { 72 }
+        let(:io) { string_io_object }
+        its(:written_bytes) { should == "\x0A\x01\x48" }
+      end
+
+      context "Object responds to :write" do
+        let(:value) { 72 }
+        let(:io) { writable_object }
+        its(:written_bytes) { should == "\x0A\x01\x48" }
+      end
+
+      context "raise IO error transparently" do
+        let(:value) { 72 }
+        let(:io) { io_error_object }
+        it { -> { subject }.should raise_error EOFError }
+      end
+    end
+
+    it 'returns self' do
+      obj = klass.new(72)
+      obj.encode_to(string_io_object).should == obj
     end
   end
 

@@ -1,8 +1,11 @@
 require 'rspec'
 require 'krypt-core'
 require 'openssl'
+require_relative './resources'
 
 describe Krypt::ASN1::Boolean do 
+  include Krypt::ASN1::Resources
+
   let(:mod) { Krypt::ASN1 }
   let(:klass) { mod::Boolean }
   let(:decoder) { mod }
@@ -253,6 +256,35 @@ describe Krypt::ASN1::Boolean do
     it "preserves a BER-encoded value when encoding it again" do
       ber = "\x01\x01\x01"
       decoder.decode(ber).to_der.should == ber
+    end
+  end
+
+  describe '#encode_to' do
+    context 'encodes to an IO' do
+      subject { klass.new(value).encode_to(io); io }
+
+      context "StringIO" do
+        let(:value) { true }
+        let(:io) { string_io_object }
+        its(:written_bytes) { should == "\x01\x01\xFF" }
+      end
+
+      context "Object responds to :write" do
+        let(:value) { true }
+        let(:io) { writable_object }
+        its(:written_bytes) { should == "\x01\x01\xFF" }
+      end
+
+      context "raise IO error transparently" do
+        let(:value) { true }
+        let(:io) { io_error_object }
+        it { -> { subject }.should raise_error EOFError }
+      end
+    end
+
+    it 'returns self' do
+      obj = klass.new(true)
+      obj.encode_to(string_io_object).should == obj
     end
   end
 
