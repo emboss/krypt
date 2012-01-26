@@ -256,9 +256,9 @@ describe Krypt::ASN1::Header, "#size" do
     subject.next(Resources.bytes_to_io(eoc)).size.should == 0
   end
 
-  it "returns -1 for infinite length values" do
+  it "returns 0 for infinite length values" do
     inf = %w{30 80 02 01 01 00 00}
-    subject.next(Resources.bytes_to_io(inf)).size.should == -1
+    subject.next(Resources.bytes_to_io(inf)).size.should == 0
   end
 
 end
