@@ -260,8 +260,7 @@ describe Krypt::ASN1::UTF8String do
         let(:der) { "\x0C\x00" }
         its(:class) { should == klass }
         its(:tag) { should == Krypt::ASN1::UTF8_STRING }
-        #its(:value) { should == '' }
-        its(:value) { should == nil } #TODO: discuss
+        its(:value) { should == '' }
       end
 
       context '1000 octets' do
