@@ -205,10 +205,6 @@ describe Krypt::ASN1::UTCTime do
         it { should == "\x17\x0D991231235959Z" }
       end
 
-      context 'second fraction' do
-        pending 'ossl does not support this'
-      end
-
       context 'timezone' do
         pending 'ossl does not support this'
       end
@@ -325,13 +321,6 @@ describe Krypt::ASN1::UTCTime do
         its(:class) { should == klass }
         its(:tag) { should == Krypt::ASN1::UTC_TIME }
         its(:value) { should == Time.utc(2012, 1, 23, 15, 0, 0) }
-      end
-
-      context 'with fraction' do
-        let(:der) { "\x17\x12120123150000.0001Z" }
-        its(:class) { should == klass }
-        its(:tag) { should == Krypt::ASN1::UTC_TIME }
-        its(:value) { subject.usec.should == 100 } # TODO: ossl does not support decoding usec
       end
 
       context 'Min time representation' do
