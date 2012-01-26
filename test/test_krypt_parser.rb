@@ -284,7 +284,7 @@ class Krypt::ParserTest < Test::Unit::TestCase
     assert_equal(:UNIVERSAL, header.tag_class)
     assert_equal(true, header.constructed?)
     assert_equal(true, header.infinite?)
-    assert_equal(-1, header.length)
+    assert_equal(0, header.length)
     assert_equal(2, header.header_length)
     value_io = header.value_io(values_only)
 
