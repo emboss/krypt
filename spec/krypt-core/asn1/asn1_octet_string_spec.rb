@@ -80,18 +80,6 @@ describe Krypt::ASN1::OctetString do
         let(:tag_class) { :PRIVATE }
         its(:tag_class) { should == tag_class }
       end
-
-      context 'does not accept unknown tag_class' do
-        context nil do
-          let(:tag_class) { nil }
-          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-        end
-
-        context :no_such_class do
-          let(:tag_class) { :no_such_class }
-          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-        end
-      end
     end
 
     context 'when the 2nd argument is given but 3rd argument is omitted' do
@@ -155,18 +143,6 @@ describe Krypt::ASN1::OctetString do
         let(:tag_class) { :PRIVATE }
         its(:tag_class) { should == tag_class }
       end
-
-      context 'does not accept unknown tag_class' do
-        context nil do
-          let(:tag_class) { nil }
-          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-        end
-
-        context :no_such_class do
-          let(:tag_class) { :no_such_class }
-          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-        end
-      end
     end
   end
 
@@ -198,6 +174,11 @@ describe Krypt::ASN1::OctetString do
         let(:value) { 'x' * 1001 }
         it { should == "\x04\x82\x03\xE9" + 'x' * 1001 }
       end
+
+      context 'nil' do
+        let(:value) { nil }
+        it { -> { subject }.should raise_error asn1error }
+      end
     end
 
     context 'encodes tag number' do
@@ -211,6 +192,11 @@ describe Krypt::ASN1::OctetString do
       context 'custom tag (TODO: allowed?)' do
         let(:tag) { 14 }
         it { should == "\xCE\x0Chello,world!" }
+      end
+
+      context 'nil' do
+        let(:tag) { nil }
+        it { -> { subject }.should raise_error asn1error }
       end
     end
 
@@ -235,6 +221,44 @@ describe Krypt::ASN1::OctetString do
       context 'PRIVATE' do
         let(:tag_class) { :PRIVATE }
         it { should == "\xC4\x0Chello,world!" }
+      end
+
+      context nil do
+        let(:tag_class) { nil }
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check nil
+      end
+
+      context :no_such_class do
+        let(:tag_class) { :no_such_class }
+        it { -> { subject }.should raise_error asn1error }
+      end
+    end
+
+    context 'encodes values set via accessors' do
+      subject {
+        o = klass.new(nil)
+        o.value = value if defined? value
+        o.tag = tag if defined? tag
+        o.tag_class = tag_class if defined? tag_class
+        o.to_der
+      }
+
+      context 'value: 01010101' do
+        let(:value) { 'hello,world!' }
+        it { should == "\x04\x0Chello,world!" }
+      end
+
+      context 'custom tag (TODO: allowed?)' do
+        let(:value) { 'hello,world!' }
+        let(:tag) { 14 }
+        let(:tag_class) { :PRIVATE }
+        it { should == "\xCE\x0Chello,world!" }
+      end
+
+      context 'tag_class' do
+        let(:value) { 'hello,world!' }
+        let(:tag_class) { :APPLICATION }
+        it { should == "\x44\x0Chello,world!" }
       end
     end
   end

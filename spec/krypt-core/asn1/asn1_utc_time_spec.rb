@@ -57,16 +57,6 @@ describe Krypt::ASN1::UTCTime do
         let(:value) { 0 }
         its(:value) { should == value }  # TODO: should be time?
       end
-
-      context 'does not accept negative Integer' do
-        let(:value) { -1 }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-      end
-
-      context 'does not accept a String that Integer(str) barks' do
-        let(:value) { "ABC" }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-      end
     end
 
     context 'gets explicit tag number as the 2nd argument' do
@@ -104,18 +94,6 @@ describe Krypt::ASN1::UTCTime do
       context 'accepts :PRIVATE' do
         let(:tag_class) { :PRIVATE }
         its(:tag_class) { should == tag_class }
-      end
-
-      context 'does not accept unknown tag_class' do
-        context nil do
-          let(:tag_class) { nil }
-          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-        end
-
-        context :no_such_class do
-          let(:tag_class) { :no_such_class }
-          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-        end
       end
     end
 
@@ -157,16 +135,6 @@ describe Krypt::ASN1::UTCTime do
         let(:value) { 0 }
         its(:value) { should == value }  # TODO: should be time?
       end
-
-      context 'does not accept negative Integer' do
-        let(:value) { -1 }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-      end
-
-      context 'does not accept a String that Integer(str) barks' do
-        let(:value) { "ABC" }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-      end
     end
 
     describe '#tag' do
@@ -204,18 +172,6 @@ describe Krypt::ASN1::UTCTime do
       context 'accepts :PRIVATE' do
         let(:tag_class) { :PRIVATE }
         its(:tag_class) { should == tag_class }
-      end
-
-      context 'does not accept unknown tag_class' do
-        context nil do
-          let(:tag_class) { nil }
-          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-        end
-
-        context :no_such_class do
-          let(:tag_class) { :no_such_class }
-          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-        end
       end
     end
   end
@@ -266,6 +222,16 @@ describe Krypt::ASN1::UTCTime do
         let(:value) { 2**64 - 1 }
         pending 'When do we check the error?'
       end
+
+      context 'negative Integer' do
+        let(:value) { -1 }
+        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+      end
+
+      context 'String that Integer(str) barks' do
+        let(:value) { "ABC" }
+        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+      end
     end
 
     context 'encodes tag number' do
@@ -279,6 +245,11 @@ describe Krypt::ASN1::UTCTime do
       context 'custom tag (TODO: allowed?)' do
         let(:tag) { 14 }
         it { should == "\xCE\x0D120123150000Z" }
+      end
+
+      context 'nil' do
+        let(:tag) { nil }
+        it { -> { subject }.should raise_error asn1error }
       end
     end
 
@@ -303,6 +274,44 @@ describe Krypt::ASN1::UTCTime do
       context 'PRIVATE' do
         let(:tag_class) { :PRIVATE }
         it { should == "\xD7\x0D120123150000Z" }
+      end
+
+      context nil do
+        let(:tag_class) { nil }
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check nil
+      end
+
+      context :no_such_class do
+        let(:tag_class) { :no_such_class }
+        it { -> { subject }.should raise_error asn1error }
+      end
+    end
+
+    context 'encodes values set via accessors' do
+      subject {
+        o = klass.new(nil)
+        o.value = value if defined? value
+        o.tag = tag if defined? tag
+        o.tag_class = tag_class if defined? tag_class
+        o.to_der
+      }
+
+      context 'value: Time' do
+        let(:value) { Time.utc(2012, 1, 24, 0, 0, 0) }
+        it { should == "\x17\x0D120124000000Z" }
+      end
+
+      context 'custom tag (TODO: allowed?)' do
+        let(:value) { Time.utc(2012, 1, 24, 0, 0, 0) }
+        let(:tag) { 14 }
+        let(:tag_class) { :PRIVATE }
+        it { should == "\xCE\x0D120124000000Z" }
+      end
+
+      context 'tag_class' do
+        let(:value) { Time.utc(2012, 1, 24, 0, 0, 0) }
+        let(:tag_class) { :APPLICATION }
+        it { should == "\x57\x0D120124000000Z" }
       end
     end
   end

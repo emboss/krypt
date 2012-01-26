@@ -93,18 +93,6 @@ describe Krypt::ASN1::Sequence do
         let(:tag_class) { :PRIVATE }
         its(:tag_class) { should == tag_class }
       end
-
-      context 'does not accept unknown tag_class' do
-        context nil do
-          let(:tag_class) { nil }
-          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-        end
-
-        context :no_such_class do
-          let(:tag_class) { :no_such_class }
-          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-        end
-      end
     end
 
     context 'when the 2nd argument is given but 3rd argument is omitted' do
@@ -172,18 +160,6 @@ describe Krypt::ASN1::Sequence do
         let(:tag_class) { :PRIVATE }
         its(:tag_class) { should == tag_class }
       end
-
-      context 'does not accept unknown tag_class' do
-        context nil do
-          let(:tag_class) { nil }
-          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-        end
-
-        context :no_such_class do
-          let(:tag_class) { :no_such_class }
-          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-        end
-      end
     end
   end
 
@@ -215,6 +191,29 @@ describe Krypt::ASN1::Sequence do
         let(:value) { [i(0)] * 1000 }
         it { should == "\x30\x82\x0B\xB8" + "\x02\x01\x00" * 1000 }
       end
+
+      context 'responds to :each' do
+        let(:value) {
+          o = BasicObject.new
+          def o.each
+            yield Krypt::ASN1::OctetString.new('hello')
+            yield Krypt::ASN1::Integer.new(42)
+            yield Krypt::ASN1::OctetString.new('world')
+          end
+          o
+        }
+        it { should == "\x30\x11\x04\x05hello\x02\x01\x2A\x04\x05world" }
+      end
+
+      context 'nil' do
+        let(:value) { nil }
+        it { -> { subject }.should raise_error asn1error }
+      end
+
+      context 'does not respond to :each' do
+        let(:value) { '123' }
+        it { -> { subject }.should raise_error asn1error }
+      end
     end
 
     context 'encodes tag number' do
@@ -229,6 +228,11 @@ describe Krypt::ASN1::Sequence do
       context 'custom tag (TODO: allowed?)' do
         let(:tag) { 14 }
         it { should == "\xEE\x06\x04\x00\x04\x00\x04\x00" }
+      end
+
+      context 'nil' do
+        let(:tag) { nil }
+        it { -> { subject }.should raise_error asn1error }
       end
     end
 
@@ -254,6 +258,44 @@ describe Krypt::ASN1::Sequence do
       context 'PRIVATE' do
         let(:tag_class) { :PRIVATE }
         it { should == "\xF0\x06\x04\x00\x04\x00\x04\x00" }
+      end
+
+      context nil do
+        let(:tag_class) { nil }
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check nil
+      end
+
+      context :no_such_class do
+        let(:tag_class) { :no_such_class }
+        it { -> { subject }.should raise_error asn1error }
+      end
+    end
+
+    context 'encodes values set via accessors' do
+      subject {
+        o = klass.new(nil)
+        o.value = value if defined? value
+        o.tag = tag if defined? tag
+        o.tag_class = tag_class if defined? tag_class
+        o.to_der
+      }
+
+      context 'value: SEQUENCE' do
+        let(:value) { [s('hello'), i(42), s('world')] }
+        it { should == "\x30\x11\x04\x05hello\x02\x01\x2A\x04\x05world" }
+      end
+
+      context 'custom tag (TODO: allowed?)' do
+        let(:value) { [s('hello'), i(42), s('world')] }
+        let(:tag) { 14 }
+        let(:tag_class) { :PRIVATE }
+        it { should == "\xEE\x11\x04\x05hello\x02\x01\x2A\x04\x05world" }
+      end
+
+      context 'tag_class' do
+        let(:value) { [s('hello'), i(42), s('world')] }
+        let(:tag_class) { :APPLICATION }
+        it { should == "\x70\x11\x04\x05hello\x02\x01\x2A\x04\x05world" }
       end
     end
   end

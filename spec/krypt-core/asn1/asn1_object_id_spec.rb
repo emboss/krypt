@@ -36,31 +36,6 @@ describe Krypt::ASN1::ObjectId do
         its(:value) { should == '1.0.8571.2' }
         its(:infinite_length) { should == false }
       end
-
-      context 'does not accept (empty)' do
-        let(:value) { '' }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-      end
-
-      context 'does not accept non OID format' do
-        let(:value) { '1,0:1' }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-      end
-
-      context 'does not accept non number id' do
-        let(:value) { '1.0.ABC' }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-      end
-
-      context 'does not accept illegal first octet (must be 0..2)' do
-        let(:value) { '3.0.8571.2' }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-      end
-
-      context 'does not accept illegal second octet (must be 0..3)' do
-        let(:value) { '1.4.8571.2' }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-      end
     end
 
     context 'gets explicit tag number as the 2nd argument' do
@@ -99,18 +74,6 @@ describe Krypt::ASN1::ObjectId do
         let(:tag_class) { :PRIVATE }
         its(:tag_class) { should == tag_class }
       end
-
-      context 'does not accept unknown tag_class' do
-        context nil do
-          let(:tag_class) { nil }
-          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-        end
-
-        context :no_such_class do
-          let(:tag_class) { :no_such_class }
-          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-        end
-      end
     end
 
     context 'when the 2nd argument is given but 3rd argument is omitted' do
@@ -129,31 +92,6 @@ describe Krypt::ASN1::ObjectId do
         its(:tag_class) { should == :UNIVERSAL }
         its(:value) { should == '1.0.8571.2' }
         its(:infinite_length) { should == false }
-      end
-
-      context 'does not accept (empty)' do
-        let(:value) { '' }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-      end
-
-      context 'does not accept non OID format' do
-        let(:value) { '1,0:1' }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-      end
-
-      context 'does not accept non number id' do
-        let(:value) { '1.0.ABC' }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-      end
-
-      context 'does not accept illegal first octet (must be 0..2)' do
-        let(:value) { '3.0.8571.2' }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-      end
-
-      context 'does not accept illegal second octet (must be 0..3)' do
-        let(:value) { '1.4.8571.2' }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
       end
     end
 
@@ -192,18 +130,6 @@ describe Krypt::ASN1::ObjectId do
       context 'accepts :PRIVATE' do
         let(:tag_class) { :PRIVATE }
         its(:tag_class) { should == tag_class }
-      end
-
-      context 'does not accept unknown tag_class' do
-        context nil do
-          let(:tag_class) { nil }
-          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-        end
-
-        context :no_such_class do
-          let(:tag_class) { :no_such_class }
-          it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
-        end
       end
     end
   end
@@ -261,6 +187,41 @@ describe Krypt::ASN1::ObjectId do
         let(:value) { (['1'] * 1000).join('.') }
         it { should == "\x06\x82\x03\xE7\x29" + "\x01" * 998 }
       end
+
+      context 'nil' do
+        let(:value) { nil }
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check value
+      end
+
+      context '(empty)' do
+        let(:value) { '' }
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check value
+      end
+
+      context 'single octet' do
+        let(:value) { '1' }
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check value
+      end
+
+      context 'non OID format' do
+        let(:value) { '1,0:1' }
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check value
+      end
+
+      context 'non number id' do
+        let(:value) { '1.0.ABC' }
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check value
+      end
+
+      context 'illegal first octet (must be 0..2)' do
+        let(:value) { '3.0.8571.2' }
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check value
+      end
+
+      context 'illegal second octet (must be 0..3)' do
+        let(:value) { '1.4.8571.2' }
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check value
+      end
     end
 
     context 'encodes tag number' do
@@ -274,6 +235,11 @@ describe Krypt::ASN1::ObjectId do
       context 'custom tag (TODO: allowed?)' do
         let(:tag) { 14 }
         it { should == "\xCE\x04\x28\xC2\x7B\x02" }
+      end
+
+      context 'nil' do
+        let(:tag) { nil }
+        it { -> { subject }.should raise_error asn1error }
       end
     end
 
@@ -298,6 +264,44 @@ describe Krypt::ASN1::ObjectId do
       context 'PRIVATE' do
         let(:tag_class) { :PRIVATE }
         it { should == "\xC6\x04\x28\xC2\x7B\x02" }
+      end
+
+      context nil do
+        let(:tag_class) { nil }
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check nil
+      end
+
+      context :no_such_class do
+        let(:tag_class) { :no_such_class }
+        it { -> { subject }.should raise_error asn1error }
+      end
+    end
+
+    context 'encodes values set via accessors' do
+      subject {
+        o = klass.new(nil)
+        o.value = value if defined? value
+        o.tag = tag if defined? tag
+        o.tag_class = tag_class if defined? tag_class
+        o.to_der
+      }
+
+      context 'value: 1.0.8571.2' do
+        let(:value) { '1.0.8571.2' }
+        it { should == "\x06\x04\x28\xC2\x7B\x02" }
+      end
+
+      context 'custom tag (TODO: allowed?)' do
+        let(:value) { '1.0.8571.2' }
+        let(:tag) { 14 }
+        let(:tag_class) { :PRIVATE }
+        it { should == "\xCE\x04\x28\xC2\x7B\x02" }
+      end
+
+      context 'tag_class' do
+        let(:value) { '1.0.8571.2' }
+        let(:tag_class) { :APPLICATION }
+        it { should == "\x46\x04\x28\xC2\x7B\x02" }
       end
     end
   end
