@@ -3,13 +3,14 @@ require 'krypt-core'
 require 'openssl'
 
 describe Krypt::ASN1::OctetString do 
-  let(:klass) { Krypt::ASN1::OctetString }
-  let(:decoder) { Krypt::ASN1 }
+  let(:mod) { Krypt::ASN1 }
+  let(:klass) { mod::OctetString }
+  let(:decoder) { mod }
+  let(:asn1error) { mod::ASN1Error }
 
   # For test against OpenSSL
   #
-  #let(:klass) { OpenSSL::ASN1::OctetString }
-  #let(:decoder) { OpenSSL::ASN1 }
+  #let(:mod) { OpenSSL::ASN1 }
   #
   # OpenSSL stub for signature mismatch
   class OpenSSL::ASN1::OctetString
