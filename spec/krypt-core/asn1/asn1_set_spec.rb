@@ -331,6 +331,31 @@ describe Krypt::ASN1::Set do
     end
   end
 
+  describe '#each' do
+    subject { yielded_value_from_each(klass.new(value)) }
+
+    context "yields each value in its order" do
+      let(:value) { [s('hello'), i(42), s('world')] }
+      it { should == value }
+    end
+
+    context "yields nothing for empty value" do
+      let(:value) { [] }
+      it { should == value }
+    end
+
+    it "is Enumerable via each" do
+      value = [s('hello'), i(42), s('world')]
+      klass.new(value).map { |e| e.value }.should == ['hello', 42, 'world']
+    end
+
+    it "returns Enumerator for blockless call" do
+      value = [s('hello'), i(42), s('world')]
+      pending "Blockless Sequence#each should return an Enumerable, not self"
+      klass.new(value).each.next.value.should == 'hello'
+    end
+  end
+
   describe 'extracted from ASN1.decode' do
     subject { decoder.decode(der) }
 

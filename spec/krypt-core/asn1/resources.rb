@@ -36,6 +36,14 @@ module Krypt
       def i(num)
         Krypt::ASN1::Integer.new(num)
       end
+
+      def yielded_value_from_each(obj)
+        all = []
+        obj.each do |element|
+          all << element
+        end
+        all
+      end
     end
   end
 end
