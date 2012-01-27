@@ -163,6 +163,30 @@ describe Krypt::ASN1::Set do
         its(:tag_class) { should == tag_class }
       end
     end
+
+    describe '#infinite_length' do
+      subject { o = klass.new(nil); o.infinite_length = infinite_length; o }
+
+      context 'accepts true' do
+        let(:infinite_length) { true }
+        its(:infinite_length) { should == true }
+      end
+
+      context 'accepts false' do
+        let(:infinite_length) { false }
+        its(:infinite_length) { should == false }
+      end
+
+      context 'accepts nil as false' do
+        let(:infinite_length) { nil }
+        its(:infinite_length) { should == false }
+      end
+
+      context 'accepts non boolean as true' do
+        let(:infinite_length) { Object.new }
+        its(:infinite_length) { should == true }
+      end
+    end
   end
 
   describe '#to_der' do
@@ -270,6 +294,24 @@ describe Krypt::ASN1::Set do
       context :no_such_class do
         let(:tag_class) { :no_such_class }
         it { -> { subject }.should raise_error asn1error }
+      end
+    end
+
+    context 'encodes indefinite length packets' do
+      subject {
+        o = klass.new(nil, Krypt::ASN1::SEQUENCE, :UNIVERSAL)
+        o.value = value if defined? value
+        o.infinite_length = true
+        o
+      }
+
+      context 'with EndOfContents' do
+        let(:value) { [s('hello'), i(42), s('world'), eoc] }
+        let(:infinite_length) { true }
+        its(:to_der) {
+          pending "creating EOC causes SEGV"
+          should == "\x31\x80\x04\x05hello\x02\x01\x2A\x04\x05world\x00\x00"
+        }
       end
     end
 
@@ -426,6 +468,21 @@ describe Krypt::ASN1::Set do
       context 'PRIVATE' do
         let(:der) { "\xF1\x11\x04\x05hello\x02\x01\x2A\x04\x05world" }
         its(:tag_class) { should == :PRIVATE }
+      end
+    end
+
+    context 'extracted infinite_length' do
+      context 'definite encoding' do
+        let(:der) { "\x31\x11\x04\x05hello\x02\x01\x2A\x04\x05world" }
+        its(:infinite_length) { should == false }
+      end
+
+      context 'indefinite encoding' do
+        let(:der) { "\x31\x80\x04\x05hello\x02\x01\x2A\x04\x05world\x00\x00" }
+        its(:infinite_length) { should == true }
+        it "has EndOfContents at the last value" do
+          subject.value.last.should be_instance_of Krypt::ASN1::EndOfContents
+        end
       end
     end
   end
