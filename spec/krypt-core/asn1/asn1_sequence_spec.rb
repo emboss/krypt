@@ -302,10 +302,7 @@ describe Krypt::ASN1::Sequence do
       context 'with EndOfContents' do
         let(:value) { [s('hello'), i(42), s('world'), eoc] }
         let(:infinite_length) { true }
-        its(:to_der) {
-          pending "creating EOC causes SEGV"
-          should == "\x30\x80\x04\x05hello\x02\x01\x2A\x04\x05world\x00\x00"
-        }
+        its(:to_der) { should == "\x30\x80\x04\x05hello\x02\x01\x2A\x04\x05world\x00\x00" }
       end
     end
 

@@ -299,7 +299,7 @@ describe Krypt::ASN1::Set do
 
     context 'encodes indefinite length packets' do
       subject {
-        o = klass.new(nil, Krypt::ASN1::SEQUENCE, :UNIVERSAL)
+        o = klass.new(nil, Krypt::ASN1::SET, :UNIVERSAL)
         o.value = value if defined? value
         o.infinite_length = true
         o
@@ -308,10 +308,7 @@ describe Krypt::ASN1::Set do
       context 'with EndOfContents' do
         let(:value) { [s('hello'), i(42), s('world'), eoc] }
         let(:infinite_length) { true }
-        its(:to_der) {
-          pending "creating EOC causes SEGV"
-          should == "\x31\x80\x04\x05hello\x02\x01\x2A\x04\x05world\x00\x00"
-        }
+        its(:to_der) { should == "\x31\x80\x04\x05hello\x02\x01\x2A\x04\x05world\x00\x00" }
       end
     end
 
@@ -324,7 +321,7 @@ describe Krypt::ASN1::Set do
         o.to_der
       }
 
-      context 'value: SEQUENCE' do
+      context 'value: SET' do
         let(:value) { [s('hello'), i(42), s('world')] }
         it { should == "\x31\x11\x04\x05hello\x02\x01\x2A\x04\x05world" }
       end
