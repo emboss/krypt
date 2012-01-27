@@ -44,7 +44,7 @@ describe Krypt::ASN1::UTCTime do
         let(:value) { 0 + Time.now.to_i }
         its(:tag) { should == Krypt::ASN1::UTC_TIME }
         its(:tag_class) { should == :UNIVERSAL }
-        its(:value) { should == value } # TODO: Should be a Time?
+        its(:value) { should == value }
         its(:infinite_length) { should == false }
       end
 
@@ -52,13 +52,13 @@ describe Krypt::ASN1::UTCTime do
         let(:value) { '' + Time.now.to_i.to_s }
         its(:tag) { should == Krypt::ASN1::UTC_TIME }
         its(:tag_class) { should == :UNIVERSAL }
-        its(:value) { should == value } # TODO: Should be a Time?
+        its(:value) { should == value }
         its(:infinite_length) { should == false }
       end
 
       context 'accepts 0' do
         let(:value) { 0 }
-        its(:value) { should == value }  # TODO: should be time?
+        its(:value) { should == value }
       end
     end
 
@@ -122,7 +122,7 @@ describe Krypt::ASN1::UTCTime do
         let(:value) { 0 + Time.now.to_i }
         its(:tag) { should == Krypt::ASN1::UTC_TIME }
         its(:tag_class) { should == :UNIVERSAL }
-        its(:value) { should == value } # TODO: Should be a Time?
+        its(:value) { should == value }
         its(:infinite_length) { should == false }
       end
 
@@ -130,13 +130,13 @@ describe Krypt::ASN1::UTCTime do
         let(:value) { '' + Time.now.to_i.to_s }
         its(:tag) { should == Krypt::ASN1::UTC_TIME }
         its(:tag_class) { should == :UNIVERSAL }
-        its(:value) { should == value } # TODO: Should be a Time?
+        its(:value) { should == value }
         its(:infinite_length) { should == false }
       end
 
       context 'accepts 0' do
         let(:value) { 0 }
-        its(:value) { should == value }  # TODO: should be time?
+        its(:value) { should == value }
       end
     end
 
