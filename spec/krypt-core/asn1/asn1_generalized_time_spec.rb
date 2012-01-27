@@ -9,7 +9,6 @@ describe Krypt::ASN1::GeneralizedTime do
   let(:mod) { Krypt::ASN1 }
   let(:klass) { mod::GeneralizedTime }
   let(:decoder) { mod }
-  let(:asn1error) { mod::ASN1Error }
 
   # For test against OpenSSL
   #
@@ -108,7 +107,7 @@ describe Krypt::ASN1::GeneralizedTime do
 
   describe 'accessors' do
     describe '#value' do
-      subject { o = klass.new(nil); o.value = value; o }
+      subject { o = klass.new(0); o.value = value; o }
 
       context 'accepts Time' do
         let(:value) { Time.now }
@@ -141,7 +140,7 @@ describe Krypt::ASN1::GeneralizedTime do
     end
 
     describe '#tag' do
-      subject { o = klass.new(nil); o.tag = tag; o }
+      subject { o = klass.new(0); o.tag = tag; o }
 
       context 'accepts default tag' do
         let(:tag) { Krypt::ASN1::GENERALIZED_TIME }
@@ -155,7 +154,7 @@ describe Krypt::ASN1::GeneralizedTime do
     end
 
     describe '#tag_class' do
-      subject { o = klass.new(nil); o.tag_class = tag_class; o }
+      subject { o = klass.new(0); o.tag_class = tag_class; o }
 
       context 'accepts :UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -252,7 +251,7 @@ describe Krypt::ASN1::GeneralizedTime do
 
       context 'nil' do
         let(:tag) { nil }
-        it { -> { subject }.should raise_error asn1error }
+        it { -> { subject }.should raise_error ArgumentError }
       end
     end
 
@@ -281,20 +280,20 @@ describe Krypt::ASN1::GeneralizedTime do
 
       context nil do
         let(:tag_class) { nil }
-        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check nil
+        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check nil
       end
 
       context :no_such_class do
         let(:tag_class) { :no_such_class }
-        it { -> { subject }.should raise_error asn1error }
+        it { -> { subject }.should raise_error ArgumentError }
       end
     end
 
     context 'encodes values set via accessors' do
       subject {
-        o = klass.new(nil)
-        o.value = value if defined? value
+        o = klass.new(0)
         o.tag = tag if defined? tag
+        o.value = value if defined? value
         o.tag_class = tag_class if defined? tag_class
         o.to_der
       }
@@ -305,8 +304,8 @@ describe Krypt::ASN1::GeneralizedTime do
       end
 
       context 'custom tag' do
-        let(:value) { Time.utc(2012, 1, 24, 0, 0, 0) }
-        let(:tag) { 14 }
+        let(:value) { "20120124000000Z" }
+        let(:tag) { 14 } # TODO: setting the tag to 14 will change the codec to default internally
         let(:tag_class) { :PRIVATE }
         it { should == "\xCE\x0F20120124000000Z" }
       end

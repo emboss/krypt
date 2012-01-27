@@ -9,7 +9,6 @@ describe Krypt::ASN1::Null do
   let(:mod) { Krypt::ASN1 }
   let(:klass) { mod::Null }
   let(:decoder) { mod }
-  let(:asn1error) { mod::ASN1Error }
 
   # For test against OpenSSL
   #
@@ -173,7 +172,7 @@ describe Krypt::ASN1::Null do
 
       context 'nil' do
         let(:tag) { nil }
-        it { -> { subject }.should raise_error asn1error }
+        it { -> { subject }.should raise_error ArgumentError }
       end
     end
 
@@ -202,20 +201,20 @@ describe Krypt::ASN1::Null do
 
       context nil do
         let(:tag_class) { nil }
-        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check nil
+        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check nil
       end
 
       context :no_such_class do
         let(:tag_class) { :no_such_class }
-        it { -> { subject }.should raise_error asn1error }
+        it { -> { subject }.should raise_error ArgumentError }
       end
     end
 
     context 'encodes values set via accessors' do
       subject {
         o = klass.new(nil)
-        o.value = value if defined? value
         o.tag = tag if defined? tag
+        o.value = value if defined? value
         o.tag_class = tag_class if defined? tag_class
         o.to_der
       }
@@ -226,8 +225,8 @@ describe Krypt::ASN1::Null do
       end
 
       context 'custom tag' do
-        let(:value) { nil }
-        let(:tag) { 14 }
+        let(:value) { "" }
+        let(:tag) { 14 } # TODO: setting the tag to 14 will change the codec to default internally
         let(:tag_class) { :PRIVATE }
         it { should == "\xCE\x00" }
       end
