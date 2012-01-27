@@ -65,7 +65,7 @@ describe Krypt::ASN1::UTF8String do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -132,7 +132,7 @@ describe Krypt::ASN1::UTF8String do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -197,7 +197,7 @@ describe Krypt::ASN1::UTF8String do
         it { should == _A("\xCC\x18" + value) }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:tag) { 14 }
         it { should == _A("\xCE\x18" + value) }
       end
@@ -257,7 +257,7 @@ describe Krypt::ASN1::UTF8String do
         it { should == _A("\x0C\x18" + value) }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:value) { 'こんにちは、世界！' }
         let(:tag) { 14 }
         let(:tag_class) { :PRIVATE }

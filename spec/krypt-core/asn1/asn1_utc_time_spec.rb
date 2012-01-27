@@ -70,7 +70,7 @@ describe Krypt::ASN1::UTCTime do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -148,7 +148,7 @@ describe Krypt::ASN1::UTCTime do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -241,7 +241,7 @@ describe Krypt::ASN1::UTCTime do
         it { should == "\xD7\x0D120123150000Z" }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:tag) { 14 }
         it { should == "\xCE\x0D120123150000Z" }
       end
@@ -300,7 +300,7 @@ describe Krypt::ASN1::UTCTime do
         it { should == "\x17\x0D120124000000Z" }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:value) { Time.utc(2012, 1, 24, 0, 0, 0) }
         let(:tag) { 14 }
         let(:tag_class) { :PRIVATE }

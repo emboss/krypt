@@ -63,7 +63,7 @@ describe Krypt::ASN1::Set do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -134,7 +134,7 @@ describe Krypt::ASN1::Set do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -251,7 +251,7 @@ describe Krypt::ASN1::Set do
         it { should == "\xF1\x06\x04\x00\x04\x00\x04\x00" }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:tag) { 14 }
         it { should == "\xEE\x06\x04\x00\x04\x00\x04\x00" }
       end
@@ -326,7 +326,7 @@ describe Krypt::ASN1::Set do
         it { should == "\x31\x11\x04\x05hello\x02\x01\x2A\x04\x05world" }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:value) { [s('hello'), i(42), s('world')] }
         let(:tag) { 14 }
         let(:tag_class) { :PRIVATE }

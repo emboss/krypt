@@ -63,7 +63,7 @@ describe Krypt::ASN1::Null do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -121,7 +121,7 @@ describe Krypt::ASN1::Null do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -166,7 +166,7 @@ describe Krypt::ASN1::Null do
         it { should == "\xC5\x00" }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:tag) { 14 }
         it { should == "\xCE\x00" }
       end
@@ -225,7 +225,7 @@ describe Krypt::ASN1::Null do
         it { should == "\x05\x00" }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:value) { nil }
         let(:tag) { 14 }
         let(:tag_class) { :PRIVATE }

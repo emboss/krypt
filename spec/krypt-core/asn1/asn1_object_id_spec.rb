@@ -49,7 +49,7 @@ describe Krypt::ASN1::ObjectId do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -106,7 +106,7 @@ describe Krypt::ASN1::ObjectId do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -235,7 +235,7 @@ describe Krypt::ASN1::ObjectId do
         it { should == "\xC6\x04\x28\xC2\x7B\x02" }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:tag) { 14 }
         it { should == "\xCE\x04\x28\xC2\x7B\x02" }
       end
@@ -294,7 +294,7 @@ describe Krypt::ASN1::ObjectId do
         it { should == "\x06\x04\x28\xC2\x7B\x02" }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:value) { '1.0.8571.2' }
         let(:tag) { 14 }
         let(:tag_class) { :PRIVATE }

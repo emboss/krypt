@@ -55,7 +55,7 @@ describe Krypt::ASN1::OctetString do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -118,7 +118,7 @@ describe Krypt::ASN1::OctetString do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -192,7 +192,7 @@ describe Krypt::ASN1::OctetString do
         it { should == "\xC4\x0Chello,world!" }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:tag) { 14 }
         it { should == "\xCE\x0Chello,world!" }
       end
@@ -251,7 +251,7 @@ describe Krypt::ASN1::OctetString do
         it { should == "\x04\x0Chello,world!" }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:value) { 'hello,world!' }
         let(:tag) { 14 }
         let(:tag_class) { :PRIVATE }

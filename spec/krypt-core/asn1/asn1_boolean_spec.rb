@@ -57,7 +57,7 @@ describe Krypt::ASN1::Boolean do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -116,7 +116,7 @@ describe Krypt::ASN1::Boolean do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -180,7 +180,7 @@ describe Krypt::ASN1::Boolean do
         it { should == "\xC1\x01\xFF" }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:tag) { 14 }
         it { should == "\xCE\x01\xFF" }
       end
@@ -239,7 +239,7 @@ describe Krypt::ASN1::Boolean do
         it { should == "\x01\x01\xFF" }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:value) { true }
         let(:tag) { 14 }
         let(:tag_class) { :PRIVATE }

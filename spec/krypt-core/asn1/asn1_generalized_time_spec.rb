@@ -70,7 +70,7 @@ describe Krypt::ASN1::GeneralizedTime do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -148,7 +148,7 @@ describe Krypt::ASN1::GeneralizedTime do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -245,7 +245,7 @@ describe Krypt::ASN1::GeneralizedTime do
         it { should == "\xD8\x0F20120123150000Z" }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:tag) { 14 }
         it { should == "\xCE\x0F20120123150000Z" }
       end
@@ -304,7 +304,7 @@ describe Krypt::ASN1::GeneralizedTime do
         it { should == "\x18\x0F20120124000000Z" }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:value) { Time.utc(2012, 1, 24, 0, 0, 0) }
         let(:tag) { 14 }
         let(:tag_class) { :PRIVATE }

@@ -59,7 +59,7 @@ describe Krypt::ASN1::Enumerated do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -126,7 +126,7 @@ describe Krypt::ASN1::Enumerated do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -220,7 +220,7 @@ describe Krypt::ASN1::Enumerated do
         it { should == "\xCA\x01\x48" }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:tag) { 14 }
         it { should == "\xCE\x01\x48" }
       end
@@ -279,7 +279,7 @@ describe Krypt::ASN1::Enumerated do
         it { should == "\x0A\x01\x48" }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:value) { 72 }
         let(:tag) { 14 }
         let(:tag_class) { :PRIVATE }

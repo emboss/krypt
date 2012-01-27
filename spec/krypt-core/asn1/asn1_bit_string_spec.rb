@@ -61,7 +61,7 @@ describe Krypt::ASN1::BitString do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (TODO: allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -120,7 +120,7 @@ describe Krypt::ASN1::BitString do
         its(:tag) { should == tag }
       end
 
-      context 'accepts custom tag (TODO: allowed?)' do
+      context 'accepts custom tag' do
         let(:tag) { 14 }
         its(:tag) { should == tag }
       end
@@ -199,7 +199,7 @@ describe Krypt::ASN1::BitString do
         it { should == "\xC3\x02\x00\x55" }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:tag) { 14 }
         it { should == "\xCE\x02\x00\x55" }
       end
@@ -258,7 +258,7 @@ describe Krypt::ASN1::BitString do
         it { should == "\x03\x02\x00\x55" }
       end
 
-      context 'custom tag (TODO: allowed?)' do
+      context 'custom tag' do
         let(:value) { _B('01010101') }
         let(:tag) { 14 }
         let(:tag_class) { :PRIVATE }
