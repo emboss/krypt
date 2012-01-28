@@ -205,7 +205,7 @@ describe Krypt::ASN1::Set do
 
       context 'SET OF Integer' do
         let(:value) { [i(-1), i(0), i(1)] }
-        it { should == "\x31\x0C\x02\x04\xFF\xFF\xFF\xFF\x02\x01\x00\x02\x01\x01" }
+        it { should == "\x31\x09\x02\x01\xFF\x02\x01\x00\x02\x01\x01" }
       end
 
       context '(empty)' do
@@ -220,7 +220,7 @@ describe Krypt::ASN1::Set do
 
       context 'responds to :each' do
         let(:value) {
-          o = BasicObject.new
+          o = Object.new # TODO: Discuss -> BasicObject does not support rb_respond_to
           def o.each
             yield Krypt::ASN1::OctetString.new('hello')
             yield Krypt::ASN1::Integer.new(42)
