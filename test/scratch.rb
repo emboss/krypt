@@ -1,20 +1,10 @@
 require 'krypt'
 require_relative 'resources'
+require 'openssl'
 require 'stringio'
 require 'pp'
 
-int1 = Krypt::ASN1::Integer.new(1)
-int2 = Krypt::ASN1::Integer.new(2)
-int3 = Krypt::ASN1::Integer.new(3)
+pp Krypt::ASN1::EndOfContents.new(nil)
+#-27066 "\x0A\x02\x96\x46"
+#2**62-1 "\x0A\x08\x3F\xFF\xFF\xFF\xFF\xFF\xFF\xFF" 
 
-seq = Krypt::ASN1::Sequence.new([int1, int2, int3])
-
-pp seq
-pp seq.value
-der = seq.to_der
-pp der
-
-asn1 = Krypt::ASN1.decode(der)
-pp asn1
-pp asn1.value
-puts der == asn1.to_der
