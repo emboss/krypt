@@ -9,6 +9,7 @@ describe Krypt::ASN1::BitString do
   let(:mod) { Krypt::ASN1 }
   let(:klass) { mod::BitString }
   let(:decoder) { mod }
+  let(:asn1error) { mod::ASN1Error }
 
   # For test against OpenSSL
   #
@@ -98,7 +99,7 @@ describe Krypt::ASN1::BitString do
 
   describe 'accessors' do
     describe '#value' do
-      subject { o = klass.new(""); o.value = value; o }
+      subject { o = klass.new(nil); o.value = value; o }
 
       context 'accepts binary packed 01010101 := "\x55"' do
         let(:value) { _B('01010101') }
@@ -112,7 +113,7 @@ describe Krypt::ASN1::BitString do
     end
 
     describe '#tag' do
-      subject { o = klass.new(""); o.tag = tag; o }
+      subject { o = klass.new(nil); o.tag = tag; o }
 
       context 'accepts default tag' do
         let(:tag) { Krypt::ASN1::BIT_STRING }
@@ -126,7 +127,7 @@ describe Krypt::ASN1::BitString do
     end
 
     describe '#tag_class' do
-      subject { o = klass.new(""); o.tag_class = tag_class; o }
+      subject { o = klass.new(nil); o.tag_class = tag_class; o }
 
       context 'accepts :UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -186,7 +187,7 @@ describe Krypt::ASN1::BitString do
 
       context 'nil' do
         let(:value) { nil }
-        it { -> { subject }.should raise_error ArgumentError }
+        it { -> { subject }.should raise_error asn1error }
       end
     end
 
@@ -205,7 +206,7 @@ describe Krypt::ASN1::BitString do
 
       context 'nil' do
         let(:tag) { nil }
-        it { -> { subject }.should raise_error ArgumentError }
+        it { -> { subject }.should raise_error asn1error }
       end
     end
 
@@ -234,20 +235,20 @@ describe Krypt::ASN1::BitString do
 
       context nil do
         let(:tag_class) { nil }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check nil
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check nil
       end
 
       context :no_such_class do
         let(:tag_class) { :no_such_class }
-        it { -> { subject }.should raise_error ArgumentError }
+        it { -> { subject }.should raise_error asn1error }
       end
     end
 
     context 'encodes values set via accessors' do
       subject {
-        o = klass.new("")
-        o.tag = tag if defined? tag
+        o = klass.new(nil)
         o.value = value if defined? value
+        o.tag = tag if defined? tag
         o.tag_class = tag_class if defined? tag_class
         o.to_der
       }
@@ -258,8 +259,8 @@ describe Krypt::ASN1::BitString do
       end
 
       context 'custom tag' do
-        let(:value) { "\x00\x55" }
-        let(:tag) { 14 } # TODO: setting the tag to 14 will change the codec to default internally
+        let(:value) { _B('01010101') }
+        let(:tag) { 14 }
         let(:tag_class) { :PRIVATE }
         it { should == "\xCE\x02\x00\x55" }
       end
