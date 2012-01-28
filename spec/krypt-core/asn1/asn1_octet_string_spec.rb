@@ -9,6 +9,7 @@ describe Krypt::ASN1::OctetString do
   let(:mod) { Krypt::ASN1 }
   let(:klass) { mod::OctetString }
   let(:decoder) { mod }
+  let(:asn1error) { mod::ASN1Error }
 
   # For test against OpenSSL
   #
@@ -92,7 +93,7 @@ describe Krypt::ASN1::OctetString do
 
   describe 'accessors' do
     describe '#value' do
-      subject { o = klass.new(""); o.value = value; o }
+      subject { o = klass.new(nil); o.value = value; o }
 
       context 'accepts "hello,world!"' do
         let(:value) { 'hello,world!' }
@@ -110,7 +111,7 @@ describe Krypt::ASN1::OctetString do
     end
 
     describe '#tag' do
-      subject { o = klass.new(""); o.tag = tag; o }
+      subject { o = klass.new(nil); o.tag = tag; o }
 
       context 'accepts default tag' do
         let(:tag) { Krypt::ASN1::OCTET_STRING }
@@ -124,7 +125,7 @@ describe Krypt::ASN1::OctetString do
     end
 
     describe '#tag_class' do
-      subject { o = klass.new(""); o.tag_class = tag_class; o }
+      subject { o = klass.new(nil); o.tag_class = tag_class; o }
 
       context 'accepts :UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -179,7 +180,7 @@ describe Krypt::ASN1::OctetString do
 
       context 'nil' do
         let(:value) { nil }
-        it { -> { subject }.should raise_error ArgumentError }
+        it { -> { subject }.should raise_error asn1error }
       end
     end
 
@@ -198,7 +199,7 @@ describe Krypt::ASN1::OctetString do
 
       context 'nil' do
         let(:tag) { nil }
-        it { -> { subject }.should raise_error ArgumentError }
+        it { -> { subject }.should raise_error asn1error }
       end
     end
 
@@ -227,18 +228,18 @@ describe Krypt::ASN1::OctetString do
 
       context nil do
         let(:tag_class) { nil }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check nil
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check nil
       end
 
       context :no_such_class do
         let(:tag_class) { :no_such_class }
-        it { -> { subject }.should raise_error ArgumentError }
+        it { -> { subject }.should raise_error asn1error }
       end
     end
 
     context 'encodes values set via accessors' do
       subject {
-        o = klass.new("")
+        o = klass.new(nil)
         o.value = value if defined? value
         o.tag = tag if defined? tag
         o.tag_class = tag_class if defined? tag_class

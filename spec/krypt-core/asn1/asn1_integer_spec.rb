@@ -9,6 +9,7 @@ describe Krypt::ASN1::Integer do
   let(:mod) { Krypt::ASN1 }
   let(:klass) { mod::Integer }
   let(:decoder) { mod }
+  let(:asn1error) { mod::ASN1Error }
 
   # For test against OpenSSL
   #
@@ -89,14 +90,14 @@ describe Krypt::ASN1::Integer do
     end
 
     context 'when the 2nd argument is given but 3rd argument is omitted' do
-      subject { klass.new(1, Krypt::ASN1::INTEGER) }
+      subject { klass.new(true, Krypt::ASN1::INTEGER) }
       its(:tag_class) { should == :CONTEXT_SPECIFIC }
     end
   end
 
   describe 'accessors' do
     describe '#value' do
-      subject { o = klass.new(1); o.value = value; o }
+      subject { o = klass.new(nil); o.value = value; o }
 
       context 'accepts Integer' do
         let(:value) { 72 }
@@ -118,7 +119,7 @@ describe Krypt::ASN1::Integer do
     end
 
     describe '#tag' do
-      subject { o = klass.new(1); o.tag = tag; o }
+      subject { o = klass.new(nil); o.tag = tag; o }
 
       context 'accepts default tag' do
         let(:tag) { Krypt::ASN1::INTEGER }
@@ -132,7 +133,7 @@ describe Krypt::ASN1::Integer do
     end
 
     describe '#tag_class' do
-      subject { o = klass.new(1); o.tag_class = tag_class; o }
+      subject { o = klass.new(nil); o.tag_class = tag_class; o }
 
       context 'accepts :UNIVERSAL' do
         let(:tag_class) { :UNIVERSAL }
@@ -222,12 +223,12 @@ describe Krypt::ASN1::Integer do
 
       context 'nil' do
         let(:value) { nil }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl crashes
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl crashes
       end
 
       context 'String' do
         let(:value) { '123' }
-        it { -> { subject }.should raise_error ArgumentError }
+        it { -> { subject }.should raise_error asn1error }
       end
     end
 
@@ -246,7 +247,7 @@ describe Krypt::ASN1::Integer do
 
       context 'nil' do
         let(:tag) { nil }
-        it { -> { subject }.should raise_error ArgumentError }
+        it { -> { subject }.should raise_error asn1error }
       end
     end
 
@@ -275,20 +276,20 @@ describe Krypt::ASN1::Integer do
 
       context nil do
         let(:tag_class) { nil }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check nil
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check nil
       end
 
       context :no_such_class do
         let(:tag_class) { :no_such_class }
-        it { -> { subject }.should raise_error ArgumentError }
+        it { -> { subject }.should raise_error asn1error }
       end
     end
 
     context 'encodes values set via accessors' do
       subject {
-        o = klass.new(1)
-        o.tag = tag if defined? tag
+        o = klass.new(nil)
         o.value = value if defined? value
+        o.tag = tag if defined? tag
         o.tag_class = tag_class if defined? tag_class
         o.to_der
       }
@@ -299,7 +300,7 @@ describe Krypt::ASN1::Integer do
       end
 
       context 'custom tag' do
-        let(:value) { "\x48" } # TODO: setting tag to 14 changed codec to default internally
+        let(:value) { 72 }
         let(:tag) { 14 }
         let(:tag_class) { :PRIVATE }
         it { should == "\xCE\x01\x48" }
