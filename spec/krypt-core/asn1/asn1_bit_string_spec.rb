@@ -259,8 +259,8 @@ describe Krypt::ASN1::BitString do
       end
 
       context 'custom tag' do
-        let(:value) { _B('01010101') }
-        let(:tag) { 14 }
+        let(:value) { "\x00\x55" }
+        let(:tag) { 14 } # TODO: Discuss - resetting the tag resets codec
         let(:tag_class) { :PRIVATE }
         it { should == "\xCE\x02\x00\x55" }
       end

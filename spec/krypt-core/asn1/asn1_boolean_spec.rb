@@ -240,8 +240,8 @@ describe Krypt::ASN1::Boolean do
       end
 
       context 'custom tag' do
-        let(:value) { true }
-        let(:tag) { 14 }
+        let(:value) { "\xFF" }
+        let(:tag) { 14 } # TODO: Discuss - resetting the tag resets codec
         let(:tag_class) { :PRIVATE }
         it { should == "\xCE\x01\xFF" }
       end

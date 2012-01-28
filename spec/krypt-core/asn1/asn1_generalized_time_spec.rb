@@ -305,8 +305,8 @@ describe Krypt::ASN1::GeneralizedTime do
       end
 
       context 'custom tag' do
-        let(:value) { Time.utc(2012, 1, 24, 0, 0, 0) }
-        let(:tag) { 14 }
+        let(:value) {  "20120124000000Z" }
+        let(:tag) { 14 } # TODO: Discuss - resetting the tag resets codec
         let(:tag_class) { :PRIVATE }
         it { should == "\xCE\x0F20120124000000Z" }
       end

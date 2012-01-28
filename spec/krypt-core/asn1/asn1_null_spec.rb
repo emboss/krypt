@@ -226,8 +226,8 @@ describe Krypt::ASN1::Null do
       end
 
       context 'custom tag' do
-        let(:value) { nil }
-        let(:tag) { 14 }
+        let(:value) { "" }
+        let(:tag) { 14 } # TODO: Discuss - resetting the tag resets codec
         let(:tag_class) { :PRIVATE }
         it { should == "\xCE\x00" }
       end
