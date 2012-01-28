@@ -221,8 +221,8 @@ describe Krypt::ASN1::ObjectId do
         it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check value
       end
 
-      context 'illegal second octet (must be 0..3)' do
-        let(:value) { '1.4.8571.2' }
+      context 'illegal second octet (must be 0..39)' do
+        let(:value) { '1.40.8571.2' }
         it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check value
       end
     end
@@ -391,6 +391,23 @@ describe Krypt::ASN1::ObjectId do
         its(:class) { should == klass }
         its(:tag) { should == Krypt::ASN1::OBJECT_ID }
         its(:value) { should == (['1'] * 1000).join('.') }
+      end
+
+      context 'Illegal first octet too large (3.50.2.3)' do
+        let(:der) { "\x06\x03\xAA\x02\x03" }
+        it { -> { subject.value }.should raise_error asn1error }
+      end
+
+      context 'Illegal first sub id (4.2.0.0)' do
+        let(:der) { "\x06\x03\xA2\x00\x00" }
+        it { -> { subject.value }.should raise_error asn1error }
+      end
+      
+      describe 'We cannot prevent this mistake, so the parsed value will be different than expected' do
+        context 'Illegal second sub id (1.40.0.0)' do
+          let(:der) { "\x06\x03\x50\x00\x00" }
+          its(:value) { should == "2.0.0.0" }
+        end
       end
     end
 
