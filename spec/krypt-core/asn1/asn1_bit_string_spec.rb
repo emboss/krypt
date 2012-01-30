@@ -95,6 +95,11 @@ describe Krypt::ASN1::BitString do
       subject { klass.new(_B('01010101'), Krypt::ASN1::BIT_STRING) }
       its(:tag_class) { should == :CONTEXT_SPECIFIC }
     end
+
+    context 'sets unused_bits to 0' do
+      subject { klass.new(nil) }
+      its(:unused_bits) { should == 0 }
+    end
   end
 
   describe 'accessors' do
@@ -250,6 +255,7 @@ describe Krypt::ASN1::BitString do
         o.value = value if defined? value
         o.tag = tag if defined? tag
         o.tag_class = tag_class if defined? tag_class
+        o.unused_bits = unused_bits if defined? unused_bits
         o.to_der
       }
 
@@ -269,6 +275,26 @@ describe Krypt::ASN1::BitString do
         let(:value) { _B('01010101') }
         let(:tag_class) { :APPLICATION }
         it { should == "\x43\x02\x00\x55" }
+      end
+
+      context 'unused_bits' do
+        let(:value) { _B('01010100') }
+        let(:unused_bits) { 2 }
+        it { should == "\x03\x02\x02\x54" }
+      end
+
+      context 'rejects unused_bits' do
+        let (:value) { _B('01010100') }
+
+        context '< 0' do
+          let(:unused_bits) { -1 }
+          it { -> { subject }.should raise_error asn1error }
+        end
+
+        context '> 7' do
+          let(:unused_bits) { 8 }
+          it { -> { subject }.should raise_error asn1error }
+        end
       end
     end
   end
@@ -346,6 +372,32 @@ describe Krypt::ASN1::BitString do
         its(:class) { should == klass }
         its(:tag) { should == Krypt::ASN1::BIT_STRING }
         its(:value) { should == "\xFF" * 1001 }
+      end
+
+      context 'rejects incomplete value' do
+        let(:der) { "\x03\x00" }
+        it { -> { subject.value }.should raise_error asn1error }
+      end
+
+      context 'unused_bits is 0 for empty value' do
+        let(:der) { "\x03\x01\x00" }
+        its(:class) { should == klass }
+        its(:tag) { should == Krypt::ASN1::BIT_STRING }
+        its(:value) { should == '' }
+        its(:unused_bits) { should == 0 }
+      end
+
+      context 'unused_bits non-zero' do
+        let(:der) { "\x03\x02\x02\x01" }
+        its(:class) { should == klass }
+        its(:tag) { should == Krypt::ASN1::BIT_STRING }
+        its(:value) { should == "\x01" }
+        its(:unused_bits) { should == 2 }
+      end
+
+      context 'rejects unused_bits larger than 7' do
+        let(:der) { "\x03\x02\x08\x01" }
+        it { -> { subject.value }.should raise_error asn1error }
       end
     end
 
