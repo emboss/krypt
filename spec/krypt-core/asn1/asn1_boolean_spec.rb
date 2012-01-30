@@ -311,6 +311,11 @@ describe Krypt::ASN1::Boolean do
         its(:class) { should == klass }
         its(:value) { should == true }
       end
+
+      context 'rejects values whose length is > 1' do
+       let(:der) { "\x01\x02\x01\x01" }
+       it { -> { subject.value }.should raise_error asn1error }
+      end 
     end
 
     context 'extracted tag class' do

@@ -218,12 +218,12 @@ describe Krypt::ASN1::GeneralizedTime do
 
       context '(empty)' do
         let(:value) { '' }
-        pending 'When do we check the error?'
+        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
       end
 
       context 'Bignum' do
         let(:value) { 2**64 - 1 }
-        pending 'When do we check the error?'
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check value
       end
 
       context 'negative Integer' do
@@ -380,7 +380,7 @@ describe Krypt::ASN1::GeneralizedTime do
         let(:der) { "\x18\x0F19991231235959Z" }
         its(:class) { should == klass }
         its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
-        its(:value) { Time.utc(1999, 12, 31, 23, 59, 59) }
+        its(:value) { should == Time.utc(1999, 12, 31, 23, 59, 59) }
       end
 
       context 'timezone' do
@@ -388,6 +388,7 @@ describe Krypt::ASN1::GeneralizedTime do
           let(:der) { "\x18\x1320000101085959+0900" }
           its(:class) { should == klass }
           its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
+          pending 'No timezone support yet'
           its(:value) { Time.utc(1999, 12, 31, 23, 59, 59) }
         end
 
@@ -395,6 +396,7 @@ describe Krypt::ASN1::GeneralizedTime do
           let(:der) { "\x18\x1319991231145959-0900" }
           its(:class) { should == klass }
           its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
+          pending 'No timezone support yet'
           its(:value) { Time.utc(1999, 12, 31, 23, 59, 59) }
         end
 
@@ -402,6 +404,7 @@ describe Krypt::ASN1::GeneralizedTime do
           let(:der) { "\x18\x1319991231235959+0000" }
           its(:class) { should == klass }
           its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
+          pending 'No timezone support yet'
           its(:value) { Time.utc(1999, 12, 31, 23, 59, 59) }
         end
 
@@ -409,6 +412,7 @@ describe Krypt::ASN1::GeneralizedTime do
           let(:der) { "\x18\x1319991231235959-0000" }
           its(:class) { should == klass }
           its(:tag) { should == Krypt::ASN1::GENERALIZED_TIME }
+          pending 'No timezone support yet'
           its(:value) { Time.utc(1999, 12, 31, 23, 59, 59) }
         end
       end

@@ -374,9 +374,9 @@ describe Krypt::ASN1::BitString do
         its(:value) { should == "\xFF" * 1001 }
       end
 
-      context 'rejects incomplete value' do
-        let(:der) { "\x03\x00" }
-        it { -> { subject.value }.should raise_error asn1error }
+      it 'rejects incomplete value' do
+        asn1 = decoder.decode("\x03\x00")
+        -> { asn1.value }.should raise_error asn1error
       end
 
       context 'unused_bits is 0 for empty value' do

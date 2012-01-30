@@ -420,6 +420,11 @@ describe Krypt::ASN1::Integer do
         its(:tag) { should == Krypt::ASN1::INTEGER }
         its(:value) { should == 2**62-1 }
       end
+
+      context 'rejects zero length value' do
+        let(:der) { "\x02\x00" }
+        it { -> { subject.value }.should raise_error asn1error }
+      end
     end
 
     context 'extracted tag class' do

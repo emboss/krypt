@@ -302,5 +302,10 @@ describe Krypt::ASN1::Null do
         its(:tag_class) { should == :PRIVATE }
       end
     end
+
+    context 'rejects values with a length > 0' do
+      let(:der) { "\x05\x01\x00" }
+      it { -> { subject.value }.should raise_error asn1error }
+    end
   end
 end
