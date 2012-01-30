@@ -2,6 +2,7 @@ require 'rspec'
 require 'krypt-core'
 require 'openssl'
 require_relative './resources'
+require_relative '../resources'
 
 describe Krypt::ASN1::ASN1Data do 
   include Krypt::ASN1::Resources
@@ -376,6 +377,15 @@ describe Krypt::ASN1::ASN1Data do
         its(:written_bytes) { should == "\x80\x01\xFF" }
       end
 
+      it "encodes to File IO" do
+        io = File.open(IO::NULL, "wb")
+        begin
+          klass.new("\xFF", 0, :CONTEXT_SPECIFIC).encode_to(io)
+        ensure
+          io.close if io
+        end
+      end
+        
       context "raise IO error transparently" do
         let(:io) { io_error_object }
         it { -> { subject }.should raise_error EOFError }
@@ -479,35 +489,55 @@ describe Krypt::ASN1::ASN1Data do
           eoc.value.should be_nil
         end
       end
+    end
 
-      context 'rejects infinite length primitive values' do
-        let(:tag) { "\x80" }
-        let(:length) { "\x80" }
-        let(:value) { "\x01\x01\xFF\x00\x00" }
-        it { -> { subject }.should raise_error Krypt::ASN1::ParseError }
-      end
+    context 'rejects infinite length primitive values' do
+      let(:tag) { "\x80" }
+      let(:length) { "\x80" }
+      let(:value) { "\x01\x01\xFF\x00\x00" }
+      it { -> { subject }.should raise_error Krypt::ASN1::ParseError }
+    end
 
-      context 'rejects UNIVERSAL tags > 30' do
-        let(:tag) { "\x1F\x42" }
-        let(:length) { "\x01" }
-        let(:value) { "\x00" }
-        it { -> { subject }.should raise_error asn1error }
-      end
-      
-      context 'raises ParseError if premature EOF is detected' do
-        let(:tag) { "\x02" }
-        let(:length) { "\x02" }
-        let(:value) { "\x00" }
-        it { -> { subject }.should raise_error Krypt::ASN1::ParseError }
-      end
+    context 'rejects UNIVERSAL tags > 30' do
+      let(:tag) { "\x1F\x42" }
+      let(:length) { "\x01" }
+      let(:value) { "\x00" }
+      it { -> { subject }.should raise_error asn1error }
+    end
+    
+    context 'raises ParseError if premature EOF is detected' do
+      let(:tag) { "\x02" }
+      let(:length) { "\x02" }
+      let(:value) { "\x00" }
+      it { -> { subject }.should raise_error Krypt::ASN1::ParseError }
+    end
 
-      context 'raises ParseError if header ends prematurely' do
-        let(:tag) { "" }
-        let(:length) { "" }
-        let(:value) { "" }
-        it { -> { subject }.should raise_error Krypt::ASN1::ParseError }
-      end
+    context 'raises ParseError if header ends prematurely' do
+      let(:tag) { "" }
+      let(:length) { "" }
+      let(:value) { "" }
+      it { -> { subject }.should raise_error Krypt::ASN1::ParseError }
+    end
 
+    it 'decodes arbitrary objects that respond to #to_der' do
+      o = Object.new
+      def o.to_der
+        "\x02\x01\x01"
+      end
+      asn1 = decoder.decode(o)
+      asn1.tag.should == mod::INTEGER
+      asn1.value.should == 1
+    end
+
+    it 'decodes files' do
+      io = Resources.certificate_io
+      begin
+        asn1 = decoder.decode(io)
+        asn1.tag.should == mod::SEQUENCE
+        asn1.to_der.should == Resources.certificate
+      ensure
+        io.close
+      end
     end
   end
 end
