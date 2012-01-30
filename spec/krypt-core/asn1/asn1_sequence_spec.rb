@@ -384,8 +384,17 @@ describe Krypt::ASN1::Sequence do
 
     it "returns Enumerator for blockless call" do
       value = [s('hello'), i(42), s('world')]
-      pending "Blockless Sequence#each should return an Enumerable, not self"
       klass.new(value).each.next.value.should == 'hello'
+    end
+
+    it "yields each value for an Enumerable" do
+      o = Object.new
+      def o.each
+        yield Krypt::ASN1::Integer.new(1)
+        yield Krypt::ASN1::Integer.new(2)
+        yield Krypt::ASN1::Integer.new(3)
+      end
+      klass.new(o).map { |e| e.value }.should == [1, 2, 3]
     end
   end
 
