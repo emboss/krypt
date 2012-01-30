@@ -382,7 +382,7 @@ describe Krypt::ASN1::ASN1Data do
         begin
           klass.new("\xFF", 0, :CONTEXT_SPECIFIC).encode_to(io)
         ensure
-          io.close if io
+          io.close
         end
       end
         
