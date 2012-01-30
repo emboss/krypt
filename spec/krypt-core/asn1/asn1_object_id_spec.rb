@@ -295,8 +295,8 @@ describe Krypt::ASN1::ObjectId do
       end
 
       context 'custom tag' do
-        let(:value) { "\x28\xC2\x7B\x02" }
-        let(:tag) { 14 } # TODO: Discuss - resetting the tag resets codec
+        let(:value) { '1.0.8571.2' }
+        let(:tag) { 14 }
         let(:tag_class) { :PRIVATE }
         it { should == "\xCE\x04\x28\xC2\x7B\x02" }
       end

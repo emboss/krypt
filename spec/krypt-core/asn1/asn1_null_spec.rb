@@ -109,7 +109,9 @@ describe Krypt::ASN1::Null do
       end
 
       it "only accepts nil as the value argument" do
-        -> { klass.new.value = 1 }.should raise_error(ArgumentError)
+        asn1 = klass.new
+        asn1.value = 1
+        -> { asn1.to_der }.should raise_error asn1error
       end
     end
 
@@ -226,8 +228,8 @@ describe Krypt::ASN1::Null do
       end
 
       context 'custom tag' do
-        let(:value) { "" }
-        let(:tag) { 14 } # TODO: Discuss - resetting the tag resets codec
+        let(:value) { nil }
+        let(:tag) { 14 }
         let(:tag_class) { :PRIVATE }
         it { should == "\xCE\x00" }
       end

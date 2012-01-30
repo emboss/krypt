@@ -339,6 +339,27 @@ describe Krypt::ASN1::ASN1Data do
     context 'rejects UNIVERSAL tags > 30' do
       it { -> { klass.new("\xFF", 31, :UNIVERSAL).to_der }.should raise_error asn1error }
     end
+
+    it 'rejects constructed primitive values that are not infinite length' do
+      asn1 = mod::OctetString.new [mod::OctetString.new("\x00"), mod::EndOfContents.new]
+      -> { asn1.to_der }.should raise_error asn1error
+    end
+
+    it 'allows to encode constructed primitive values that are infinite length' do
+      asn1 = mod::OctetString.new [mod::OctetString.new("\x00"), mod::EndOfContents.new]
+      asn1.infinite_length = true
+      asn1.to_der.should == "\x24\x80\x04\x01\x00\x00\x00"
+    end
+
+    it 'rejects primitive SEQUENCE values' do
+      asn1 = mod::Sequence.new(1)
+      -> { asn1.to_der }.should raise_error asn1error
+    end
+
+    it 'rejects primitive SET values' do
+      asn1 = mod::Set.new(1)
+      -> { asn1.to_der }.should raise_error asn1error
+    end
   end
 
   describe '#encode_to' do

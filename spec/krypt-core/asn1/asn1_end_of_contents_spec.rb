@@ -54,8 +54,10 @@ describe Krypt::ASN1::EndOfContents do
         its(:value) { should == nil }
       end
 
-      it "only accepts nil as the value argument" do
-        -> { klass.new.value = 1 }.should raise_error(ArgumentError)
+      it "accepts objects other than nil as the value argument, but raises on encoding" do
+        asn1 = klass.new
+        asn1.value = 1
+        -> { asn1.to_der }.should raise_error asn1error
       end
     end
   end

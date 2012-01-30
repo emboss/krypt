@@ -304,8 +304,8 @@ describe Krypt::ASN1::Integer do
       end
 
       context 'custom tag' do
-        let(:value) { "\x48" }
-        let(:tag) { 14 } # TODO: Discuss - resetting the tag resets codec
+        let(:value) { 72 }
+        let(:tag) { 14 }
         let(:tag_class) { :PRIVATE }
         it { should == "\xCE\x01\x48" }
       end
