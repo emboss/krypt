@@ -356,5 +356,28 @@ describe Krypt::ASN1::OctetString do
         its(:tag_class) { should == :PRIVATE }
       end
     end
+
+    context 'infinite-length encoded octet string' do
+      let(:der) { "\x24\x80\x04\x01\x00\x04\x01\x01\x00\x00" }
+      its(:tag) { should == Krypt::ASN1::OCTET_STRING }
+      its(:tag_class) { should == :UNIVERSAL }
+      its(:infinite_length) { should == true }
+      it '' do
+        subject.should be_an_instance_of mod::OctetString
+        subject.value.should respond_to :each
+        subject.value.size.should == 3
+        oct1 = subject.value[0]
+        oct2 = subject.value[1]
+        eoc = subject.value[2]
+        [oct1, oct2].each do |oct|
+          oct.tag.should == Krypt::ASN1::OCTET_STRING
+          oct.tag_class.should == :UNIVERSAL
+        end
+        oct1.value.should == "\x00"
+        oct2.value.should == "\x01"
+        eoc.tag.should == Krypt::ASN1::END_OF_CONTENTS
+        eoc.value.should be_nil
+      end
+    end
   end
 end

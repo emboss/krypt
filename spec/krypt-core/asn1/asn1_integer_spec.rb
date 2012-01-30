@@ -232,6 +232,10 @@ describe Krypt::ASN1::Integer do
       end
     end
 
+    context 'rejects UNIVERSAL tags > 30' do
+      it { -> { klass.new(1, 31, :UNIVERSAL).to_der }.should raise_error asn1error }
+    end
+
     context 'encodes tag number' do
       subject { klass.new(72, tag, :PRIVATE).to_der }
 
