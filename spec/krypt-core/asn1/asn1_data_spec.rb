@@ -378,13 +378,14 @@ describe Krypt::ASN1::ASN1Data do
       end
 
       it "encodes to File IO" do
-        io = File.open(IO::NULL, "wb")
+        #io = File.open(IO::NULL, "wb") # not defined in JRuby yet
+        io = File.open("/dev/null", "wb")
         begin
           klass.new("\xFF", 0, :CONTEXT_SPECIFIC).encode_to(io)
         ensure
           io.close
         end
-      end
+      end if File.exists?("/dev/null")
         
       context "raise IO error transparently" do
         let(:io) { io_error_object }
