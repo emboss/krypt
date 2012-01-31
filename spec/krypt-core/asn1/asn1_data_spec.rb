@@ -127,6 +127,76 @@ describe Krypt::ASN1::ASN1Data do
     end
   end
 
+  describe Krypt::ASN1::Constructive, '#new' do
+    let(:klazz) { mod::Constructive }
+
+    context 'requires exactly 3 arguments' do
+      subject { klazz.new(value, tag, tag_class) }
+
+      context 'accepts any object as value' do
+        let(:value) { Object.new }
+        let(:tag) { 14 }
+        let(:tag_class) { :UNIVERSAL }
+        its(:tag) { should == 14 }
+        its(:tag_class) { should == :UNIVERSAL }
+        its(:value) { should == value }
+        its(:infinite_length) { should == false }
+      end
+
+      context 'accepts nil as value' do
+        let(:value) { nil }
+        let(:tag) { 14 }
+        let(:tag_class) { :UNIVERSAL }
+        its(:tag) { should == 14 }
+        its(:tag_class) { should == :UNIVERSAL }
+        its(:value) { should == nil }
+        its(:infinite_length) { should == false }
+      end
+    end
+
+    context 'raises ArgumentError for more or less arguments' do
+      it { -> { klazz.new }.should raise_error ArgumentError }
+      it { -> { klazz.new(5) }.should raise_error ArgumentError }
+      it { -> { klazz.new(5, 2) }.should raise_error ArgumentError }
+      it { -> { klazz.new(5, 2, :UNIVERSAL, 17) }.should raise_error ArgumentError }
+    end
+  end
+
+  describe Krypt::ASN1::Primitive, '#new' do
+    let(:klazz) { mod::Primitive }
+
+    context 'requires exactly 3 arguments' do
+      subject { klazz.new(value, tag, tag_class) }
+
+      context 'accepts any object as value' do
+        let(:value) { Object.new }
+        let(:tag) { 14 }
+        let(:tag_class) { :UNIVERSAL }
+        its(:tag) { should == 14 }
+        its(:tag_class) { should == :UNIVERSAL }
+        its(:value) { should == value }
+        its(:infinite_length) { should == false }
+      end
+
+      context 'accepts nil as value' do
+        let(:value) { nil }
+        let(:tag) { 14 }
+        let(:tag_class) { :UNIVERSAL }
+        its(:tag) { should == 14 }
+        its(:tag_class) { should == :UNIVERSAL }
+        its(:value) { should == nil }
+        its(:infinite_length) { should == false }
+      end
+    end
+
+    context 'raises ArgumentError for more or less arguments' do
+      it { -> { klazz.new }.should raise_error ArgumentError }
+      it { -> { klazz.new(5) }.should raise_error ArgumentError }
+      it { -> { klazz.new(5, 2) }.should raise_error ArgumentError }
+      it { -> { klazz.new(5, 2, :UNIVERSAL, 17) }.should raise_error ArgumentError }
+    end
+  end
+
   describe '#to_der' do
     context 'encodes UNIVERSAL tag values as if the equivalent primitive
              class was used' do

@@ -148,12 +148,12 @@ describe Krypt::ASN1::ObjectId do
 
       context '(empty)' do
         let(:value) { '' }
-        pending 'When do we check the error?'
+        it { -> { subject }.should raise_error asn1error }
       end
 
       context '1' do
         let(:value) { '1' }
-        pending 'When do we check the error?'
+        it { -> { subject }.should raise_error asn1error }
       end
 
       # oid[0] ::= 0, 1, 2
@@ -216,6 +216,11 @@ describe Krypt::ASN1::ObjectId do
         it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check value
       end
 
+      context 'starts with .' do
+        let(:value) { '.0.8571.2' }
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check value
+      end
+
       context 'illegal first octet (must be 0..2)' do
         let(:value) { '3.0.8571.2' }
         it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check value
@@ -224,6 +229,11 @@ describe Krypt::ASN1::ObjectId do
       context 'illegal second octet (must be 0..39)' do
         let(:value) { '1.40.8571.2' }
         it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check value
+      end
+
+      context 'rejects sub identifiers in the bignum range' do
+        let(:value) { "1.2." + "3" * 1000 + "4.5" }
+        it { -> { subject }.should raise_error asn1error }
       end
     end
 

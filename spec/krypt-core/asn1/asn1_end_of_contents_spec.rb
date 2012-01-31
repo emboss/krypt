@@ -122,5 +122,10 @@ describe Krypt::ASN1::EndOfContents do
       its(:tag) { should == Krypt::ASN1::END_OF_CONTENTS }
       its(:value) { should == nil }
     end
+
+    context 'rejects values with a lenght > 0' do
+      let(:der) { "\x00\x01\x00" }
+      it { -> { subject.value }.should raise_error asn1error }
+    end
   end
 end

@@ -421,6 +421,20 @@ describe Krypt::ASN1::Integer do
         its(:value) { should == 2**62-1 }
       end
 
+      context 'positive Bignum' do
+        let(:der) { "\x02\x82\x06\x08\x02" + "\x00" * 1543 }
+        its(:class) { should == klass }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
+        its(:value) { should == 2**12345 }
+      end
+
+      context 'negative Bignum' do
+        let(:der) { "\x02\x82\x06\x08\xFE" + "\x00" * 1543 }
+        its(:class) { should == klass }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
+        its(:value) { should == -(2**12345) }
+      end
+
       context 'rejects zero length value' do
         let(:der) { "\x02\x00" }
         it { -> { subject.value }.should raise_error asn1error }
