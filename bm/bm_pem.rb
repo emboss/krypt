@@ -58,6 +58,12 @@ Benchmark.bm do |bm|
     end
   end
 
+  bm.report("Krypt::PEM.decode only") do
+    n.times do
+      der = Krypt::PEM.decode(pem)
+    end
+  end
+
   bm.report("Krypt::PEM.decode, then ASN1") do
     n.times do
       der = Krypt::PEM.decode(pem)
