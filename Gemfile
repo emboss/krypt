@@ -6,6 +6,7 @@ gem 'krypt-core-jruby', :platforms => :jruby, :path => File.expand_path('../kryp
 group :development do
   gem 'rake'
   gem 'rspec'
+  gem 'jruby-openssl', :platforms => :jruby
 end
 
 group :test do
