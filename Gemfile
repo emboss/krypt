@@ -1,7 +1,7 @@
 source :rubygems
 
-gem 'krypt-core',       :platforms => :ruby,  :path => File.expand_path('../krypt-core', File.dirname(__FILE__))
-gem 'krypt-core-jruby', :platforms => :jruby, :path => File.expand_path('../krypt-core-jruby', File.dirname(__FILE__))
+gem 'krypt-core',       :platforms => :ruby,  :git => "git://github.com/emboss/krypt-core.git"
+gem 'krypt-core-jruby', :platforms => :jruby, :git => "git://github.com/emboss/krypt-core-jruby.git"
 
 group :development do
   gem 'rake'
