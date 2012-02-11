@@ -1,3 +1,5 @@
+#use this by running bundle install --gemfile=Gemfile.dev
+
 source :rubygems
 
 gem 'krypt-core',       :platforms => :ruby,  :path => File.expand_path('../krypt-core', File.dirname(__FILE__))
