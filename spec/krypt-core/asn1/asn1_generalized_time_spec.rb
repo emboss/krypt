@@ -218,7 +218,7 @@ describe Krypt::ASN1::GeneralizedTime do
 
       context '(empty)' do
         let(:value) { '' }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check value
       end
 
       context 'Bignum' do
@@ -228,12 +228,12 @@ describe Krypt::ASN1::GeneralizedTime do
 
       context 'negative Integer' do
         let(:value) { -1 }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check value
       end
 
       context 'String that Integer(str) barks' do
         let(:value) { "ABC" }
-        it { -> { subject }.should raise_error ArgumentError } # TODO: ossl does not check value
+        it { -> { subject }.should raise_error asn1error } # TODO: ossl does not check value
       end
     end
 
