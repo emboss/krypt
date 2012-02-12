@@ -25,7 +25,7 @@ class Runner
       exit(true)
     else
       echo_failure "The build has failed."
-      echo_failure "Failed tasks: #{failed.join(', ')}"
+      echo_failure "Failed tasks: #{failed.keys.join(', ')}"
       exit(false)
     end
   end
