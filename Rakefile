@@ -19,7 +19,8 @@ Rake::TestTask.new('test') do |test|
 end
 
 RSpec::Core::RakeTask.new(:spec) do |spec|
-  spec.ruby_opts = ['--1.9'] if java? 
+  spec.ruby_opts = ['--1.9'] if java?
+  spec.rspec_opts = ['--trace']
   spec.fail_on_error = true
 end
 
