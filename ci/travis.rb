@@ -10,9 +10,9 @@ class Runner
     header "Krypt CI started."
     puts "Ruby version:"
     system "ruby -v"
-    cmd = "bundle exec rake "
     @tasks.each do |t|
-      @results[t] = system(cmd + t.to_s)
+      cmd = "bundle exec rake #{t.to_s} 2>&1"
+      @results[t] = system(cmd)
     end
   end
 
