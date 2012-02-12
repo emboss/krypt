@@ -11,7 +11,7 @@ class Runner
     puts "Ruby version:"
     system "ruby -v"
     @tasks.each do |t|
-      cmd = "bundle exec rake #{t.to_s} 2>&1"
+      cmd = "bundle exec rake #{t.to_s} --trace"
       @results[t] = system(cmd)
     end
   end
