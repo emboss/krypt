@@ -1,5 +1,7 @@
 == krypt
 
+{<img src="https://secure.travis-ci.org/emboss/krypt.png" />}[http://travis-ci.org/emboss/krypt]
+
 The goal of krypt is to provide a platform- and
 library-independent cryptography API for the Ruby
 language (http://www.ruby-lang.org). It can be used
