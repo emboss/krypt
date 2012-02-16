@@ -140,7 +140,7 @@ describe Krypt::ASN1 do
   end
 
   describe "#decode_der" do
-    subject { decoder.decode(value) }
+    subject { decoder.decode_der(value) }
 
     context "accepts regular DER-encoded values" do
       let(:value) { "\x02\x01\x01" }
@@ -153,7 +153,7 @@ describe Krypt::ASN1 do
     context "accepts IO" do
       subject do
         begin
-          decoder.decode(io)
+          decoder.decode_der(io)
         ensure
           io.close
         end
@@ -209,7 +209,7 @@ describe Krypt::ASN1 do
   end
 
   describe "#decode_pem" do
-    subject { decoder.decode(value) }
+    subject { decoder.decode_pem(value) }
 
     context "accepts regular PEM-encoded values" do
       let(:value) { create_pem_b64(Base64.encode64("\x02\x01\x01"), "INTEGER") }
@@ -222,7 +222,7 @@ describe Krypt::ASN1 do
     context "accepts IO" do
       subject do
         begin
-          decoder.decode(io)
+          decoder.decode_pem(io)
         ensure
           io.close
         end
