@@ -1,6 +1,8 @@
 source :rubygems
 
-gem 'krypt-core',       :platforms => :ruby,  :git => "git://github.com/emboss/krypt-core.git"
+gem 'krypt-provider-openssl', :platforms => :ruby,  :git => "git://github.com/emboss/krypt-provider-openssl.git"
+gem 'krypt-core',             :platforms => :ruby,  :git => "git://github.com/emboss/krypt-core.git"
+
 gem 'krypt-core-jruby', :platforms => :jruby, :git => "git://github.com/emboss/krypt-core-jruby.git"
 
 group :development do
