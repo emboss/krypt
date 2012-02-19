@@ -566,7 +566,7 @@ describe Krypt::ASN1::ASN1Data do
       let(:tag) { "\x80" }
       let(:length) { "\x80" }
       let(:value) { "\x01\x01\xFF\x00\x00" }
-      it { -> { subject }.should raise_error Krypt::ASN1::ParseError }
+      it { -> { subject }.should raise_error asn1error }
     end
 
     context 'rejects UNIVERSAL tags > 30' do
@@ -580,14 +580,14 @@ describe Krypt::ASN1::ASN1Data do
       let(:tag) { "\x02" }
       let(:length) { "\x02" }
       let(:value) { "\x00" }
-      it { -> { subject }.should raise_error Krypt::ASN1::ParseError }
+      it { -> { subject }.should raise_error asn1error }
     end
 
     context 'raises ParseError if header ends prematurely' do
       let(:tag) { "" }
       let(:length) { "" }
       let(:value) { "" }
-      it { -> { subject }.should raise_error Krypt::ASN1::ParseError }
+      it { -> { subject }.should raise_error asn1error }
     end
 
     it 'decodes arbitrary objects that respond to #to_der' do
