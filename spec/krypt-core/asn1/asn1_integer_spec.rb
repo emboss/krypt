@@ -400,6 +400,20 @@ describe Krypt::ASN1::Integer do
         its(:value) { should == 128 }
       end
 
+      context 256 do
+        let(:der) { "\x02\x02\x01\x00" }
+        its(:class) { should == klass }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
+        its(:value) { should == 256 }
+      end
+
+      context -256 do
+        let(:der) { "\x02\x02\xFF\x00" }
+        its(:class) { should == klass }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
+        its(:value) { should == -256 }
+      end
+
       context -27066 do
         let(:der) { "\x02\x02\x96\x46" }
         its(:class) { should == klass }
@@ -433,6 +447,34 @@ describe Krypt::ASN1::Integer do
         its(:class) { should == klass }
         its(:tag) { should == Krypt::ASN1::INTEGER }
         its(:value) { should == -(2**12345) }
+      end
+
+      context 'positive Bignum 4722366482869645213696' do
+        let(:der) { "\x02\x0A\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00" }
+        its(:class) { should == klass }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
+        its(:value) { should == 4722366482869645213696 }
+      end
+
+      context 'negative Bignum -4722366482869645213696' do
+        let(:der) { "\x02\x0A\xFF\x00\x00\x00\x00\x00\x00\x00\x00\x00" }
+        its(:class) { should == klass }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
+        its(:value) { should == -4722366482869645213696 }
+      end
+
+      context 'positive Bignum 2361183241434822606593' do
+        let(:der) { "\x02\x09\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x01" }
+        its(:class) { should == klass }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
+        its(:value) { should == 2361183241434822606593 }
+      end
+
+      context 'negative Bignum -2361183241434822606593' do
+        let(:der) { "\x02\x09\x80\x00\x00\x00\x00\x00\x00\x00\xFF" }
+        its(:class) { should == klass }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
+        its(:value) { should == -(2361183241434822606593) }
       end
 
       context 'rejects zero length value' do
