@@ -21,16 +21,43 @@ the best features of other popular libraries and also
 offers new features that are not offered by others today.
 
 
-== krypt-core
+== krypt-core-c
 
 The C implementation of the krypt-core API to be used
 with all C-based Rubies. The repository can be found at
 
-https://github.com/emboss/krypt-core.
+https://github.com/emboss/krypt-core-c.
 
-== krypt-core-jruby
+== krypt-core-java
 
 Realizes the krypt-core API in Java to be used by Jruby 
 (http://www.jruby.org). The repository can be found at 
 
-https://github.com/emboss/krypt-core-jruby. 
+https://github.com/emboss/krypt-core-java.
+
+== krypt-core-ruby
+
+An all Ruby implementation of krypt-core. Access to
+the native krypt-provider libraries is realized via FFI.
+The repository can be found at
+
+https://github.com/emboss/krypt-core-ruby.
+
+== krypt-provider-openssl
+
+A realization of the krypt-provider API in C that
+utilizes OpenSSL (http://www.openssl.org). Can also be used
+by JRuby via krypt-core-ruby and FFI. The repository
+is at
+
+https://github.com/emboss/krypt-provider-openssl.
+
+== krypt-provider-jce
+
+Realization of the krypt-provider API in Java exclusively
+to be used by JRuby. The implementation is based on the
+Java Cryptography Extensions, the JDK built-in cryptography
+library. The repository is at
+
+https://github.com/emboss/krypt-provider-jce.
+
