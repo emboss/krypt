@@ -320,8 +320,13 @@ describe Krypt::ASN1::Header, "#value" do
   subject { Krypt::ASN1::Parser.new }
 
   it "caches the value of a header once it was read" do
-    header = subject.next Resources.certificate_io
-    header.value.should == header.value
+    io = Resources.certificate_io
+    begin
+      header = subject.next(io)
+      header.value.should == header.value
+    ensure
+      io.close
+    end
   end
 
   it "returns nil for missing values" do
@@ -329,6 +334,15 @@ describe Krypt::ASN1::Header, "#value" do
     eoc = %w{00 00}
     subject.next(Resources.bytes_to_io(null)).value.should be_nil
     subject.next(Resources.bytes_to_io(eoc)).value.should be_nil 
+  end
+
+  it "has Encoding::BINARY" do
+    io = Resources.certificate_io
+    begin
+      subject.next(io).value.encoding.should == Encoding::BINARY
+    ensure
+      io.close
+    end
   end
 
 end
@@ -462,6 +476,12 @@ describe Krypt::ASN1::Header, "#bytes" do
     complex = Resources.bytes_to_io( Array.new(raw) << ('a' * 1000))
     header = subject.next complex
     header.bytes.should == Resources.bytes(raw) 
+  end
+
+  it "has Encoding::BINARY" do
+    raw = %w{05 00}
+    io = Resources.bytes_to_io(raw)
+    subject.next(io).bytes.encoding.should == Encoding::BINARY
   end
 
 end
