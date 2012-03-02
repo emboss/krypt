@@ -338,7 +338,7 @@ describe Krypt::ASN1::ObjectId do
       context "raise IO error transparently" do
         let(:value) { '1.0.8571.2' }
         let(:io) { io_error_object }
-        it { -> { subject }.should raise_error } # TODO EOFError }
+        it { -> { subject }.should raise_error asn1error }
       end
     end
 
