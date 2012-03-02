@@ -469,176 +469,185 @@ describe Krypt::ASN1::ASN1Data do
     end
   end
 
-  describe "extracted from ASN1.decode" do
-    subject { decoder.decode("#{tag}#{length}#{value}") }
-
-    context "for all non-UNIVERSAL primitive values" do
-      let(:length) { "\x01" }
-      let(:value) { "\xFF" }
-      
-      context ":PRIVATE" do
-        let(:tag) { "\xC0" }
-        its(:tag) { should == 0 }
-        its(:tag_class) { should == :PRIVATE }
-        its(:value) { should == value }
-        it { subject.should be_an_instance_of klass }
-      end
-
-      context ":APPLICATION" do
-        let(:tag) { "\x40" }
-        its(:tag) { should == 0 }
-        its(:tag_class) { should == :APPLICATION }
-        its(:value) { should == value }
-        it { subject.should be_an_instance_of klass }
-      end
-
-      context ":CONTEXT_SPECIFIC" do
-        let(:tag) { "\x80" }
-        its(:tag) { should == 0 }
-        its(:tag_class) { should == :CONTEXT_SPECIFIC }
-        its(:value) { should == value }
-        it { subject.should be_an_instance_of klass }
-      end
-    end
-
-    context "ASN1Constructive is returned for all non-UNIVERSAL constructed values" do
-      context "implicitly 0-tagged sequence" do
-        let(:tag) { "\xA0" }
-        let(:length) { "\x03" }
-        let(:value) { "\x02\x01\x00" }
-        its(:tag) { should == 0 }
-        its(:tag_class) { should == :CONTEXT_SPECIFIC }
-        it "" do
-          subject.value.should respond_to :each
-          subject.value.size.should == 1
-          int = subject.value.first
-          int.tag.should == Krypt::ASN1::INTEGER
-          int.tag_class.should == :UNIVERSAL
-          int.value.should == 0
-          subject.should be_an_instance_of mod::Constructive
-        end
-      end
-      
-      context "explicitly 1-tagged integer" do
-        let(:tag) { "\xA1" }
-        let(:length) { "\x03" }
-        let(:value) { "\x02\x01\x00" }
-        its(:tag) { should == 1 }
-        its(:tag_class) { should == :CONTEXT_SPECIFIC }
-        it "" do
-          subject.should be_an_instance_of mod::Constructive
-          subject.value.should respond_to :each
-          subject.value.size.should == 1
-          int = subject.value.first
-          int.tag.should == Krypt::ASN1::INTEGER
-          int.tag_class.should == :UNIVERSAL
-          int.value.should == 0
-        end
-      end
-
-      context "infinite-length 0-tagged octet string" do
-        let(:tag) { "\xA0" }
-        let(:length) { "\x80" }
-        let(:value) { "\x04\x01\x00\x04\x01\x01\x00\x00" }
-        its(:tag) { should == 0 }
-        its(:tag_class) { should == :CONTEXT_SPECIFIC }
-        its(:infinite_length) { should == true }
-        it "" do
-          subject.should be_an_instance_of mod::Constructive
-          subject.value.should respond_to :each
-          subject.value.size.should == 3
-          oct1 = subject.value[0]
-          oct2 = subject.value[1]
-          eoc = subject.value[2]
-          [oct1, oct2].each do |oct|
-            oct.tag.should == Krypt::ASN1::OCTET_STRING
-            oct.tag_class.should == :UNIVERSAL
-          end
-          oct1.value.should == "\x00"
-          oct2.value.should == "\x01"
-          eoc.tag.should == Krypt::ASN1::END_OF_CONTENTS
-          eoc.value.should be_nil
-        end
-      end
-    end
-
-    context "rejects infinite length primitive values" do
-      let(:tag) { "\x80" }
-      let(:length) { "\x80" }
-      let(:value) { "\x01\x01\xFF\x00\x00" }
-      it { -> { subject }.should raise_error asn1error }
-    end
-
-    context "rejects UNIVERSAL tags > 30" do
-      let(:tag) { "\x1F\x42" }
-      let(:length) { "\x01" }
-      let(:value) { "\x00" }
-      it { -> { subject }.should raise_error asn1error }
-    end
+  describe "extracted from ASN1" do
+    subject { decoder.send(method, "#{tag}#{length}#{value}") }
     
-    context "raises ParseError if premature EOF is detected" do
-      let(:tag) { "\x02" }
-      let(:length) { "\x02" }
-      let(:value) { "\x00" }
-      it { -> { subject }.should raise_error asn1error }
-    end
+    [:decode, :decode_der].each do |m|
+      let(:method) { m }
 
-    context "raises ParseError if header ends prematurely" do
-      let(:tag) { "" }
-      let(:length) { "" }
-      let(:value) { "" }
-      it { -> { subject }.should raise_error asn1error }
-    end
-
-    it "decodes arbitrary objects that respond to #to_der" do
-      o = Object.new
-      def o.to_der
-        "\x02\x01\x01"
-      end
-      asn1 = decoder.decode(o)
-      asn1.tag.should == mod::INTEGER
-      asn1.value.should == 1
-    end
-
-    it "decodes files" do
-      io = Resources.certificate_io
-      begin
-        asn1 = decoder.decode(io)
-        asn1.tag.should == mod::SEQUENCE
-        asn1.to_der.should == Resources.certificate
-      ensure
-        io.close
-      end
-    end
-
-    context "handles 'unknown' tag number (13) as binary content" do
-      context "primitive" do
-        let(:tag) { "\x0D" }
+      context "for all non-UNIVERSAL primitive values" do
         let(:length) { "\x01" }
-        let(:value) { "\x01" }
-        its(:tag) { should == 13 }
-        its(:tag_class) { should == :UNIVERSAL }
-        its(:value) { should == "\x01" }
-      end
+        let(:value) { "\xFF" }
+        
+        context ":PRIVATE" do
+          let(:tag) { "\xC0" }
+          its(:tag) { should == 0 }
+          its(:tag_class) { should == :PRIVATE }
+          its(:value) { should == value }
+          it { subject.should be_an_instance_of klass }
+        end
 
-      context "constructive" do
-        let(:tag) { "\x2D" }
-        let(:length) { "\x03" }
-        let(:value) { "\x02\x01\x01" }
-        its(:tag) { should == 13 }
-        its(:tag_class) { should == :UNIVERSAL }
-        its(:value) { should be_an_instance_of Array }
-        it do
-          content = subject.value
-          content.size.should == 1
-          int = content[0]
-          int.tag.should == Krypt::ASN1::INTEGER
-          int.tag_class.should == :UNIVERSAL
-          int.value.should == 1
+        context ":APPLICATION" do
+          let(:tag) { "\x40" }
+          its(:tag) { should == 0 }
+          its(:tag_class) { should == :APPLICATION }
+          its(:value) { should == value }
+          it { subject.should be_an_instance_of klass }
+        end
+
+        context ":CONTEXT_SPECIFIC" do
+          let(:tag) { "\x80" }
+          its(:tag) { should == 0 }
+          its(:tag_class) { should == :CONTEXT_SPECIFIC }
+          its(:value) { should == value }
+          it { subject.should be_an_instance_of klass }
         end
       end
+
+      context "ASN1Constructive is returned for all non-UNIVERSAL constructed values" do
+        context "implicitly 0-tagged sequence" do
+          let(:tag) { "\xA0" }
+          let(:length) { "\x03" }
+          let(:value) { "\x02\x01\x00" }
+          its(:tag) { should == 0 }
+          its(:tag_class) { should == :CONTEXT_SPECIFIC }
+          it "" do
+            subject.value.should respond_to :each
+            subject.value.size.should == 1
+            int = subject.value.first
+            int.tag.should == Krypt::ASN1::INTEGER
+            int.tag_class.should == :UNIVERSAL
+            int.value.should == 0
+            subject.should be_an_instance_of mod::Constructive
+          end
+        end
+        
+        context "explicitly 1-tagged integer" do
+          let(:tag) { "\xA1" }
+          let(:length) { "\x03" }
+          let(:value) { "\x02\x01\x00" }
+          its(:tag) { should == 1 }
+          its(:tag_class) { should == :CONTEXT_SPECIFIC }
+          it "" do
+            subject.should be_an_instance_of mod::Constructive
+            subject.value.should respond_to :each
+            subject.value.size.should == 1
+            int = subject.value.first
+            int.tag.should == Krypt::ASN1::INTEGER
+            int.tag_class.should == :UNIVERSAL
+            int.value.should == 0
+          end
+        end
+
+        context "infinite-length 0-tagged octet string" do
+          let(:tag) { "\xA0" }
+          let(:length) { "\x80" }
+          let(:value) { "\x04\x01\x00\x04\x01\x01\x00\x00" }
+          its(:tag) { should == 0 }
+          its(:tag_class) { should == :CONTEXT_SPECIFIC }
+          its(:infinite_length) { should == true }
+          it "" do
+            subject.should be_an_instance_of mod::Constructive
+            subject.value.should respond_to :each
+            subject.value.size.should == 3
+            oct1 = subject.value[0]
+            oct2 = subject.value[1]
+            eoc = subject.value[2]
+            [oct1, oct2].each do |oct|
+              oct.tag.should == Krypt::ASN1::OCTET_STRING
+              oct.tag_class.should == :UNIVERSAL
+            end
+            oct1.value.should == "\x00"
+            oct2.value.should == "\x01"
+            eoc.tag.should == Krypt::ASN1::END_OF_CONTENTS
+            eoc.value.should be_nil
+          end
+        end
+      end
+
+      context "rejects infinite length primitive values" do
+        let(:tag) { "\x80" }
+        let(:length) { "\x80" }
+        let(:value) { "\x01\x01\xFF\x00\x00" }
+        it { -> { subject }.should raise_error asn1error }
+      end
+
+      context "rejects UNIVERSAL tags > 30" do
+        let(:tag) { "\x1F\x42" }
+        let(:length) { "\x01" }
+        let(:value) { "\x00" }
+        it { -> { subject }.should raise_error asn1error }
+      end
+      
+      context "raises ParseError if premature EOF is detected" do
+        let(:tag) { "\x02" }
+        let(:length) { "\x02" }
+        let(:value) { "\x00" }
+        it { -> { subject }.should raise_error asn1error }
+      end
+
+      context "raises ParseError if header ends prematurely" do
+        let(:tag) { "" }
+        let(:length) { "" }
+        let(:value) { "" }
+        it { -> { subject }.should raise_error asn1error }
+      end
+
+      it "decodes arbitrary objects that respond to #to_der" do
+        o = Object.new
+        def o.to_der
+          "\x02\x01\x01"
+        end
+        asn1 = decoder.decode(o)
+        asn1.tag.should == mod::INTEGER
+        asn1.value.should == 1
+      end
+
+      it "decodes files" do
+        io = Resources.certificate_io
+        begin
+          asn1 = decoder.decode(io)
+          asn1.tag.should == mod::SEQUENCE
+          asn1.to_der.should == Resources.certificate
+        ensure
+          io.close
+        end
+      end
+
+      context "handles 'unknown' tag number (13) as binary content" do
+        context "primitive" do
+          let(:tag) { "\x0D" }
+          let(:length) { "\x01" }
+          let(:value) { "\x01" }
+          its(:tag) { should == 13 }
+          its(:tag_class) { should == :UNIVERSAL }
+          its(:value) { should == "\x01" }
+        end
+
+        context "constructive" do
+          let(:tag) { "\x2D" }
+          let(:length) { "\x03" }
+          let(:value) { "\x02\x01\x01" }
+          its(:tag) { should == 13 }
+          its(:tag_class) { should == :UNIVERSAL }
+          its(:value) { should be_an_instance_of Array }
+          it do
+            content = subject.value
+            content.size.should == 1
+            int = content[0]
+            int.tag.should == Krypt::ASN1::INTEGER
+            int.tag_class.should == :UNIVERSAL
+            int.value.should == 1
+          end
+        end
+      end
+           
+      it "should parse indefinite length constructive" do
+        raw = "\x30\x80\x02\x01\x01\x80\x01\x02\x00\x00"
+        decoder.decode(raw).value.size.should == 3
+      end
     end
-    
+
     it "should handle IO as an IO" do
       io = StringIO.new(
         [
@@ -650,7 +659,7 @@ describe Krypt::ASN1::ASN1Data do
       decoder.decode_der(io).should be_an_instance_of Krypt::ASN1::Integer
     end
 
-    # TODO: Fails for JRuby - bug?
+    # ODO: Fails for JRuby - bug?
     it "should handle generic IOs as an IO" do
       stringio = StringIO.new(
         [
@@ -671,10 +680,44 @@ describe Krypt::ASN1::ASN1Data do
       decoder.decode_der(generic).should be_an_instance_of Krypt::ASN1::Null
       decoder.decode_der(generic).should be_an_instance_of Krypt::ASN1::Integer
     end unless RUBY_PLATFORM =~ /java/
+  end
 
-    it "should parse indefinite length constructive" do
-      raw = "\x30\x80\x02\x01\x01\x80\x01\x02\x00\x00"
-      decoder.decode(raw).value.size.should == 3
+  describe "extracted from ASN1.decode_pem" do
+    subject { decoder.decode_pem(value) }
+
+    context "PEM certificate" do
+      let(:value) { Resources.certificate_pem }
+      its(:to_der) { should == Resources.certificate }
+    end
+
+    context "rejects non PEM values" do
+      let(:value) { Resources.certificate }
+      it { -> { subject }.should raise_error asn1error }
+    end
+
+    it "decodes files" do
+      io = Resources.certificate_pem_io
+      begin
+        decoder.decode_pem(io).to_der.should == Resources.certificate
+      ensure
+        io.close
+      end
+    end
+
+    context "decodes StringIO" do
+      let(:value) { StringIO.new(Resources.certificate_pem) }
+      its(:to_der) { should == Resources.certificate }
+    end
+   
+    context "decodes arbitrary objects that respond to #to_pem" do
+      let(:value) do
+        o = Object.new
+        def o.to_pem
+          Resources.certificate_pem
+        end
+        o
+      end
+      its(:to_der) { should == Resources.certificate }
     end
   end
 end

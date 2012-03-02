@@ -25,6 +25,21 @@ Benchmark.bm do |bm|
       end
     end
     bm.report("OpenSSL::X509::Certificate String(n=#{n})") { n.times { OpenSSL::X509::Certificate.new(Resources.certificate) } }
+    bm.report("Krypt::ASN1.decode_der String(n=#{n})") { n.times { Krypt::ASN1.decode_der(cert) } }
+    bm.report("Krypt::ASN1.decode_der File IO(n=#{n})") do 
+      n.times do
+        io = Resources.certificate_io
+        Krypt::ASN1.decode_der(io)
+        io.close
+      end
+    end
+    bm.report("Krypt::ASN1.decode_der String from File IO(n=#{n})") do
+      n.times do
+        io = Resources.certificate_io
+        Krypt::ASN1.decode_der(io.read)
+        io.close
+      end
+    end
     puts
   end
 

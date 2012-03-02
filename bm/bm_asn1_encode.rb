@@ -1,0 +1,116 @@
+require 'krypt'
+require_relative 'resources'
+require 'stringio'
+require 'openssl'
+require 'benchmark'
+
+def ossl_content
+  [
+    OpenSSL::ASN1::Boolean.new(true),
+    OpenSSL::ASN1::Integer.new(65536),
+    OpenSSL::ASN1::Integer.new(1234567890123456789012345678901234567890),
+    OpenSSL::ASN1::BitString.new("abcdefghijklmnopqrstuvwxyz"),
+    OpenSSL::ASN1::OctetString.new("abcdefghijklmnopqrstuvwxyz"),
+    OpenSSL::ASN1::Null.new(nil),
+    OpenSSL::ASN1::ObjectId.new("1.30.87654321.987654321.23" + ".23" * 50),
+    OpenSSL::ASN1::Integer.new(65536),
+    OpenSSL::ASN1::Integer.new(1234567890123456789012345678901234567890),
+    OpenSSL::ASN1::UTF8String.new("abcdefghijklmnopqrstuvwxyz"),
+    OpenSSL::ASN1::UTCTime.new(Time.now),
+    OpenSSL::ASN1::UTCTime.new(Time.now),
+    OpenSSL::ASN1::UTCTime.new(Time.now),
+    OpenSSL::ASN1::UTCTime.new(Time.now),
+    OpenSSL::ASN1::OctetString.new("abcdefghijklmnopqrstuvwxyz"),
+    OpenSSL::ASN1::OctetString.new("abcdefghijklmnopqrstuvwxyz"),
+    OpenSSL::ASN1::OctetString.new("abcdefghijklmnopqrstuvwxyz"),
+    OpenSSL::ASN1::OctetString.new("abcdefghijklmnopqrstuvwxyz"),
+    OpenSSL::ASN1::OctetString.new("abcdefghijklmnopqrstuvwxyz"),
+    OpenSSL::ASN1::OctetString.new("abcdefghijklmnopqrstuvwxyz"),
+    OpenSSL::ASN1::OctetString.new("abcdefghijklmnopqrstuvwxyz"),
+    OpenSSL::ASN1::OctetString.new("abcdefghijklmnopqrstuvwxyz"),
+    OpenSSL::ASN1::OctetString.new("abcdefghijklmnopqrstuvwxyz"),
+    OpenSSL::ASN1::OctetString.new("abcdefghijklmnopqrstuvwxyz")
+  ]
+end
+
+def krypt_content
+  [
+    Krypt::ASN1::Boolean.new(true),
+    Krypt::ASN1::Integer.new(65536),
+    Krypt::ASN1::Integer.new(1234567890123456789012345678901234567890),
+    Krypt::ASN1::BitString.new("abcdefghijklmnopqrstuvwxyz"),
+    Krypt::ASN1::OctetString.new("abcdefghijklmnopqrstuvwxyz"),
+    Krypt::ASN1::Null.new,
+    Krypt::ASN1::ObjectId.new("1.30.87654321.987654321.23" + ".23" * 50),
+    Krypt::ASN1::Integer.new(65536),
+    Krypt::ASN1::Integer.new(1234567890123456789012345678901234567890),
+    Krypt::ASN1::UTF8String.new("abcdefghijklmnopqrstuvwxyz"),
+    Krypt::ASN1::UTCTime.new(Time.now),
+    Krypt::ASN1::UTCTime.new(Time.now),
+    Krypt::ASN1::GeneralizedTime.new(Time.now),
+    Krypt::ASN1::GeneralizedTime.new(Time.now),
+    Krypt::ASN1::NumericString.new("abcdefghijklmnopqrstuvwxyz"),
+    Krypt::ASN1::PrintableString.new("abcdefghijklmnopqrstuvwxyz"),
+    Krypt::ASN1::T61String.new("abcdefghijklmnopqrstuvwxyz"),
+    Krypt::ASN1::VideotexString.new("abcdefghijklmnopqrstuvwxyz"),
+    Krypt::ASN1::IA5String.new("abcdefghijklmnopqrstuvwxyz"),
+    Krypt::ASN1::GraphicString.new("abcdefghijklmnopqrstuvwxyz"),
+    Krypt::ASN1::ISO64String.new("abcdefghijklmnopqrstuvwxyz"),
+    Krypt::ASN1::GeneralString.new("abcdefghijklmnopqrstuvwxyz"),
+    Krypt::ASN1::UniversalString.new("abcdefghijklmnopqrstuvwxyz"),
+    Krypt::ASN1::BMPString.new("abcdefghijklmnopqrstuvwxyz")
+  ]
+end
+
+Benchmark.bm do |bm|
+
+  devnull = File.open("/dev/null", "wb")
+
+  krypt_cert = Krypt::ASN1.decode_der(Resources.certificate)
+  ossl_cert = OpenSSL::ASN1.decode(Resources.certificate)
+  ossl_x509 = OpenSSL::X509::Certificate.new(Resources.certificate)
+  n = 100_000
+ 
+  bm.report("Krypt encode parsed certificate(n=#{n})") { n.times { krypt_cert.to_der } }
+  bm.report("OpenSSL encode parsed certificate(n=#{n})") { n.times { ossl_cert.to_der } }
+  bm.report("X509 encode parsed certificate(n=#{n})") { n.times { ossl_x509.to_der } } 
+  
+  krypt_seq = Krypt::ASN1::Sequence.new(krypt_content)
+  krypt_set = Krypt::ASN1::Set.new(krypt_content)
+  krypt_asn1 = Krypt::ASN1::Sequence.new([krypt_seq, krypt_set])
+
+  ossl_seq = OpenSSL::ASN1::Sequence.new(ossl_content)
+  ossl_set = OpenSSL::ASN1::Set.new(ossl_content)
+  ossl_asn1 = OpenSSL::ASN1::Sequence.new([ossl_seq, ossl_set])
+
+  bm.report("Krypt encode generated once(n=#{n})") { n.times { krypt_asn1.to_der } }
+  bm.report("OpenSSL encode generated once(n=#{n})") { n.times { ossl_asn1.to_der } }
+  
+  bm.report("Krypt encode generated n times(n=#{n})") do
+    n.times do
+      krypt_seq = Krypt::ASN1::Sequence.new(krypt_content)
+      krypt_set = Krypt::ASN1::Set.new(krypt_content)
+      Krypt::ASN1::Sequence.new([krypt_seq, krypt_set]).to_der
+    end
+  end
+
+  bm.report("OpenSSL encode generated n times(n=#{n})") do
+    n.times do
+      ossl_seq = OpenSSL::ASN1::Sequence.new(ossl_content)
+      ossl_set = OpenSSL::ASN1::Set.new(ossl_content)
+      OpenSSL::ASN1::Sequence.new([ossl_seq, ossl_set]).to_der
+    end
+  end
+
+  bm.report("Krypt encode parsed certificate to file(n=#{n})") { n.times { krypt_cert.encode_to(devnull) } }
+  bm.report("Krypt encode generated once to file(n=#{n})") { n.times { krypt_asn1.encode_to(devnull) } }
+  bm.report("Krypt encode generated n times to file(n=#{n})") do
+    n.times do
+      krypt_seq = Krypt::ASN1::Sequence.new(krypt_content)
+      krypt_set = Krypt::ASN1::Set.new(krypt_content)
+      Krypt::ASN1::Sequence.new([krypt_seq, krypt_set]).encode_to(devnull)
+    end
+  end
+
+end
+
