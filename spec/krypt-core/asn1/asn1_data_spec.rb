@@ -348,6 +348,143 @@ describe Krypt::ASN1::ASN1Data do
       end
     end
 
+    context "encodes infinite length constructed values" do
+      subject do
+        asn1 = klass.new(value, tag, tag_class)
+        asn1.infinite_length = true
+        asn1.to_der
+      end
+
+      context "UNIVERSAL primitive with explicit EOC" do
+        let(:value) { [
+          mod::OctetString.new("\x01"), 
+          mod::OctetString.new("\x02"), 
+          mod::EndOfContents.new
+        ] }
+        let(:tag) { Krypt::ASN1::OCTET_STRING }
+        let(:tag_class) { :UNIVERSAL }
+        it { subject.should == "\x24\x80\x04\x01\x01\x04\x01\x02\x00\x00" }
+      end
+
+      context "UNIVERSAL primitive without explicit EOC" do
+        let(:value) { [
+          mod::OctetString.new("\x01"), 
+          mod::OctetString.new("\x02"), 
+        ] }
+        let(:tag) { Krypt::ASN1::OCTET_STRING }
+        let(:tag_class) { :UNIVERSAL }
+        it { subject.should == "\x24\x80\x04\x01\x01\x04\x01\x02\x00\x00" }
+      end
+
+      context "UNIVERSAL constructed with explicit EOC" do
+        let(:value) { [
+          mod::Integer.new(1), 
+          mod::Boolean.new(true), 
+          mod::EndOfContents.new
+        ] }
+        let(:tag) { Krypt::ASN1::SEQUENCE }
+        let(:tag_class) { :UNIVERSAL }
+        it { subject.should == "\x30\x80\x02\x01\x01\x01\x01\xFF\x00\x00" }
+      end
+
+      context "UNIVERSAL constructed without explicit EOC" do
+        let(:value) { [
+          mod::Integer.new(1), 
+          mod::Boolean.new(true), 
+        ] }
+        let(:tag) { Krypt::ASN1::SEQUENCE }
+        let(:tag_class) { :UNIVERSAL }
+        it { subject.should == "\x30\x80\x02\x01\x01\x01\x01\xFF\x00\x00" }
+      end
+
+      context "implicitly 0-tagged constructed with explicit EOC" do
+        let(:value) { [
+          mod::Integer.new(1), 
+          mod::Boolean.new(true), 
+          mod::EndOfContents.new
+        ] }
+        let(:tag) { 0 }
+        let(:tag_class) { :CONTEXT_SPECIFIC }
+        it { subject.should == "\xA0\x80\x02\x01\x01\x01\x01\xFF\x00\x00" }
+      end
+
+      context "implicitly 0-tagged constructed without explicit EOC" do
+        let(:value) { [
+          mod::Integer.new(1), 
+          mod::Boolean.new(true), 
+          mod::EndOfContents.new
+        ] }
+        let(:tag) { 0 }
+        let(:tag_class) { :CONTEXT_SPECIFIC }
+        it { subject.should == "\xA0\x80\x02\x01\x01\x01\x01\xFF\x00\x00" }
+      end
+
+      context "nested with explicit EOC" do
+        let(:value) do
+          inner = mod::OctetString.new([
+            mod::OctetString.new("\x01"),
+            mod::OctetString.new("\x02"),
+            mod::EndOfContents.new
+          ])
+          inner.infinite_length = true
+          [
+            inner,
+            mod::Integer.new(1),
+            mod::EndOfContents.new
+          ]
+        end
+        let(:tag) { mod::SEQUENCE }
+        let(:tag_class) { :UNIVERSAL }
+        it { subject.should == "\x30\x80\x24\x80\x04\x01\x01\x04\x01\x02\x00\x00\x02\x01\x01\x00\x00" }
+      end
+
+      context "nested without explicit EOC" do
+        let(:value) do
+          inner = mod::OctetString.new([
+            mod::OctetString.new("\x01"),
+            mod::OctetString.new("\x02"),
+          ])
+          inner.infinite_length = true
+          [
+            inner,
+            mod::Integer.new(1),
+          ]
+        end
+        let(:tag) { mod::SEQUENCE }
+        let(:tag_class) { :UNIVERSAL }
+        it { subject.should == "\x30\x80\x24\x80\x04\x01\x01\x04\x01\x02\x00\x00\x02\x01\x01\x00\x00" }
+      end
+
+      context "enumerable with explicit EOC" do
+        let(:value) do
+          o = Object.new
+          def o.each
+            yield Krypt::ASN1::OctetString.new("\x01")
+            yield Krypt::ASN1::OctetString.new("\x02")
+            yield Krypt::ASN1::EndOfContents.new
+          end
+          o
+        end
+        let(:tag) { mod::SEQUENCE }
+        let(:tag_class) { :UNIVERSAL }
+        it { subject.should == "\x30\x80\x04\x01\x01\x04\x01\x02\x00\x00" }
+      end
+
+      context "enumerable without explicit EOC" do
+        let(:value) do
+          o = Object.new
+          def o.each
+            yield Krypt::ASN1::OctetString.new("\x01")
+            yield Krypt::ASN1::OctetString.new("\x02")
+          end
+          o
+        end
+        let(:tag) { mod::SEQUENCE }
+        let(:tag_class) { :UNIVERSAL }
+        it { subject.should == "\x30\x80\x04\x01\x01\x04\x01\x02\x00\x00" }
+      end
+    end
+
     context "all STRING classes except BIT STRING and UTF8 STRING behave like OCTET STRING" do
       subject { decoder.decode(klazz.new("test").to_der).value == "test" }
 

@@ -333,6 +333,31 @@ describe Krypt::ASN1::Sequence do
         it { should == "\x70\x11\x04\x05hello\x02\x01\x2A\x04\x05world" }
       end
     end
+
+    context "encodes infinite length values" do
+      subject do
+        asn1 = klass.new(value)
+        asn1.infinite_length = true
+        asn1.to_der
+      end
+
+      context "with explicit EOC" do
+        let(:value) { [
+          mod::Integer.new(1), 
+          mod::Boolean.new(true), 
+          mod::EndOfContents.new
+        ] }
+        it { subject.should == "\x30\x80\x02\x01\x01\x01\x01\xFF\x00\x00" }
+      end
+
+      context "without explicit EOC" do
+        let(:value) { [
+          mod::Integer.new(1), 
+          mod::Boolean.new(true), 
+        ] }
+        it { subject.should == "\x30\x80\x02\x01\x01\x01\x01\xFF\x00\x00" }
+      end
+    end
   end
 
   describe '#encode_to' do

@@ -264,6 +264,31 @@ describe Krypt::ASN1::OctetString do
         it { should == "\x44\x0Chello,world!" }
       end
     end
+
+    context "encodes infinite length constructed values" do
+      subject do
+        asn1 = klass.new(value)
+        asn1.infinite_length = true
+        asn1.to_der
+      end
+
+      context "UNIVERSAL primitive with explicit EOC" do
+        let(:value) { [
+          mod::OctetString.new("\x01"), 
+          mod::OctetString.new("\x02"), 
+          mod::EndOfContents.new
+        ] }
+        it { subject.should == "\x24\x80\x04\x01\x01\x04\x01\x02\x00\x00" }
+      end
+
+      context "UNIVERSAL primitive without explicit EOC" do
+        let(:value) { [
+          mod::OctetString.new("\x01"), 
+          mod::OctetString.new("\x02"), 
+        ] }
+        it { subject.should == "\x24\x80\x04\x01\x01\x04\x01\x02\x00\x00" }
+      end
+    end
   end
 
   describe '#encode_to' do
