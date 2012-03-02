@@ -682,23 +682,57 @@ describe Krypt::ASN1::ASN1Data do
           let(:value) { "\x04\x01\x00\x04\x01\x01\x00\x00" }
           its(:tag) { should == 0 }
           its(:tag_class) { should == :CONTEXT_SPECIFIC }
-          its(:infinite_length) { should == true }
-          it "" do
+          its(:infinite_length) { should be_true }
+          it do
             subject.should be_an_instance_of mod::Constructive
             subject.value.should respond_to :each
-            subject.value.size.should == 3
+            subject.value.size.should == 2
             oct1 = subject.value[0]
             oct2 = subject.value[1]
-            eoc = subject.value[2]
             [oct1, oct2].each do |oct|
               oct.tag.should == Krypt::ASN1::OCTET_STRING
               oct.tag_class.should == :UNIVERSAL
             end
             oct1.value.should == "\x00"
             oct2.value.should == "\x01"
-            eoc.tag.should == Krypt::ASN1::END_OF_CONTENTS
-            eoc.value.should be_nil
           end
+        end
+      end
+
+      context "drops the EOC when parsing" do
+        context"and encoding again" do
+          let(:tag) { "\x30" }
+          let(:length) { "\x80" }
+          let(:value) { "\x02\x01\x01\x00\x00" }
+          its(:tag) { should == Krypt::ASN1::SEQUENCE }
+          its(:tag_class) { should == :UNIVERSAL }
+          its(:infinite_length) { should be_true }
+          its(:to_der) { should == "\x30\x80\x02\x01\x01\x00\x00" }
+        end
+
+        context"and inspecting the values" do
+          let(:tag) { "\x30" }
+          let(:length) { "\x80" }
+          let(:value) { "\x02\x01\x01\x00\x00" }
+          its(:tag) { should == Krypt::ASN1::SEQUENCE }
+          its(:tag_class) { should == :UNIVERSAL }
+          its(:infinite_length) { should be_true }
+          it do
+            subject.value.should respond_to :each
+            subject.value.size.should == 1
+            int = subject.value[0]
+            int.tag.should == Krypt::ASN1::INTEGER
+            int.tag_class.should == :UNIVERSAL
+            int.infinite_length.should be_false
+            subject.to_der.should == "\x30\x80\x02\x01\x01\x00\x00"
+          end
+        end
+
+        context "rejects an encoding without EOC" do
+          let(:tag) { "\x30" }
+          let(:length) { "\x80" }
+          let(:value) { "\x02\x01\x01" }
+          it { ->  { subject.value }.should raise_error asn1error }
         end
       end
 
@@ -781,7 +815,9 @@ describe Krypt::ASN1::ASN1Data do
            
       it "should parse indefinite length constructive" do
         raw = "\x30\x80\x02\x01\x01\x80\x01\x02\x00\x00"
-        decoder.decode(raw).value.size.should == 3
+        asn1 = decoder.decode(raw)
+        asn1.value.size.should == 2
+        asn1.value.any? { |o| o.instance_of? Krypt::ASN1::EndOfContents }.should be_false
       end
     end
 

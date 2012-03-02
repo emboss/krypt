@@ -390,18 +390,16 @@ describe Krypt::ASN1::OctetString do
       it '' do
         subject.should be_an_instance_of mod::OctetString
         subject.value.should respond_to :each
-        subject.value.size.should == 3
+        subject.value.size.should == 2
         oct1 = subject.value[0]
         oct2 = subject.value[1]
-        eoc = subject.value[2]
         [oct1, oct2].each do |oct|
           oct.tag.should == Krypt::ASN1::OCTET_STRING
           oct.tag_class.should == :UNIVERSAL
         end
         oct1.value.should == "\x00"
         oct2.value.should == "\x01"
-        eoc.tag.should == Krypt::ASN1::END_OF_CONTENTS
-        eoc.value.should be_nil
+        subject.to_der.should == der
       end
     end
   end

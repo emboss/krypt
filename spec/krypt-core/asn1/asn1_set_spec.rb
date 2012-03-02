@@ -473,9 +473,7 @@ describe Krypt::ASN1::Set do
         it 'contains decoded value' do
           value = subject.value
           value.size == 1000
-          value.each do |v|
-            v.value.should == 0
-          end
+          value.all? { |v| v.value == 0 }.should be_true
         end
       end
     end
@@ -511,8 +509,9 @@ describe Krypt::ASN1::Set do
       context 'indefinite encoding' do
         let(:der) { "\x31\x80\x04\x05hello\x02\x01\x2A\x04\x05world\x00\x00" }
         its(:infinite_length) { should == true }
-        it "has EndOfContents at the last value" do
-          subject.value.last.should be_instance_of Krypt::ASN1::EndOfContents
+        it "drops EndOfContents as last value" do
+          subject.value.size.should == 3
+          subject.value.any? { |o| o.instance_of? Krypt::ASN1::EndOfContents }.should be_false
         end
       end
     end
