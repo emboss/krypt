@@ -87,6 +87,16 @@ describe Krypt::ASN1::Enumerated do
         let(:tag_class) { :PRIVATE }
         its(:tag_class) { should == tag_class }
       end
+
+      context 'accepts :IMPLICIT' do
+        let(:tag_class) { :IMPLICIT }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :EXPLICIT' do
+        let(:tag_class) { :EXPLICIT }
+        its(:tag_class) { should == tag_class }
+      end
     end
 
     context 'when the 2nd argument is given but 3rd argument is omitted' do
@@ -152,6 +162,16 @@ describe Krypt::ASN1::Enumerated do
 
       context 'accepts :PRIVATE' do
         let(:tag_class) { :PRIVATE }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :IMPLICIT' do
+        let(:tag_class) { :IMPLICIT }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :EXPLICIT' do
+        let(:tag_class) { :EXPLICIT }
         its(:tag_class) { should == tag_class }
       end
     end
@@ -252,6 +272,16 @@ describe Krypt::ASN1::Enumerated do
       context 'PRIVATE' do
         let(:tag_class) { :PRIVATE }
         it { should == "\xCA\x01\x48" }
+      end
+
+      context 'IMPLICIT' do
+        let(:tag_class) { :IMPLICIT }
+        it { should == "\x8A\x01\x48" }
+      end
+
+      context 'EXPLICIT' do
+        let(:tag_class) { :EXPLICIT }
+        it { should == "\xAA\x03\x0A\x01\x48" }
       end
 
       context nil do
@@ -403,6 +433,23 @@ describe Krypt::ASN1::Enumerated do
       context 'PRIVATE' do
         let(:der) { "\xCA\x02\x00\x80" }
         its(:tag_class) { should == :PRIVATE }
+      end
+
+      context "setting IMPLICIT will result in CONTEXT_SPECIFIC" do
+        let(:der) { "\x0A\x02\x00\x80" }
+        it do
+          subject.tag_class = :IMPLICIT
+          subject.to_der.should == "\x8A\x02\x00\x80"
+        end
+      end
+
+      context "setting EXPLICIT will reencode as CONTEXT_SPECIFIC" do
+        let(:der) { "\x0A\x02\x00\x80" }
+        it do
+          subject.tag_class = :EXPLICIT
+          subject.tag = 0
+          subject.to_der.should == "\xA0\x04\x0A\x02\x00\x80" 
+        end
       end
     end
   end

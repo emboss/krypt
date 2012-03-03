@@ -83,6 +83,16 @@ describe Krypt::ASN1::OctetString do
         let(:tag_class) { :PRIVATE }
         its(:tag_class) { should == tag_class }
       end
+
+      context 'accepts :IMPLICIT' do
+        let(:tag_class) { :IMPLICIT }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :EXPLICIT' do
+        let(:tag_class) { :EXPLICIT }
+        its(:tag_class) { should == tag_class }
+      end
     end
 
     context 'when the 2nd argument is given but 3rd argument is omitted' do
@@ -144,6 +154,16 @@ describe Krypt::ASN1::OctetString do
 
       context 'accepts :PRIVATE' do
         let(:tag_class) { :PRIVATE }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :IMPLICIT' do
+        let(:tag_class) { :IMPLICIT }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :EXPLICIT' do
+        let(:tag_class) { :EXPLICIT }
         its(:tag_class) { should == tag_class }
       end
     end
@@ -224,6 +244,16 @@ describe Krypt::ASN1::OctetString do
       context 'PRIVATE' do
         let(:tag_class) { :PRIVATE }
         it { should == "\xC4\x0Chello,world!" }
+      end
+
+      context 'IMPLICIT' do
+        let(:tag_class) { :IMPLICIT }
+        it { should == "\x84\x0Chello,world!" }
+      end
+
+      context 'EXPLICIT' do
+        let(:tag_class) { :EXPLICIT }
+        it { should == "\xA4\x0E\x04\x0Chello,world!" }
       end
 
       context nil do
@@ -380,6 +410,24 @@ describe Krypt::ASN1::OctetString do
         let(:der) { "\xC4\x0Chello,world!" }
         its(:tag_class) { should == :PRIVATE }
       end
+
+      context "setting IMPLICIT will result in CONTEXT_SPECIFIC" do
+        let(:der) { "\x04\x0Chello,world!" }
+        it do
+          subject.tag_class = :IMPLICIT
+          subject.to_der.should == "\x84\x0Chello,world!"
+        end
+      end
+
+      context "setting EXPLICIT will reencode as CONTEXT_SPECIFIC" do
+        let(:der) { "\x04\x0Chello,world!" }
+        it do
+          subject.tag_class = :EXPLICIT
+          subject.tag = 0
+          subject.to_der.should == "\xA0\x0E\x04\x0Chello,world!" 
+        end
+      end
+
     end
 
     context 'infinite-length encoded octet string' do

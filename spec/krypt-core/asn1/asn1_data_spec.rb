@@ -109,6 +109,16 @@ describe Krypt::ASN1::ASN1Data do
         its(:tag_class) { should == tag_class }
       end
 
+      context "accepts :IMPLICIT" do
+        let(:tag_class) { :IMPLICIT }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context "does not accept :EXPLICIT" do
+        let(:tag_class) { :EXPLICIT }
+        it { -> { subject }.should raise_error asn1error }
+      end
+
       context "does not accept unknown tag classes" do
         let(:tag_class) { :IMAGINARY }
         it { -> { subject }.should raise_error asn1error }
@@ -117,6 +127,48 @@ describe Krypt::ASN1::ASN1Data do
       context "does not accept non-Symbols as tag class" do
         let(:tag_class) { 7 }
         it { -> { subject }.should raise_error asn1error }
+      end
+    end
+
+    describe "rejects :EXPLICIT when set via accessor" do
+      it "primitive UNIVERSAL" do
+        asn1 = klass.new(42, Krypt::ASN1::INTEGER, :UNIVERSAL)
+        -> { asn1.tag_class = :EXPLICIT }.should raise_error asn1error
+      end
+
+      it "primitive CONTEXT_SPECIFIC" do
+        asn1 = klass.new("42", 0, :CONTEXT_SPECIFIC)
+        -> { asn1.tag_class = :EXPLICIT }.should raise_error asn1error
+      end
+
+      it "primitive APPLICATION" do
+        asn1 = klass.new("42", 0, :APPLICATION)
+        -> { asn1.tag_class = :EXPLICIT }.should raise_error asn1error
+      end
+
+      it "primitive PRIVATE" do
+        asn1 = klass.new("42", 0, :PRIVATE)
+        -> { asn1.tag_class = :EXPLICIT }.should raise_error asn1error
+      end
+
+      it "constructive UNIVERSAL" do
+        asn1 = klass.new([Krypt::ASN1::Null.new], Krypt::ASN1::SEQUENCE, :UNIVERSAL)
+        -> { asn1.tag_class = :EXPLICIT }.should raise_error asn1error
+      end
+
+      it "constructive CONTEXT_SPECIFIC" do
+        asn1 = klass.new([Krypt::ASN1::Null.new], Krypt::ASN1::SEQUENCE, :CONTEXT_SPECIFIC)
+        -> { asn1.tag_class = :EXPLICIT }.should raise_error asn1error
+      end
+
+      it "constructive APPLICATION" do
+        asn1 = klass.new([Krypt::ASN1::Null.new], Krypt::ASN1::SEQUENCE, :APPLICATION)
+        -> { asn1.tag_class = :EXPLICIT }.should raise_error asn1error
+      end
+
+      it "constructive PRIVATE" do
+        asn1 = klass.new([Krypt::ASN1::Null.new], Krypt::ASN1::SEQUENCE, :PRIVATE)
+        -> { asn1.tag_class = :EXPLICIT }.should raise_error asn1error
       end
     end
 
@@ -154,6 +206,32 @@ describe Krypt::ASN1::ASN1Data do
       end
     end
 
+    context "rejects :EXPLICIT" do
+      it { -> { klazz.new(42, 3, :EXPLICIT) }.should raise_error asn1error }
+
+      describe "when set via accessor" do
+        it "constructive UNIVERSAL" do
+          asn1 = klazz.new([Krypt::ASN1::Null.new], Krypt::ASN1::SEQUENCE, :UNIVERSAL)
+          -> { asn1.tag_class = :EXPLICIT }.should raise_error asn1error
+        end
+
+        it "constructive CONTEXT_SPECIFIC" do
+          asn1 = klazz.new([Krypt::ASN1::Null.new], Krypt::ASN1::SEQUENCE, :CONTEXT_SPECIFIC)
+          -> { asn1.tag_class = :EXPLICIT }.should raise_error asn1error
+        end
+
+        it "constructive APPLICATION" do
+          asn1 = klazz.new([Krypt::ASN1::Null.new], Krypt::ASN1::SEQUENCE, :APPLICATION)
+          -> { asn1.tag_class = :EXPLICIT }.should raise_error asn1error
+        end
+
+        it "constructive PRIVATE" do
+          asn1 = klazz.new([Krypt::ASN1::Null.new], Krypt::ASN1::SEQUENCE, :PRIVATE)
+          -> { asn1.tag_class = :EXPLICIT }.should raise_error asn1error
+        end
+      end
+    end
+
     context "raises ArgumentError for more or less arguments" do
       it { -> { klazz.new }.should raise_error ArgumentError }
       it { -> { klazz.new(5) }.should raise_error ArgumentError }
@@ -186,6 +264,32 @@ describe Krypt::ASN1::ASN1Data do
         its(:tag_class) { should == :UNIVERSAL }
         its(:value) { should == nil }
         its(:infinite_length) { should == false }
+      end
+    end
+
+    context "rejects :EXPLICIT" do
+      it { -> { klazz.new(42, 3, :EXPLICIT) }.should raise_error asn1error }
+    end
+
+    describe "rejects :EXPLICIT when set via accessor" do
+      it "primitive UNIVERSAL" do
+        asn1 = klazz.new(42, Krypt::ASN1::INTEGER, :UNIVERSAL)
+        -> { asn1.tag_class = :EXPLICIT }.should raise_error asn1error
+      end
+
+      it "primitive CONTEXT_SPECIFIC" do
+        asn1 = klazz.new("42", 0, :CONTEXT_SPECIFIC)
+        -> { asn1.tag_class = :EXPLICIT }.should raise_error asn1error
+      end
+
+      it "primitive APPLICATION" do
+        asn1 = klazz.new("42", 0, :APPLICATION)
+        -> { asn1.tag_class = :EXPLICIT }.should raise_error asn1error
+      end
+
+      it "primitive PRIVATE" do
+        asn1 = klazz.new("42", 0, :PRIVATE)
+        -> { asn1.tag_class = :EXPLICIT }.should raise_error asn1error
       end
     end
 
@@ -268,6 +372,21 @@ describe Krypt::ASN1::ASN1Data do
 
       context ":CONTEXT_SPECIFIC tag class" do
         let(:tag_class) { :CONTEXT_SPECIFIC }
+        let(:value) { "\xC0\xFF\xEE\xBA\xBE" }
+
+        context "tag < 30" do
+          let(:tag) { Krypt::ASN1::BOOLEAN }
+          it { should == "\x81\x05\xC0\xFF\xEE\xBA\xBE" }
+        end
+
+        context "tag > 30" do
+          let(:tag) { 42 }
+          it { should == "\x9F\x2A\x05\xC0\xFF\xEE\xBA\xBE" }
+        end
+      end
+
+      context ":IMPLICIT tag class" do
+        let(:tag_class) { :IMPLICIT }
         let(:value) { "\xC0\xFF\xEE\xBA\xBE" }
 
         context "tag < 30" do

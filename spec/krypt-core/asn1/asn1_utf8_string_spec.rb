@@ -93,6 +93,16 @@ describe Krypt::ASN1::UTF8String do
         let(:tag_class) { :PRIVATE }
         its(:tag_class) { should == tag_class }
       end
+
+      context 'accepts :IMPLICIT' do
+        let(:tag_class) { :IMPLICIT }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :EXPLICIT' do
+        let(:tag_class) { :EXPLICIT }
+        its(:tag_class) { should == tag_class }
+      end
     end
 
     context 'when the 2nd argument is given but 3rd argument is omitted' do
@@ -158,6 +168,16 @@ describe Krypt::ASN1::UTF8String do
 
       context 'accepts :PRIVATE' do
         let(:tag_class) { :PRIVATE }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :IMPLICIT' do
+        let(:tag_class) { :IMPLICIT }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :EXPLICIT' do
+        let(:tag_class) { :EXPLICIT }
         its(:tag_class) { should == tag_class }
       end
     end
@@ -230,6 +250,16 @@ describe Krypt::ASN1::UTF8String do
       context 'PRIVATE' do
         let(:tag_class) { :PRIVATE }
         it { should == _A("\xCC\x18" + value) }
+      end
+
+      context 'IMPLICIT' do
+        let(:tag_class) { :IMPLICIT }
+        it { should == _A("\x8C\x18" + value) }
+      end
+
+      context 'EXPLICIT' do
+        let(:tag_class) { :EXPLICIT }
+        it { should == _A("\xAC\x1A\x0C\x18" + value) }
       end
 
       context nil do
@@ -351,6 +381,24 @@ describe Krypt::ASN1::UTF8String do
         let(:der) { _A("\xCC\x18" + value) }
         its(:tag_class) { should == :PRIVATE }
       end
+
+      context "setting IMPLICIT will result in CONTEXT_SPECIFIC" do
+        let(:der) { _A("\x0C\x18" + value) }
+        it do
+          subject.tag_class = :IMPLICIT
+          subject.to_der.should == _A("\x8C\x18" + value)
+        end
+      end
+
+      context "setting EXPLICIT will reencode as CONTEXT_SPECIFIC" do
+        let(:der) { _A("\x0C\x18" + value) }
+        it do
+          subject.tag_class = :EXPLICIT
+          subject.tag = 0
+          subject.to_der.should == _A("\xA0\x1A\x0C\x18" + value) 
+        end
+      end
+
     end
   end
 end

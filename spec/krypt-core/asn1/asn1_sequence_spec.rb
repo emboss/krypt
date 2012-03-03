@@ -89,6 +89,16 @@ describe Krypt::ASN1::Sequence do
         let(:tag_class) { :PRIVATE }
         its(:tag_class) { should == tag_class }
       end
+
+      context 'accepts :IMPLICIT' do
+        let(:tag_class) { :IMPLICIT }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :EXPLICIT' do
+        let(:tag_class) { :EXPLICIT }
+        its(:tag_class) { should == tag_class }
+      end
     end
 
     context 'when the 2nd argument is given but 3rd argument is omitted' do
@@ -154,6 +164,16 @@ describe Krypt::ASN1::Sequence do
 
       context 'accepts :PRIVATE' do
         let(:tag_class) { :PRIVATE }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :IMPLICIT' do
+        let(:tag_class) { :IMPLICIT }
+        its(:tag_class) { should == tag_class }
+      end
+
+      context 'accepts :EXPLICIT' do
+        let(:tag_class) { :EXPLICIT }
         its(:tag_class) { should == tag_class }
       end
     end
@@ -278,6 +298,16 @@ describe Krypt::ASN1::Sequence do
       context 'PRIVATE' do
         let(:tag_class) { :PRIVATE }
         it { should == "\xF0\x06\x04\x00\x04\x00\x04\x00" }
+      end
+
+      context 'IMPLICIT' do
+        let(:tag_class) { :IMPLICIT }
+        it { should == "\xB0\x06\x04\x00\x04\x00\x04\x00" }
+      end
+
+      context 'EXPLICIT' do
+        let(:tag_class) { :EXPLICIT }
+        it { should == "\xB0\x08\x30\x06\x04\x00\x04\x00\x04\x00" }
       end
 
       context nil do
@@ -491,6 +521,23 @@ describe Krypt::ASN1::Sequence do
       context 'PRIVATE' do
         let(:der) { "\xF0\x11\x04\x05hello\x02\x01\x2A\x04\x05world" }
         its(:tag_class) { should == :PRIVATE }
+      end
+
+      context "setting IMPLICIT will result in CONTEXT_SPECIFIC" do
+        let(:der) { "\x30\x11\x04\x05hello\x02\x01\x2A\x04\x05world" }
+        it do
+          subject.tag_class = :IMPLICIT
+          subject.to_der.should == "\xB0\x11\x04\x05hello\x02\x01\x2A\x04\x05world"
+        end
+      end
+
+      context "setting EXPLICIT will reencode as CONTEXT_SPECIFIC" do
+        let(:der) { "\x30\x11\x04\x05hello\x02\x01\x2A\x04\x05world" }
+        it do
+          subject.tag_class = :EXPLICIT
+          subject.tag = 0
+          subject.to_der.should == "\xA0\x13\x30\x11\x04\x05hello\x02\x01\x2A\x04\x05world" 
+        end
       end
     end
 
