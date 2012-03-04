@@ -332,8 +332,8 @@ describe Krypt::ASN1::ASN1Data do
 
       context "SET" do
         let(:tag) { Krypt::ASN1::SET }
-        let(:value) { [Krypt::ASN1::Integer.new(1)] }
-        it { should == Krypt::ASN1::Set.new([Krypt::ASN1::Integer.new(1)]).to_der }
+        let(:value) { [Krypt::ASN1::Integer.new(1), Krypt::ASN1::Boolean.new(true)] }
+        it { should == Krypt::ASN1::Set.new([Krypt::ASN1::Integer.new(1), Krypt::ASN1::Boolean.new(true)]).to_der }
       end
     end
 

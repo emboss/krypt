@@ -245,6 +245,48 @@ describe Krypt::ASN1::Sequence do
         it { should == "\x30\x11\x04\x05hello\x02\x01\x2A\x04\x05world" }
       end
 
+      context "keeps the ordering of the value in the encoding" do
+        context "definite length Array" do
+          let(:value) { [i(1), s("a"), Krypt::ASN1::Boolean.new(true)] }
+          it { should == "\x30\x09\x02\x01\x01\x04\x01a\x01\x01\xFF" }
+        end
+
+        context "definite length Enumerable" do
+          let(:value) {
+            o = Object.new
+            def o.each
+              yield Krypt::ASN1::Integer.new(1)
+              yield Krypt::ASN1::OctetString.new("a")
+              yield Krypt::ASN1::Boolean.new(true)
+            end
+            o
+          }
+          it { should == "\x30\x09\x02\x01\x01\x04\x01a\x01\x01\xFF" }
+        end
+
+        context "infinite length" do
+          subject { o = klass.new(value); o.infinite_length = true; o.to_der }
+
+          context "infinite length Array" do
+            let(:value) { [i(1), s("a"), Krypt::ASN1::Boolean.new(true)] }
+            it { should == "\x30\x80\x02\x01\x01\x04\x01a\x01\x01\xFF\x00\x00" }
+          end
+
+          context "infinite length Enumerable" do
+            let(:value) {
+              o = Object.new
+              def o.each
+                yield Krypt::ASN1::Integer.new(1)
+                yield Krypt::ASN1::OctetString.new("a")
+                yield Krypt::ASN1::Boolean.new(true)
+              end
+              o
+            }
+            it { should == "\x30\x80\x02\x01\x01\x04\x01a\x01\x01\xFF\x00\x00" }
+          end
+        end
+      end
+
       context 'nil' do
         let(:value) { nil }
         it { -> { subject }.should raise_error asn1error }
@@ -556,5 +598,38 @@ describe Krypt::ASN1::Sequence do
         end
       end
     end
+
+    context "preserves the ordering present in the encoding" do
+      context "definite length" do
+        context "when immediately re-encoding" do
+          let(:der) { "\x30\x08\x05\x00\x04\x01a\x02\x01\x01" }
+          its(:to_der) { should == der }
+        end
+        
+        context "when changing one of the values" do
+          let(:der) { "\x30\x08\x05\x00\x04\x01a\x02\x01\x01" }
+          it do
+            subject.value[2].value = 5
+            subject.to_der.should == "\x30\x08\x05\x00\x04\x01a\x02\x01\x05"
+          end
+        end
+      end
+
+      context "infinite length" do
+        context "when immediately re-encoding" do
+          let(:der) { "\x30\x80\x05\x00\x04\x01a\x02\x01\x01\x00\x00" }
+          its(:to_der) { should == der }
+        end
+        
+        context "when changing one of the values" do
+          let(:der) { "\x30\x80\x05\x00\x04\x01a\x02\x01\x01\x00\x00" }
+          it do
+            subject.value[2].value = 5
+            subject.to_der.should == "\x30\x80\x05\x00\x04\x01a\x02\x01\x05\x00\x00"
+          end
+        end
+      end
+    end
   end
 end
+

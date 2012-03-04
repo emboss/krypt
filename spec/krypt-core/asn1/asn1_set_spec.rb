@@ -215,7 +215,7 @@ describe Krypt::ASN1::Set do
 
       context 'SET' do
         let(:value) { [s('hello'), i(42), s('world')] }
-        it { should == "\x31\x11\x04\x05hello\x02\x01\x2A\x04\x05world" }
+        it { should == "\x31\x11\x02\x01\x2A\x04\x05hello\x04\x05world" }
       end
 
       context 'SET OF OctetString' do
@@ -225,7 +225,7 @@ describe Krypt::ASN1::Set do
 
       context 'SET OF Integer' do
         let(:value) { [i(-1), i(0), i(1)] }
-        it { should == "\x31\x09\x02\x01\xFF\x02\x01\x00\x02\x01\x01" }
+        it { should == "\x31\x09\x02\x01\x00\x02\x01\x01\x02\x01\xFF" }
       end
 
       context '(empty)' do
@@ -238,9 +238,29 @@ describe Krypt::ASN1::Set do
         it { should == "\x31\x82\x0B\xB8" + "\x02\x01\x00" * 1000 }
       end
 
-      context 'responds to :each' do
+      context 'responds to :each and to sort' do
         let(:value) {
-          o = Object.new # TODO: Discuss -> BasicObject does not support rb_respond_to
+          o = Object.new
+          def o.each
+            yield Krypt::ASN1::OctetString.new('hello')
+            yield Krypt::ASN1::Integer.new(42)
+            yield Krypt::ASN1::OctetString.new('world')
+          end
+          def o.sort
+            [
+              Krypt::ASN1::OctetString.new('hello'),
+              Krypt::ASN1::Integer.new(42),
+              Krypt::ASN1::OctetString.new('world')
+            ].sort
+          end
+          o
+        }
+        it { should == "\x31\x11\x02\x01\x2A\x04\x05hello\x04\x05world" }
+      end
+
+      context 'responds to :each, but not sortable' do
+        let(:value) {
+          o = Object.new
           def o.each
             yield Krypt::ASN1::OctetString.new('hello')
             yield Krypt::ASN1::Integer.new(42)
@@ -248,7 +268,111 @@ describe Krypt::ASN1::Set do
           end
           o
         }
-        it { should == "\x31\x11\x04\x05hello\x02\x01\x2A\x04\x05world" }
+        it { should == "\x31\x11\x02\x01\x2A\x04\x05hello\x04\x05world" }
+      end
+
+      context "orders SET encoding by tag when creating the SET" do
+        context "definite length Array" do
+          let (:value) { [ 
+            Krypt::ASN1::Null.new,
+            Krypt::ASN1::Integer.new(1),
+            Krypt::ASN1::Boolean.new(true)
+          ] }
+          it { should == "\x31\x08\x01\x01\xFF\x02\x01\x01\x05\x00" }
+        end
+
+        context "definite length Enumerable" do
+          let(:value) {
+            o = Object.new
+            def o.each
+              yield Krypt::ASN1::Null.new
+              yield Krypt::ASN1::Integer.new(1)
+              yield Krypt::ASN1::Boolean.new(true)
+            end
+            o
+          }
+          it { should == "\x31\x08\x01\x01\xFF\x02\x01\x01\x05\x00" }
+        end
+
+        context "infinite length" do
+          subject { o = klass.new(value); o.infinite_length = true; o.to_der } 
+
+          context "infinite length Array" do
+            let (:value) { [ 
+              Krypt::ASN1::Null.new,
+              Krypt::ASN1::Integer.new(1),
+              Krypt::ASN1::Boolean.new(true)
+            ] }
+            it { should == "\x31\x80\x01\x01\xFF\x02\x01\x01\x05\x00\x00\x00" }
+          end
+
+          context "infinite length Enumerable" do
+            let(:value) {
+              o = Object.new
+              def o.each
+                yield Krypt::ASN1::Null.new
+                yield Krypt::ASN1::Integer.new(1)
+                yield Krypt::ASN1::Boolean.new(true)
+              end
+              o
+            }
+            it { should == "\x31\x80\x01\x01\xFF\x02\x01\x01\x05\x00\x00\x00" }
+          end
+        end
+      end
+
+      context "orders SET OF encoding in lexicographical order when creating the SET" do
+        context "definite length Array" do
+          let (:value) { [ 
+            Krypt::ASN1::OctetString.new("aaaaaa"),
+            Krypt::ASN1::OctetString.new("aaaab"),
+            Krypt::ASN1::OctetString.new("aaa"),
+            Krypt::ASN1::OctetString.new("b")
+          ] }
+          it { should == "\x31\x17\x04\x01b\x04\x03aaa\x04\x05aaaab\x04\x06aaaaaa" }
+        end
+
+        context "definite length Enumerable" do
+          let (:value) {
+            o = Object.new
+            def o.each
+              yield Krypt::ASN1::OctetString.new("aaaaaa")
+              yield Krypt::ASN1::OctetString.new("aaaab")
+              yield Krypt::ASN1::OctetString.new("aaa")
+              yield Krypt::ASN1::OctetString.new("b")
+            end
+            o
+          }
+          it { should == "\x31\x17\x04\x01b\x04\x03aaa\x04\x05aaaab\x04\x06aaaaaa" }
+        end
+
+        context "infinite length" do
+          subject { o = klass.new(value); o.infinite_length = true; o.to_der } 
+
+          context "Array" do
+            let (:value) { [ 
+              Krypt::ASN1::OctetString.new("aaaaaa"),
+              Krypt::ASN1::OctetString.new("aaaab"),
+              Krypt::ASN1::OctetString.new("aaa"),
+              Krypt::ASN1::OctetString.new("b")
+            ] }
+            it { should == "\x31\x80\x04\x01b\x04\x03aaa\x04\x05aaaab\x04\x06aaaaaa\x00\x00" }
+          end
+
+          context "Enumerable" do
+            let (:value) {
+              o = Object.new
+              def o.each
+                yield Krypt::ASN1::OctetString.new("aaaaaa")
+                yield Krypt::ASN1::OctetString.new("aaaab")
+                yield Krypt::ASN1::OctetString.new("aaa")
+                yield Krypt::ASN1::OctetString.new("b")
+              end
+              o
+            }
+            it { should == "\x31\x80\x04\x01b\x04\x03aaa\x04\x05aaaab\x04\x06aaaaaa\x00\x00" }
+          end
+        end
       end
 
       context 'nil' do
@@ -338,7 +462,19 @@ describe Krypt::ASN1::Set do
       context 'with EndOfContents' do
         let(:value) { [s('hello'), i(42), s('world'), eoc] }
         let(:infinite_length) { true }
-        its(:to_der) { should == "\x31\x80\x04\x05hello\x02\x01\x2A\x04\x05world\x00\x00" }
+        its(:to_der) { should == "\x31\x80\x02\x01\x2A\x04\x05hello\x04\x05world\x00\x00" }
+      end
+
+      context 'with 0-tagged zero-length value without EndOfContents' do
+        let(:value) { [i(0), i(-1), Krypt::ASN1::ASN1Data.new(nil, 0, :CONTEXT_SPECIFIC)] }
+        let(:infinite_length) { true }
+        its(:to_der) { should == "\x31\x80\x80\x00\x02\x01\x00\x02\x01\xFF\x00\x00" }
+      end
+
+      context 'with 0-tagged zero-length value with EndOfContents' do
+        let(:value) { [i(0), i(-1), Krypt::ASN1::ASN1Data.new(nil, 0, :CONTEXT_SPECIFIC), Krypt::ASN1::EndOfContents.new] }
+        let(:infinite_length) { true }
+        its(:to_der) { should == "\x31\x80\x80\x00\x02\x01\x00\x02\x01\xFF\x00\x00" }
       end
     end
 
@@ -353,7 +489,7 @@ describe Krypt::ASN1::Set do
 
       context 'value: SET' do
         let(:value) { [s('hello'), i(42), s('world')] }
-        it { should == "\x31\x11\x04\x05hello\x02\x01\x2A\x04\x05world" }
+        it { should == "\x31\x11\x02\x01\x2A\x04\x05hello\x04\x05world" }
       end
 
       context 'custom tag' do
@@ -383,7 +519,7 @@ describe Krypt::ASN1::Set do
           mod::Boolean.new(true), 
           mod::EndOfContents.new
         ] }
-        it { subject.should == "\x31\x80\x02\x01\x01\x01\x01\xFF\x00\x00" }
+        it { subject.should == "\x31\x80\x01\x01\xFF\x02\x01\x01\x00\x00" }
       end
 
       context "without explicit EOC" do
@@ -391,7 +527,7 @@ describe Krypt::ASN1::Set do
           mod::Integer.new(1), 
           mod::Boolean.new(true), 
         ] }
-        it { subject.should == "\x31\x80\x02\x01\x01\x01\x01\xFF\x00\x00" }
+        it { subject.should == "\x31\x80\x01\x01\xFF\x02\x01\x01\x00\x00" }
       end
     end
   end
@@ -542,7 +678,97 @@ describe Krypt::ASN1::Set do
         it do
           subject.tag_class = :EXPLICIT
           subject.tag = 0
-          subject.to_der.should == "\xA0\x13\x31\x11\x04\x05hello\x02\x01\x2A\x04\x05world" 
+          subject.to_der.should == "\xA0\x13\x31\x11\x02\x01\x2A\x04\x05hello\x04\x05world" 
+        end
+      end
+    end
+
+    context "preserves wrongly encoded SET encodings" do
+      context "definite length" do
+        let(:der) { "\x31\x08\x05\x00\x02\x01\x01\x01\x01\xFF" }
+        it do
+          ary = subject.value
+          ary.size.should == 3
+          ary[0].tag.should == Krypt::ASN1::NULL
+          ary[1].tag.should == Krypt::ASN1::INTEGER
+          ary[2].tag.should == Krypt::ASN1::BOOLEAN
+          subject.to_der.should == der
+        end
+      end
+
+      context "infinite length" do
+        let(:der) { "\x31\x80\x05\x00\x02\x01\x01\x01\x01\xFF\x00\x00" }
+        it do
+          ary = subject.value
+          ary.size.should == 3
+          ary[0].tag.should == Krypt::ASN1::NULL
+          ary[1].tag.should == Krypt::ASN1::INTEGER
+          ary[2].tag.should == Krypt::ASN1::BOOLEAN
+          subject.to_der.should == der
+        end
+      end
+
+      context "reencodes the value in proper SET encoding when the set value is changed" do
+        let(:der) { "\x31\x08\x05\x00\x02\x01\x01\x01\x01\xFF" }
+        it do
+          subject.value = [
+            Krypt::ASN1::Null.new,
+            Krypt::ASN1::Integer.new(1),
+            Krypt::ASN1::Boolean.new(true)
+          ]
+          subject.to_der.should == "\x31\x08\x01\x01\xFF\x02\x01\x01\x05\x00"
+        end
+      end
+
+      context "keeps the wrong SET order when an inner value is changed" do # would be too expensive to track
+        let(:der) { "\x31\x08\x05\x00\x02\x01\x01\x01\x01\xFF" }
+        it do
+          ary = subject.value
+          ary[1].value = 7
+          subject.to_der.should == "\x31\x08\x05\x00\x02\x01\x07\x01\x01\xFF"
+        end
+      end
+    end
+
+    context "preserves wrongly encoded SET OF encodings" do
+      context "definite length" do
+        let(:der) { "\x31\x0C\x04\x01b\x04\x03aaa\x04\x02aa" }
+        it do
+          ary = subject.value
+          ary.size.should == 3
+          ary[0].value.should == "b"
+          ary[1].value.should == "aaa"
+          ary[2].value.should == "aa"
+          subject.to_der.should == der
+        end
+      end
+
+      context "infinite length" do
+        let(:der) { "\x31\x80\x04\x01b\x04\x03aaa\x04\x02aa\x00\x00" }
+        it do
+          ary = subject.value
+          ary.size.should == 3
+          ary[0].value.should == "b"
+          ary[1].value.should == "aaa"
+          ary[2].value.should == "aa"
+          subject.to_der.should == der
+        end
+      end
+
+      context "reencodes the value in proper SET OF encoding when the set value is changed" do
+        let(:der) { "\x31\x0C\x04\x01b\x04\x03aaa\x04\x02aa" }
+        it do
+          subject.value = subject.value
+          subject.to_der.should == "\x31\x0C\x04\x01b\x04\x02aa\x04\x03aaa"
+        end
+      end
+
+      context "keeps the wrong SET order when an inner value is changed" do # would be too expensive to track
+        let(:der) { "\x31\x0C\x04\x01b\x04\x03aaa\x04\x02aa" }
+        it do
+          ary = subject.value
+          ary[0].value = "c"
+          subject.to_der.should == "\x31\x0C\x04\x01c\x04\x03aaa\x04\x02aa"
         end
       end
     end
@@ -564,3 +790,4 @@ describe Krypt::ASN1::Set do
     end
   end
 end
+

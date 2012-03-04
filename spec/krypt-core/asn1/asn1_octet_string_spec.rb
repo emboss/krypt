@@ -200,7 +200,7 @@ describe Krypt::ASN1::OctetString do
 
       context 'nil' do
         let(:value) { nil }
-        it { -> { subject }.should raise_error asn1error }
+        it { should == "\x04\x00" }
       end
     end
 

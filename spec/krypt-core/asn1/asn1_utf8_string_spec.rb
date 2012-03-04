@@ -204,7 +204,7 @@ describe Krypt::ASN1::UTF8String do
 
       context 'nil' do
         let(:value) { nil }
-        it { -> { subject }.should raise_error asn1error }
+        it { should == "\x0C\x00" }
       end
     end
 
