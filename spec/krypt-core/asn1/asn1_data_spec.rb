@@ -855,6 +855,52 @@ describe Krypt::ASN1::ASN1Data do
         end
       end
 
+      context "accepts BER redundant length encodings" do
+        let(:tag) { "\x80" }
+        let(:length) { "\x81\x01\x00" }
+        let(:value) { "" }
+        its(:tag) { should == 0 }
+        its(:tag_class) { should == :CONTEXT_SPECIFIC }
+        its(:infinite_length) { should == false }
+        its(:to_der) { should == "#{tag}#{length}" }
+        it do
+          subject.value = nil #forces re-encoding in DER
+          subject.to_der.should == "\x80\x00"
+        end
+      end
+
+      context "rejects reserved initial octet 11111111 for long definite length
+               encodings" do
+        let(:tag) { "\x80" }
+        let(:length) { "\xFF\x01\x00" }
+        let(:value) { "" }
+        it { -> { subject }.should raise_error asn1error }
+      end
+
+      context "accepts BER redundant tag encodings single octet" do
+        let(:tag) { "\x1F\x02" }
+        let(:length) { "\x01" }
+        let(:value) { "\x01" }
+        its(:tag) { should == Krypt::ASN1::INTEGER }
+        its(:tag_class) { should == :UNIVERSAL }
+        its(:infinite_length) { should == false }
+        its(:to_der) { should == "#{tag}#{length}#{value}" }
+        it do
+          subject.value = 2 # does not force re-encoding in DER, since tag isn't changed
+          subject.to_der.should == "#{tag}#{length}\x02"
+          subject.tag_class = :CONTEXT_SPECIFIC
+          subject.to_der.should == "\x82\x01\x02"
+        end
+      end
+
+      context "rejects BER complex tag encodings where the first octet has
+               bits 7 to 1 set to 0" do
+        let(:tag) { "\x1F\x80\x80\x02" }
+        let(:length) { "\x01" }
+        let(:value) { "\x01" }
+        it { -> { subject }.should raise_error asn1error }
+      end
+
       context "rejects infinite length primitive values" do
         let(:tag) { "\x80" }
         let(:length) { "\x80" }
@@ -951,7 +997,7 @@ describe Krypt::ASN1::ASN1Data do
       decoder.decode_der(io).should be_an_instance_of Krypt::ASN1::Integer
     end
 
-    # ODO: Fails for JRuby - bug?
+    # TODO: Fails for JRuby - bug?
     it "should handle generic IOs as an IO" do
       stringio = StringIO.new(
         [
