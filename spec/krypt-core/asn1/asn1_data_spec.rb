@@ -872,7 +872,7 @@ describe Krypt::ASN1::ASN1Data do
       context "accepts BER redundant length encodings multiple octets" do
         context do
           let(:tag) { "\x04" }
-          let(:length) { "\x84\x00\x00\x00\x01" }
+          let(:length) { "\x8A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" }
           let(:value) { "\x01" }
           its(:tag) { should == Krypt::ASN1::OCTET_STRING }
           its(:tag_class) { should == :UNIVERSAL }
@@ -886,7 +886,7 @@ describe Krypt::ASN1::ASN1Data do
 
         context do
           let(:tag) { "\x80" }
-          let(:length) { "\x84\x00\x00\x00\x00" }
+          let(:length) { "\x8A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" }
           let(:value) { "" }
           its(:tag) { should == 0 }
           its(:tag_class) { should == :CONTEXT_SPECIFIC }
@@ -897,6 +897,13 @@ describe Krypt::ASN1::ASN1Data do
             subject.to_der.should == "\x80\x00"
           end
         end
+      end
+
+      context "rejects length encodings that exceed max Fixnum size" do
+        let(:tag) { "\x04" }
+        let(:length) { "\x8A\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF" }
+        let(:value) { "\x01" }
+        it { -> { subject }.should raise_error asn1error }
       end
 
       context "rejects reserved initial octet 11111111 for long definite length
@@ -928,6 +935,14 @@ describe Krypt::ASN1::ASN1Data do
         let(:tag) { "\x1F\x80\x80\x02" }
         let(:length) { "\x01" }
         let(:value) { "\x01" }
+        it { -> { subject }.should raise_error asn1error }
+      end
+
+      context "rejects complex tag encodings where the tag exceeds max Fixnum
+               value" do
+        let(:tag) { "\x1F\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x7F" }
+        let(:length) { "\x00" }
+        let(:value) { "" }
         it { -> { subject }.should raise_error asn1error }
       end
 
