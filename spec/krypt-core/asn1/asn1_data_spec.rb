@@ -856,16 +856,46 @@ describe Krypt::ASN1::ASN1Data do
       end
 
       context "accepts BER redundant length encodings" do
-        let(:tag) { "\x80" }
-        let(:length) { "\x81\x01\x00" }
-        let(:value) { "" }
-        its(:tag) { should == 0 }
-        its(:tag_class) { should == :CONTEXT_SPECIFIC }
+        let(:tag) { "\x04" }
+        let(:length) { "\x81\x01" }
+        let(:value) { "\x02" }
+        its(:tag) { should == Krypt::ASN1::OCTET_STRING }
+        its(:tag_class) { should == :UNIVERSAL }
         its(:infinite_length) { should == false }
-        its(:to_der) { should == "#{tag}#{length}" }
+        its(:to_der) { should == "#{tag}#{length}#{value}" }
         it do
-          subject.value = nil #forces re-encoding in DER
-          subject.to_der.should == "\x80\x00"
+          subject.value = "\x03" #forces re-encoding in DER
+          subject.to_der.should == "\x04\x01\x03"
+        end
+      end
+
+      context "accepts BER redundant length encodings multiple octets" do
+        context do
+          let(:tag) { "\x04" }
+          let(:length) { "\x84\x00\x00\x00\x01" }
+          let(:value) { "\x01" }
+          its(:tag) { should == Krypt::ASN1::OCTET_STRING }
+          its(:tag_class) { should == :UNIVERSAL }
+          its(:infinite_length) { should == false }
+          its(:to_der) { should == "#{tag}#{length}#{value}" }
+          it do
+            subject.value = "\x02" #forces re-encoding in DER
+            subject.to_der.should == "\x04\x01\x02"
+          end
+        end
+
+        context do
+          let(:tag) { "\x80" }
+          let(:length) { "\x84\x00\x00\x00\x00" }
+          let(:value) { "" }
+          its(:tag) { should == 0 }
+          its(:tag_class) { should == :CONTEXT_SPECIFIC }
+          its(:infinite_length) { should == false }
+          its(:to_der) { should == "#{tag}#{length}" }
+          it do
+            subject.value = nil #forces re-encoding in DER
+            subject.to_der.should == "\x80\x00"
+          end
         end
       end
 
