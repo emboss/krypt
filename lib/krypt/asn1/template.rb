@@ -109,8 +109,7 @@ module Krypt::ASN1
 
     module ChoiceDefinitions
       extend GeneralDefinitions
-      eigenclass = class << self; self; end
-      eigenclass.instance_eval do
+      class << self
         define_method :declare_prim do |meth, type|
           define_method meth do
             GeneralDefinitions.add_to_definition(self, {
@@ -140,8 +139,7 @@ module Krypt::ASN1
 
     module ConstructiveDefinitions
       extend GeneralDefinitions
-      eigenclass = class << self; self; end
-      eigenclass.instance_eval do
+      class << self
         define_method :declare_prim do |meth, type|
           define_method meth do |name, opts=nil|
             if name
