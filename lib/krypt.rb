@@ -17,3 +17,5 @@ See the file 'LICENSE' for further details.
 
 require 'krypt-core'
 
+require_relative 'krypt/asn1'
+
