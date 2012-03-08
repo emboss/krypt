@@ -4,6 +4,7 @@ module Krypt::ASN1
   module Template
 
     module Sequence
+      include Template
       def self.included(base)
         Template.init_cons_definition(base) do
           :SEQUENCE
@@ -12,6 +13,7 @@ module Krypt::ASN1
     end
 
     module Set
+      include Template
       def self.included(base)
         Template.init_cons_definition(base) do
           :SET
@@ -20,6 +22,7 @@ module Krypt::ASN1
     end
 
     module Choice
+      include Template
       def self.included(base)
         definition = {
           codec: :CHOICE,
@@ -93,6 +96,17 @@ module Krypt::ASN1
       end
     end
 
+    module Accessor
+      def asn1_attr_accessor(name, iv_name)
+        define_method name do
+          get_callback(iv_name)
+        end
+        define_method "#{name.to_s}=".to_sym do |value|
+          set_callback(iv_name, value)
+        end
+      end
+    end
+
     module ChoiceDefinitions
       extend GeneralDefinitions
       eigenclass = class << self; self; end
@@ -131,8 +145,8 @@ module Krypt::ASN1
         define_method :declare_prim do |meth, type|
           define_method meth do |name, opts=nil|
             if name
-              asn1_attr_accessor name
               iv_name = ('@' + name.to_s).to_sym
+              asn1_attr_accessor name, iv_name
             else
               iv_name = nil
             end
@@ -149,8 +163,8 @@ module Krypt::ASN1
         define_method :declare_special_typed do |meth, codec|
           define_method meth do |name, type, opts=nil|
             if name
-              asn1_attr_accessor name
               iv_name = ('@' + name.to_s).to_sym
+              asn1_attr_accessor name, iv_name
             else
               iv_name = nil
             end
