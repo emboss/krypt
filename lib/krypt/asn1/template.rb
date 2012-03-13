@@ -6,9 +6,19 @@ module Krypt::ASN1
     module Sequence
       include Template
       def self.included(base)
-        Template.init_cons_definition(base) do
-          :SEQUENCE
-        end
+        definition = {
+          codec: :SEQUENCE,
+          options: nil,
+          layout: [],
+          min_size: 0
+        }
+        base.instance_variable_set(:@definition, definition)
+        base.extend Template::Accessor
+        base.extend Template::ConstructiveDefinitions
+        base.extend Template::Parser
+        #Template.init_cons_definition(base) do
+        #  :SEQUENCE
+        #end
       end
     end
 
@@ -32,6 +42,7 @@ module Krypt::ASN1
         base.instance_variable_set(:@definition, definition)
         base.extend Template::Accessor
         base.extend Template::ChoiceDefinitions
+        base.extend Template::Parser
       end
     end
 
@@ -45,6 +56,7 @@ module Krypt::ASN1
       base.instance_variable_set(:@definition, definition)
       base.extend Template::Accessor
       base.extend Template::ConstructiveDefinitions
+      base.extend Template::Parser
     end
 
     module GeneralDefinitions
@@ -142,12 +154,9 @@ module Krypt::ASN1
       class << self
         define_method :declare_prim do |meth, type|
           define_method meth do |name, opts=nil|
-            if name
-              iv_name = ('@' + name.to_s).to_sym
-              asn1_attr_accessor name, iv_name
-            else
-              iv_name = nil
-            end
+            raise ArgumentError.new "Name must not be nil" if name == nil
+            iv_name = ('@' + name.to_s).to_sym
+            asn1_attr_accessor name, iv_name
 
             GeneralDefinitions.add_to_definition(self, {
               codec: :PRIMITIVE,
@@ -160,12 +169,9 @@ module Krypt::ASN1
 
         define_method :declare_special_typed do |meth, codec|
           define_method meth do |name, type, opts=nil|
-            if name
-              iv_name = ('@' + name.to_s).to_sym
-              asn1_attr_accessor name, iv_name
-            else
-              iv_name = nil
-            end
+            raise ArgumentError.new "Name must not be nil" if name == nil
+            iv_name = ('@' + name.to_s).to_sym
+            asn1_attr_accessor name, iv_name
 
             GeneralDefinitions.add_to_definition(self, {
               codec: codec,
