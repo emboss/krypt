@@ -257,5 +257,124 @@ describe "Krypt::ASN1::Template::Sequence" do
         it { subject.should be_an_instance_of template }
       end
     end
+
+    context "multiple default value fields at end" do
+      let(:template) do
+        Class.new do
+          include SEQ
+          asn1_integer :a
+          asn1_boolean :b
+          asn1_octet_string :c, default: "a"
+          asn1_t61_string :d, default: "a"
+          asn1_ia5_string :e, default: "a"
+        end
+      end
+      
+      context "all present" do
+        let(:der) { "\x30\x0F\x02\x01\x01\x01\x01\xFF\x04\x01b\x14\x01b\x16\x01b" }
+        its(:a) { should == 1 }
+        its(:b) { should == true }
+        its(:c) { should == "b" }
+        its(:d) { should == "b" }
+        its(:e) { should == "b" }
+        it { subject.should be_an_instance_of template }
+      end
+
+      context "first absent" do
+        let(:der) { "\x30\x0C\x02\x01\x01\x01\x01\xFF\x14\x01b\x16\x01b" }
+        its(:a) { should == 1 }
+        its(:b) { should == true }
+        its(:c) { should == "a" }
+        its(:d) { should == "b" }
+        its(:e) { should == "b" }
+        it { subject.should be_an_instance_of template }
+      end
+
+      context "absent between others" do
+        let(:der) { "\x30\x0C\x02\x01\x01\x01\x01\xFF\x04\x01b\x16\x01b" }
+        its(:a) { should == 1 }
+        its(:b) { should == true }
+        its(:c) { should == "b" }
+        its(:d) { should == "a" }
+        its(:e) { should == "b" }
+        it { subject.should be_an_instance_of template }
+      end
+
+      context "last absent" do
+        let(:der) { "\x30\x0C\x02\x01\x01\x01\x01\xFF\x04\x01b\x14\x01b" }
+        its(:a) { should == 1 }
+        its(:b) { should == true }
+        its(:c) { should == "b" }
+        its(:d) { should == "b"}
+        its(:e) { should == "a" }
+        it { subject.should be_an_instance_of template }
+      end
+
+      context "all absent" do
+        let(:der) { "\x30\x06\x02\x01\x01\x01\x01\xFF" }
+        its(:a) { should == 1 }
+        its(:b) { should == true }
+        its(:c) { should == "a" }
+        its(:d) { should == "a" }
+        its(:e) { should == "a" }
+        it { subject.should be_an_instance_of template }
+      end
+    end
+
+    context "default value and optional fields mixed at beginning" do
+      let(:template) do
+        Class.new do
+          include SEQ
+          asn1_octet_string :a, optional: true
+          asn1_t61_string :b, default: "a"
+          asn1_ia5_string :c, default: "a"
+          asn1_integer :d
+        end
+      end
+
+      context "all present" do
+        let(:der) { "\x30\x0C\x04\x01b\x14\x01b\x16\x01b\x02\x01\x01" }
+        its(:a) { should == "b" }
+        its(:b) { should == "b" }
+        its(:c) { should == "b" }
+        its(:d) { should == 1 }
+      end
+
+      context "all absent" do
+        let(:der) { "\x30\x03\x02\x01\x01" }
+        its(:a) { should be_nil }
+        its(:b) { should == "a" }
+        its(:c) { should == "a" }
+        its(:d) { should == 1 }
+      end
+    end
+
+    context "default value and optional fields mixed at end" do
+      let(:template) do
+        Class.new do
+          include SEQ
+          asn1_integer :a
+          asn1_octet_string :b, optional: true
+          asn1_t61_string :c, default: "a"
+          asn1_ia5_string :d, default: "a"
+        end
+      end
+
+      context "all present" do
+        let(:der) { "\x30\x0C\x02\x01\x01\x04\x01b\x14\x01b\x16\x01b" }
+        its(:a) { should == 1 }
+        its(:b) { should == "b" }
+        its(:c) { should == "b" }
+        its(:d) { should == "b" }
+      end
+
+      context "all absent" do
+        let(:der) { "\x30\x03\x02\x01\x01" }
+        its(:a) { should == 1 }
+        its(:b) { should be_nil }
+        its(:c) { should == "a" }
+        its(:d) { should == "a" }
+      end
+    end
   end
 end
