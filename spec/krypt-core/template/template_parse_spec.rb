@@ -17,9 +17,15 @@ describe "Krypt::ASN1::Template::Sequence" do
           asn1_integer :version
         end
       end
-      let(:der) { "\x30\x03\x02\x01\x01" }
-      its(:version) { should == 1 }
-      it { subject.should be_an_instance_of template }
+      context "accepts correct encoding" do
+        let(:der) { "\x30\x03\x02\x01\x01" }
+        its(:version) { should == 1 }
+        it { subject.should be_an_instance_of template }
+      end
+      context "rejects wrong encoding" do
+        let(:der) { "\x30\x03\x04\x01\x01" }
+        it { -> { subject.version }.should raise_error asn1error }
+      end
     end
 
     context "two fields" do
@@ -30,10 +36,22 @@ describe "Krypt::ASN1::Template::Sequence" do
           asn1_boolean :works?
         end
       end
-      let(:der) { "\x30\x06\x02\x01\x01\x01\x01\xFF" }
-      its(:version) { should == 1 }
-      its(:works?) { should == true }
-      it { subject.should be_an_instance_of template }
+      context "accepts correct encoding do" do
+        let(:der) { "\x30\x06\x02\x01\x01\x01\x01\xFF" }
+        its(:version) { should == 1 }
+        its(:works?) { should == true }
+        it { subject.should be_an_instance_of template }
+      end
+      context "rejects encodings where either field is missing" do
+        context "(first)" do
+          let(:der) { "\x30\x03\x01\x01\xFF" }
+          it { -> { subject.version }.should raise_error asn1error }
+        end
+        context "(second)" do
+          let(:der) { "\x30\x03\x02\x01\x01" }
+          it { -> { subject.version }.should raise_error asn1error }
+        end
+      end
     end
 
     context "optional first field" do
@@ -347,6 +365,27 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:c) { should == "a" }
         its(:d) { should == 1 }
       end
+
+      context "rejects otherwise correct encoding if stream is not consumed" do
+        let(:der) { "\x30\x06\x02\x01\x01\x04\x01\x01" } # :d is matched, all others optional or default
+        it { -> { subject.a }.should raise_error asn1error }
+      end
+
+      context "rejects when wrong encoding is given for an optional field" do
+        let(:der) { "\x30\x0C\x01\x01\x00\x14\x01b\x16\x01b\x02\x01\x01" }
+        it { -> { subject.a }.should raise_error asn1error }
+      end
+
+      context "rejects when wrong encoding is given for a default field" do
+        let(:der) { "\x30\x0C\x04\x01\x01\x04\x01b\x16\x01b\x02\x01\x01" }
+        it { -> { subject.a }.should raise_error asn1error }
+      end
+
+      context "rejects when wrong encoding is given for a default field and the
+               optional field is omitted" do
+        let(:der) { "\x30\x09\x01\x01\xFF\x16\x01b\x02\x01\x01" }
+        it { -> { subject.a }.should raise_error asn1error }
+      end
     end
 
     context "default value and optional fields mixed at end" do
@@ -374,6 +413,62 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:b) { should be_nil }
         its(:c) { should == "a" }
         its(:d) { should == "a" }
+      end
+    end
+
+    context "inner template at beginning" do
+      let(:template2) do
+        Class.new do
+          include SEQ
+          asn1_boolean :a
+        end
+      end
+      let(:template) do
+        t = template2
+        Class.new do
+          include SEQ
+          asn1_template :a, t
+          asn1_integer :b
+        end
+      end
+      context "accepts valid encoding" do
+        let(:der) { "\x30\x08\x30\x03\x01\x01\xFF\x02\x01\x01" }
+        its(:a) { should be_an_instance_of template2 }
+        it { subject.a.a.should == true }
+        its(:b) { should == 1 }
+      end
+
+      context "rejects wrong encoding" do
+        let(:der) { "\x30\x06\x01\x01\xFF\x02\x01\x01" }
+        it { -> { subject.a }.should raise_error asn1error }
+      end
+    end
+
+    context "inner template at end" do
+      let(:template2) do
+        Class.new do
+          include SEQ
+          asn1_boolean :a
+        end
+      end
+      let(:template) do
+        t = template2
+        Class.new do
+          include SEQ
+          asn1_integer :a
+          asn1_template :b, t
+        end
+      end
+      context "accepts valid encoding" do
+        let(:der) { "\x30\x08\x02\x01\x01\x30\x03\x01\x01\xFF" }
+        its(:a) { should == 1 }
+        its(:b) { should be_an_instance_of template2 }
+        it { subject.b.a.should == true }
+      end
+
+      context "rejects wrong encoding" do
+        let(:der) { "\x31\x08\x02\x01\x01\x30\x03\x01\x01\xFF" }
+        it { -> { subject.a }.should raise_error asn1error }
       end
     end
   end
