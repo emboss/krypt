@@ -85,6 +85,8 @@ module Krypt::ASN1
         declare_special_typed(:asn1_template, :TEMPLATE)
         declare_special_typed(:asn1_sequence_of, :SEQUENCE_OF)
         declare_special_typed(:asn1_set_of, :SET_OF)
+
+        declare_any
       end
 
       def self.add_to_definition(klass, deff)
@@ -133,6 +135,7 @@ module Krypt::ASN1
 
         define_method :declare_special_typed do |meth, codec|
           define_method meth do |type|
+            raise ArgumentError.new "Type must not be nil" if type == nil
             GeneralDefinitions.add_to_definition(self, {
               codec: codec,
               type: type
@@ -140,12 +143,15 @@ module Krypt::ASN1
           end
         end
 
-        define_method :asn1_any do
-          GeneralDefinitions.add_to_definition(self, {
-            codec: :ANY
-          })
+        define_method :declare_any do
+          define_method :asn1_any do
+            GeneralDefinitions.add_to_definition(self, {
+              codec: :ANY
+            })
+          end
         end
       end
+
       init_methods
     end 
 
@@ -170,6 +176,7 @@ module Krypt::ASN1
         define_method :declare_special_typed do |meth, codec|
           define_method meth do |name, type, opts=nil|
             raise ArgumentError.new "Name must not be nil" if name == nil
+            raise ArgumentError.new "Type must not be nil" if type == nil
             iv_name = ('@' + name.to_s).to_sym
             asn1_attr_accessor name, iv_name
 
@@ -182,13 +189,21 @@ module Krypt::ASN1
           end
         end
 
-        define_method :asn1_any do |name|
-          GeneralDefinitions.add_to_definition(self, {
-            codec: :ANY,
-            name: name
-          })
+        define_method :declare_any do
+          define_method :asn1_any do |name, opts=nil|
+            raise ArgumentError.new "Name must not be nil" if name == nil
+            iv_name = ('@' + name.to_s).to_sym
+            asn1_attr_accessor name, iv_name
+
+            GeneralDefinitions.add_to_definition(self, {
+              codec: :ANY,
+              name: iv_name,
+              options: opts
+            })
+          end
         end
       end
+
       init_methods
     end
 
