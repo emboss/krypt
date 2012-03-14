@@ -6,19 +6,9 @@ module Krypt::ASN1
     module Sequence
       include Template
       def self.included(base)
-        definition = {
-          codec: :SEQUENCE,
-          options: nil,
-          layout: [],
-          min_size: 0
-        }
-        base.instance_variable_set(:@definition, definition)
-        base.extend Template::Accessor
-        base.extend Template::ConstructiveDefinitions
-        base.extend Template::Parser
-        #Template.init_cons_definition(base) do
-        #  :SEQUENCE
-        #end
+        Template.init_cons_definition(base) do
+          :SEQUENCE
+        end
       end
     end
 
@@ -94,7 +84,7 @@ module Krypt::ASN1
         cur_def[:layout] << deff
         codec = cur_def[:codec]
         if codec == :SEQUENCE || codec == :SET 
-          increase_min_size(cur_def, cur_def[:options])
+          increase_min_size(cur_def, deff[:options])
         end
       end
 
