@@ -21,6 +21,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         let(:der) { "\x30\x03\x02\x01\x01" }
         its(:version) { should == 1 }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
       context "rejects wrong encoding" do
         let(:der) { "\x30\x03\x04\x01\x01" }
@@ -44,11 +45,12 @@ describe "Krypt::ASN1::Template::Sequence" do
           asn1_boolean :works?
         end
       end
-      context "accepts correct encoding do" do
+      context "accepts correct encoding" do
         let(:der) { "\x30\x06\x02\x01\x01\x01\x01\xFF" }
         its(:version) { should == 1 }
         its(:works?) { should == true }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
       context "rejects encodings where either field is missing" do
         context "(first)" do
@@ -59,6 +61,43 @@ describe "Krypt::ASN1::Template::Sequence" do
           let(:der) { "\x30\x03\x02\x01\x01" }
           it { -> { subject.version }.should raise_error asn1error }
         end
+      end
+    end
+
+    context "preserves non-DER encodings" do
+      let(:template) do
+        Class.new do
+          include SEQ
+          asn1_boolean :a
+          asn1_octet_string :b
+        end
+      end
+      let(:der) { "\x30\x83\x00\x00\x0D\x01\x01\xBB\x24\x80\x04\x01\x01\x04\x01\x02\x00\x00" }
+      its(:to_der) { should == der }
+    end
+
+    context "does not choke on invalid encodings" do
+      let(:template) do
+        Class.new do
+          include SEQ
+          asn1_integer :a
+          asn1_octet_string :b
+        end
+      end
+
+      context "when parsing them" do
+        let(:der) { "\x30\x04\x00\x00\x22\x99" }
+        it { -> { subject }.should_not raise_error }
+      end
+
+      context "and encodes them again exactly as received" do
+        let(:der) { "\x30\x04\x00\x00\x22\x99" }
+        its(:to_der) { should == der }
+      end
+
+      context "but raises an error when accessing the fields" do
+        let(:der) { "\x30\x04\x00\x00\x22\x99" }
+        it { -> { subject.a }.should raise_error asn1error }
       end
     end
 
@@ -80,9 +119,10 @@ describe "Krypt::ASN1::Template::Sequence" do
           let(:tagging) { tagging }
           its(:a) { should == 1 }
           its(:b) { should == true }
+          its(:to_der) { should == der }
         end
 
-        context "reject wrong encoding" do
+        context "rejects wrong encoding" do
           let(:der) { "\x30\x06\x02\x01\x01\x01\x01\xFF" }
           let(:tag) { 0 }
           let(:tagging) { tagging }
@@ -101,6 +141,7 @@ describe "Krypt::ASN1::Template::Sequence" do
           let(:tagging) { :EXPLICIT }
           its(:a) { should == 1 }
           its(:b) { should == true }
+          its(:to_der) { should == der }
         end
 
         context "reject wrong encoding (non-constructed)" do
@@ -147,6 +188,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:b) { should == true }
         its(:c) { should == "a" }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
 
       context "absent" do
@@ -155,6 +197,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:b) { should == true }
         its(:c) { should == "a" }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
     end
 
@@ -174,6 +217,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:b) { should == true }
         its(:c) { should == "a" }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
 
       context "absent" do
@@ -182,6 +226,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:b) { should be_nil }
         its(:c) { should == "a" }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
     end
 
@@ -201,6 +246,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:b) { should == true }
         its(:c) { should == "a" }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
 
       context "absent" do
@@ -209,6 +255,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:b) { should == true }
         its(:c) { should be_nil }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
     end
 
@@ -232,6 +279,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:d) { should == "b" }
         its(:e) { should == "c" }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
 
       context "first absent" do
@@ -242,6 +290,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:d) { should == "b" }
         its(:e) { should == "c" }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
 
       context "absent between others" do
@@ -252,6 +301,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:d) { should be_nil }
         its(:e) { should == "c" }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
 
       context "last absent" do
@@ -262,6 +312,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:d) { should == "b"}
         its(:e) { should be_nil }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
 
       context "all absent" do
@@ -272,6 +323,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:d) { should be_nil }
         its(:e) { should be_nil }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
     end
 
@@ -289,6 +341,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:a) { should == 1 }
         its(:b) { should == true }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
 
       context "absent" do
@@ -296,6 +349,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:a) { should == 42 }
         its(:b) { should == true }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
     end
 
@@ -315,6 +369,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:b) { should == true }
         its(:c) { should == "a" }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
 
       context "absent" do
@@ -323,6 +378,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:b) { should == false }
         its(:c) { should == "a" }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
     end
 
@@ -342,6 +398,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:b) { should == true }
         its(:c) { should == "a" }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
 
       context "absent" do
@@ -350,6 +407,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:b) { should == true }
         its(:c) { should == "b" }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
     end
 
@@ -373,6 +431,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:d) { should == "b" }
         its(:e) { should == "b" }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
 
       context "first absent" do
@@ -383,6 +442,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:d) { should == "b" }
         its(:e) { should == "b" }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
 
       context "absent between others" do
@@ -393,6 +453,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:d) { should == "a" }
         its(:e) { should == "b" }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
 
       context "last absent" do
@@ -403,6 +464,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:d) { should == "b"}
         its(:e) { should == "a" }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
 
       context "all absent" do
@@ -413,6 +475,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:d) { should == "a" }
         its(:e) { should == "a" }
         it { subject.should be_an_instance_of template }
+        its(:to_der) { should == der }
       end
     end
 
@@ -433,6 +496,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:b) { should == "b" }
         its(:c) { should == "b" }
         its(:d) { should == 1 }
+        its(:to_der) { should == der }
       end
 
       context "all absent" do
@@ -441,6 +505,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:b) { should == "a" }
         its(:c) { should == "a" }
         its(:d) { should == 1 }
+        its(:to_der) { should == der }
       end
 
       context "rejects otherwise correct encoding if stream is not consumed" do
@@ -482,6 +547,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:b) { should == "b" }
         its(:c) { should == "b" }
         its(:d) { should == "b" }
+        its(:to_der) { should == der }
       end
 
       context "all absent" do
@@ -490,6 +556,7 @@ describe "Krypt::ASN1::Template::Sequence" do
         its(:b) { should be_nil }
         its(:c) { should == "a" }
         its(:d) { should == "a" }
+        its(:to_der) { should == der }
       end
     end
 
@@ -516,6 +583,7 @@ describe "Krypt::ASN1::Template::Sequence" do
           its(:a) { should be_an_instance_of template2 }
           it { subject.a.a.should == true }
           its(:b) { should == 1 }
+          its(:to_der) { should == der }
         end
 
         context "rejects wrong encoding" do
@@ -539,6 +607,7 @@ describe "Krypt::ASN1::Template::Sequence" do
           its(:a) { should == 1 }
           its(:b) { should be_an_instance_of template2 }
           it { subject.b.a.should == true }
+          its(:to_der) { should == der }
         end
 
         context "rejects wrong encoding" do
@@ -562,6 +631,7 @@ describe "Krypt::ASN1::Template::Sequence" do
           its(:a) { should be_an_instance_of template2 }
           it { subject.a.a.should == true }
           its(:b) { should == 1 }
+          its(:to_der) { should == der }
         end
 
         context "rejects wrong encoding" do
@@ -585,6 +655,7 @@ describe "Krypt::ASN1::Template::Sequence" do
           its(:a) { should be_an_instance_of template2 }
           it { subject.a.a.should == true }
           its(:b) { should == 1 }
+          its(:to_der) { should == der }
         end
 
         context "rejects wrong encoding" do
@@ -608,12 +679,14 @@ describe "Krypt::ASN1::Template::Sequence" do
           its(:a) { should be_an_instance_of template2 }
           it { subject.a.a.should == true }
           its(:b) { should == 1 }
+          its(:to_der) { should == der }
         end
 
         context "absent" do
           let(:der) { "\x30\x03\x02\x01\x01" }
           its(:a) { should be_nil }
           its(:b) { should == 1 }
+          its(:to_der) { should == der }
         end
       end
 
@@ -634,6 +707,7 @@ describe "Krypt::ASN1::Template::Sequence" do
           its(:a) { should be_an_instance_of template2 }
           it { subject.a.a.should == true }
           its(:b) { should == 1 }
+          its(:to_der) { should == der }
         end
 
         context "absent" do
@@ -641,6 +715,7 @@ describe "Krypt::ASN1::Template::Sequence" do
           its(:a) { should be_an_instance_of template2 }
           it { subject.a.a.should == false }
           its(:b) { should == 1 }
+          its(:to_der) { should == der }
         end
       end
 
@@ -661,6 +736,7 @@ describe "Krypt::ASN1::Template::Sequence" do
           its(:a) { should == 1 }
           its(:b) { should be_an_instance_of template2 }
           it { subject.b.a.should == true }
+          its(:to_der) { should == der }
         end
 
         context "absent" do
@@ -668,6 +744,7 @@ describe "Krypt::ASN1::Template::Sequence" do
           its(:a) { should == 1 }
           its(:b) { should be_an_instance_of template2 }
           it { subject.b.a.should == false }
+          its(:to_der) { should == der }
         end
       end
     end
