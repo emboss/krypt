@@ -54,6 +54,75 @@ describe "Krypt::ASN1::Template::Sequence" do
       end
     end
 
+    context "tagged field" do
+      let(:template) do
+        t = tag
+        tg = tagging
+        Class.new do
+          include SEQ
+          asn1_integer :a, tag: t, tagging: tg 
+          asn1_boolean :b
+        end
+      end
+
+      shared_examples_for "a non-constructed encoding" do |tagging, tag_byte|
+        context "accepts correct encoding" do
+          let(:der) { "\x30\x06#{tag_byte}\x01\x01\x01\x01\xFF" }
+          let(:tag) { 0 }
+          let(:tagging) { tagging }
+          its(:a) { should == 1 }
+          its(:b) { should == true }
+        end
+
+        context "reject wrong encoding" do
+          let(:der) { "\x30\x06\x02\x01\x01\x01\x01\xFF" }
+          let(:tag) { 0 }
+          let(:tagging) { tagging }
+          it { -> { subject.a }.should raise_error asn1error }
+        end
+      end
+
+      context ":IMPLICIT" do
+        it_behaves_like "a non-constructed encoding", :IMPLICIT, "\x80"
+      end
+
+      context ":EXPLICIT" do
+        context "accepts correct encoding" do
+          let(:der) { "\x30\x08\xA0\x03\x02\x01\x01\x01\x01\xFF" }
+          let(:tag) { 0 }
+          let(:tagging) { :EXPLICIT }
+          its(:a) { should == 1 }
+          its(:b) { should == true }
+        end
+
+        context "reject wrong encoding (non-constructed)" do
+          let(:der) { "\x30\x08\x80\x03\x02\x01\x01\x01\x01\xFF" }
+          let(:tag) { 0 }
+          let(:tagging) { :EXPLICIT }
+          it { -> { subject.a }.should raise_error asn1error }
+        end
+
+        context "reject wrong encoding" do
+          let(:der) { "\x30\x06\x80\x01\x01\x01\x01\xFF" }
+          let(:tag) { 0 }
+          let(:tagging) { :EXPLICIT }
+          it { -> { subject.a }.should raise_error asn1error }
+        end
+      end
+
+      context ":CONTEXT_SPECIFIC" do
+        it_behaves_like "a non-constructed encoding", :IMPLICIT, "\x80"
+      end
+
+      context ":APPLICATION" do
+        it_behaves_like "a non-constructed encoding", :APPLICATION, "\x40"
+      end
+
+      context ":PRIVATE" do
+        it_behaves_like "a non-constructed encoding", :PRIVATE, "\xC0"
+      end
+    end
+
     context "optional first field" do
       let(:template) do
         Class.new do
@@ -416,59 +485,182 @@ describe "Krypt::ASN1::Template::Sequence" do
       end
     end
 
-    context "inner template at beginning" do
+    context "inner template" do
       let(:template2) do
         Class.new do
           include SEQ
           asn1_boolean :a
         end
       end
-      let(:template) do
-        t = template2
-        Class.new do
-          include SEQ
-          asn1_template :a, t
-          asn1_integer :b
+
+      context "at beginning" do
+        let(:template) do
+          t = template2
+          Class.new do
+            include SEQ
+            asn1_template :a, t
+            asn1_integer :b
+          end
+        end
+
+        context "accepts valid encoding" do
+          let(:der) { "\x30\x08\x30\x03\x01\x01\xFF\x02\x01\x01" }
+          its(:a) { should be_an_instance_of template2 }
+          it { subject.a.a.should == true }
+          its(:b) { should == 1 }
+        end
+
+        context "rejects wrong encoding" do
+          let(:der) { "\x30\x06\x01\x01\xFF\x02\x01\x01" }
+          it { -> { subject.a }.should raise_error asn1error }
         end
       end
-      context "accepts valid encoding" do
-        let(:der) { "\x30\x08\x30\x03\x01\x01\xFF\x02\x01\x01" }
-        its(:a) { should be_an_instance_of template2 }
-        it { subject.a.a.should == true }
-        its(:b) { should == 1 }
-      end
 
-      context "rejects wrong encoding" do
-        let(:der) { "\x30\x06\x01\x01\xFF\x02\x01\x01" }
-        it { -> { subject.a }.should raise_error asn1error }
-      end
-    end
+      context "at end" do
+        let(:template) do
+          t = template2
+          Class.new do
+            include SEQ
+            asn1_integer :a
+            asn1_template :b, t
+          end
+        end
 
-    context "inner template at end" do
-      let(:template2) do
-        Class.new do
-          include SEQ
-          asn1_boolean :a
+        context "accepts valid encoding" do
+          let(:der) { "\x30\x08\x02\x01\x01\x30\x03\x01\x01\xFF" }
+          its(:a) { should == 1 }
+          its(:b) { should be_an_instance_of template2 }
+          it { subject.b.a.should == true }
+        end
+
+        context "rejects wrong encoding" do
+          let(:der) { "\x31\x08\x02\x01\x01\x30\x03\x01\x01\xFF" }
+          it { -> { subject.a }.should raise_error asn1error }
         end
       end
-      let(:template) do
-        t = template2
-        Class.new do
-          include SEQ
-          asn1_integer :a
-          asn1_template :b, t
+
+      context "with implicit tagging" do
+        let(:template) do
+          t = template2
+          Class.new do
+            include SEQ
+            asn1_template :a, t, tag: 0, tagging: :IMPLICIT
+            asn1_integer :b
+          end
+        end
+
+        context "accepts valid encoding" do
+          let(:der) { "\x30\x08\xA0\x03\x01\x01\xFF\x02\x01\x01" }
+          its(:a) { should be_an_instance_of template2 }
+          it { subject.a.a.should == true }
+          its(:b) { should == 1 }
+        end
+
+        context "rejects wrong encoding" do
+          let(:der) { "\x30\x08\x30\x03\x01\x01\xFF\x02\x01\x01" }
+          it { -> { subject.a }.should raise_error asn1error }
         end
       end
-      context "accepts valid encoding" do
-        let(:der) { "\x30\x08\x02\x01\x01\x30\x03\x01\x01\xFF" }
-        its(:a) { should == 1 }
-        its(:b) { should be_an_instance_of template2 }
-        it { subject.b.a.should == true }
+
+      context "with explicit tagging" do
+        let(:template) do
+          t = template2
+          Class.new do
+            include SEQ
+            asn1_template :a, t, tag: 0, tagging: :EXPLICIT
+            asn1_integer :b
+          end
+        end
+
+        context "accepts valid encoding" do
+          let(:der) { "\x30\x0A\xA0\x05\x30\x03\x01\x01\xFF\x02\x01\x01" }
+          its(:a) { should be_an_instance_of template2 }
+          it { subject.a.a.should == true }
+          its(:b) { should == 1 }
+        end
+
+        context "rejects wrong encoding" do
+          let(:der) { "\x30\x08\x30\x03\x01\x01\xFF\x02\x01\x01" }
+          it { -> { subject.a }.should raise_error asn1error }
+        end
       end
 
-      context "rejects wrong encoding" do
-        let(:der) { "\x31\x08\x02\x01\x01\x30\x03\x01\x01\xFF" }
-        it { -> { subject.a }.should raise_error asn1error }
+      context "optional" do
+        let(:template) do
+          t = template2
+          Class.new do
+            include SEQ
+            asn1_template :a, t, optional: true
+            asn1_integer :b
+          end
+        end
+
+        context "present" do
+          let(:der) { "\x30\x08\x30\x03\x01\x01\xFF\x02\x01\x01" }
+          its(:a) { should be_an_instance_of template2 }
+          it { subject.a.a.should == true }
+          its(:b) { should == 1 }
+        end
+
+        context "absent" do
+          let(:der) { "\x30\x03\x02\x01\x01" }
+          its(:a) { should be_nil }
+          its(:b) { should == 1 }
+        end
+      end
+
+      context "with default value at beginning" do
+        let(:template) do
+          t = template2
+          obj = t.new
+          obj.a = false
+          Class.new do
+            include SEQ
+            asn1_template :a, t, default: obj
+            asn1_integer :b
+          end
+        end
+
+        context "present" do
+          let(:der) { "\x30\x08\x30\x03\x01\x01\xFF\x02\x01\x01" }
+          its(:a) { should be_an_instance_of template2 }
+          it { subject.a.a.should == true }
+          its(:b) { should == 1 }
+        end
+
+        context "absent" do
+          let(:der) { "\x30\x03\x02\x01\x01" }
+          its(:a) { should be_an_instance_of template2 }
+          it { subject.a.a.should == false }
+          its(:b) { should == 1 }
+        end
+      end
+
+      context "with default value at end" do
+        let(:template) do
+          t = template2
+          obj = t.new
+          obj.a = false
+          Class.new do
+            include SEQ
+            asn1_integer :a
+            asn1_template :b, t, default: obj
+          end
+        end
+
+        context "present" do
+          let(:der) { "\x30\x08\x02\x01\x01\x30\x03\x01\x01\xFF" }
+          its(:a) { should == 1 }
+          its(:b) { should be_an_instance_of template2 }
+          it { subject.b.a.should == true }
+        end
+
+        context "absent" do
+          let(:der) { "\x30\x03\x02\x01\x01" }
+          its(:a) { should == 1 }
+          its(:b) { should be_an_instance_of template2 }
+          it { subject.b.a.should == false }
+        end
       end
     end
   end

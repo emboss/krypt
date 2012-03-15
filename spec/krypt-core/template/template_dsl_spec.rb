@@ -167,11 +167,101 @@ shared_examples_for "Krypt::ASN1::Template" do
     context("asn1_set_of")           { it_behaves_like "a typed declaration",     :asn1_set_of }
   end
 end
+
+shared_examples_for "constructed type constructor" do |type|
+  let (:template) do
+    Class.new do
+      include type
+      asn1_integer :a
+    end
+  end
+
+  it "takes no-args" do
+    template.new.should be_an_instance_of template
+  end
+
+  it "takes a block and yields the new instance" do
+    template.new do |o|
+      o.should be_an_instance_of template
+    end
+  end
+
+  context "rejects blocks with arity != 1" do
+    context "0" do
+      it { -> { template.new { Object.new } }.should raise_error ArgumentError }
+    end
+
+    context ">1" do
+      it { -> { template.new { |a,b| Object.new } }.should raise_error ArgumentError }
+    end
+  end
+
+  it "allows assignment to its fields once instantiated" do
+    o = template.new
+    o.a = 42
+    o.a.should == 42
+  end
+
+  it "allows assignment to its fields inside the block" do
+    obj = template.new do |o|
+      o.a = 42
+    end
+    obj.a.should == 42
+  end
+end
       
 describe "Krypt::ASN1::Template::Sequence" do
   it_behaves_like "Krypt::ASN1::Template"
+  it_behaves_like "constructed type constructor", Krypt::ASN1::Template::Sequence
 end
 
 describe "Krypt::ASN1::Template::Set" do
   it_behaves_like "Krypt::ASN1::Template"
+  it_behaves_like "constructed type constructor", Krypt::ASN1::Template::Set
 end
+
+describe "Krypt::ASN1::Template::Choice" do
+  let (:choice_value) { Krypt::ASN1::Template::ChoiceValue }
+  let (:template) do
+    Class.new do
+      include Krypt::ASN1::Template::Choice
+      asn1_integer 
+      asn1_boolean
+    end
+  end
+
+  it "takes no-args" do
+    template.new.should be_an_instance_of template
+  end
+
+  it "takes a block and yields the new instance" do
+    template.new do |o|
+      o.should be_an_instance_of template
+    end
+  end
+
+  context "rejects blocks with arity != 1" do
+    context "0" do
+      it { -> { template.new { Object.new } }.should raise_error ArgumentError }
+    end
+
+    context ">1" do
+      it { -> { template.new { |a,b| Object.new } }.should raise_error ArgumentError }
+    end
+  end
+
+  it "allows assignment to 'value' once instantiated" do
+    o = template.new
+    o.value = choice_value.new(Krypt::ASN1::INTEGER)
+    o.value.should be_an_instance_of choice_value
+  end
+
+  it "allows assignment to 'value' inside the block" do
+    obj = template.new do |o|
+      o.value = choice_value.new(Krypt::ASN1::INTEGER)
+    end
+    obj.value.should be_an_instance_of choice_value 
+  end
+
+end
+

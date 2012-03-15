@@ -24,6 +24,7 @@ module Krypt::ASN1
     module Choice
       include Template
       def self.included(base)
+        Template.mod_included_callback(base)
         definition = {
           codec: :CHOICE,
           options: nil,
@@ -33,10 +34,12 @@ module Krypt::ASN1
         base.extend Template::Accessor
         base.extend Template::ChoiceDefinitions
         base.extend Template::Parser
+        base.asn1_attr_accessor :value, :@value
       end
     end
 
     def self.init_cons_definition(base)
+      mod_included_callback(base)
       definition = {
         codec: yield,
         options: nil,
