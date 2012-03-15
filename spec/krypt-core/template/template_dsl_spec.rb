@@ -186,16 +186,6 @@ shared_examples_for "constructed type constructor" do |type|
     end
   end
 
-  context "rejects blocks with arity != 1" do
-    context "0" do
-      it { -> { template.new { Object.new } }.should raise_error ArgumentError }
-    end
-
-    context ">1" do
-      it { -> { template.new { |a,b| Object.new } }.should raise_error ArgumentError }
-    end
-  end
-
   it "allows assignment to its fields once instantiated" do
     o = template.new
     o.a = 42
@@ -237,16 +227,6 @@ describe "Krypt::ASN1::Template::Choice" do
   it "takes a block and yields the new instance" do
     template.new do |o|
       o.should be_an_instance_of template
-    end
-  end
-
-  context "rejects blocks with arity != 1" do
-    context "0" do
-      it { -> { template.new { Object.new } }.should raise_error ArgumentError }
-    end
-
-    context ">1" do
-      it { -> { template.new { |a,b| Object.new } }.should raise_error ArgumentError }
     end
   end
 
