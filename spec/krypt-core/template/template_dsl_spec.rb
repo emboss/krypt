@@ -180,23 +180,10 @@ shared_examples_for "constructed type constructor" do |type|
     template.new.should be_an_instance_of template
   end
 
-  it "takes a block and yields the new instance" do
-    template.new do |o|
-      o.should be_an_instance_of template
-    end
-  end
-
   it "allows assignment to its fields once instantiated" do
     o = template.new
     o.a = 42
     o.a.should == 42
-  end
-
-  it "allows assignment to its fields inside the block" do
-    obj = template.new do |o|
-      o.a = 42
-    end
-    obj.a.should == 42
   end
 end
       
@@ -224,24 +211,10 @@ describe "Krypt::ASN1::Template::Choice" do
     template.new.should be_an_instance_of template
   end
 
-  it "takes a block and yields the new instance" do
-    template.new do |o|
-      o.should be_an_instance_of template
-    end
-  end
-
   it "allows assignment to 'value' once instantiated" do
     o = template.new
     o.value = choice_value.new(Krypt::ASN1::INTEGER)
     o.value.should be_an_instance_of choice_value
   end
-
-  it "allows assignment to 'value' inside the block" do
-    obj = template.new do |o|
-      o.value = choice_value.new(Krypt::ASN1::INTEGER)
-    end
-    obj.value.should be_an_instance_of choice_value 
-  end
-
 end
 

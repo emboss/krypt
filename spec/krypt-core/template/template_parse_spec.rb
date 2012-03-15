@@ -26,6 +26,14 @@ describe "Krypt::ASN1::Template::Sequence" do
         let(:der) { "\x30\x03\x04\x01\x01" }
         it { -> { subject.version }.should raise_error asn1error }
       end
+      context "rejects encoding that is too long" do
+        let(:der) { "\x30\x06\x04\x01\x01\x04\x01\x01" }
+        it { -> { subject.version }.should raise_error asn1error }
+      end
+      context "rejects encoding that is not complete" do
+        let(:der) { "\x30\x03\x04\x01" }
+        it { -> { subject.version }.should raise_error asn1error }
+      end
     end
 
     context "two fields" do
