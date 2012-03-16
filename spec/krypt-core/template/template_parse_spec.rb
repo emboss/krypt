@@ -749,7 +749,7 @@ describe "Krypt::ASN1::Template::Sequence" do
       end
     end
 
-    context "asn1_sequence_of" do
+    context "SEQUENCE OF" do
       context "standard" do
         let(:template) do
           t = type
@@ -780,6 +780,100 @@ describe "Krypt::ASN1::Template::Sequence" do
           its(:a) { should be_an_instance_of Array }
           it { subject.a.size.should == 2 }
           it { subject.a.all? { |asn1| asn1.instance_of?(type) && asn1.value == 1 }.should == true }
+          its(:to_der) { should == der }
+        end
+      end
+    end
+
+    context "SET OF" do
+      context "standard" do
+        let(:template) do
+          t = type
+          Class.new do
+            include SEQ
+            asn1_set_of :a, t
+          end
+        end
+
+        context "multiple Templates" do
+          let(:template2) do
+            Class.new do
+              include SEQ
+              asn1_integer :a
+            end
+          end
+          let(:type) { template2 }
+          let(:der) { "\x30\x0C\x31\x0A\x30\x03\x02\x01\x01\x30\x03\x02\x01\x01" }
+          its(:a) { should be_an_instance_of Array }
+          it { subject.a.size.should == 2 }
+          it { subject.a.all? { |asn1| asn1.instance_of?(type) && asn1.a == 1 }.should == true }
+          its(:to_der) { should == der }
+        end
+
+        context "multiple Primitives" do
+          let(:type) { Krypt::ASN1::Integer }
+          let(:der) { "\x30\x08\x31\x06\x02\x01\x01\x02\x01\x01" }
+          its(:a) { should be_an_instance_of Array }
+          it { subject.a.size.should == 2 }
+          it { subject.a.all? { |asn1| asn1.instance_of?(type) && asn1.value == 1 }.should == true }
+          its(:to_der) { should == der }
+        end
+      end
+    end
+
+    context "ANY values" do
+      context "at beginning" do
+        let(:template) do
+          Class.new do
+            include SEQ
+            asn1_any :a
+            asn1_boolean :b
+          end
+        end
+
+        context "as primitive value" do
+          let(:der) { "\x30\x06\x02\x01\x01\x01\x01\xFF" }
+          its(:a) { should be_an_instance_of Krypt::ASN1::Integer }
+          it { subject.a.value.should == 1 }
+          its(:b) { should == true }
+          its(:to_der) { should == der }
+        end
+
+        context "as sequence" do
+          let(:der) { "\x30\x0B\x30\x06\x02\x01\x01\x02\x01\x01\x01\x01\xFF" }
+          its(:a) { should be_an_instance_of Krypt::ASN1::Sequence }
+          it { subject.a.value.should be_an_instance_of Array }
+          it { subject.a.value.size.should == 2 }
+          it { subject.a.value.all? { |v| v.instance_of?(Krypt::ASN1::Integer) && v.value == 1 }.should == true }
+          its(:b) { should == true }
+          its(:to_der) { should == der }
+        end
+      end
+
+      context "at end" do
+        let(:template) do
+          Class.new do
+            include SEQ
+            asn1_integer :a
+            asn1_any :b
+          end
+        end
+
+        context "as primitive value" do
+          let(:der) { "\x30\x06\x02\x01\x01\x01\x01\xFF" }
+          its(:a) { should == 1 }
+          its(:b) { should be_an_instance_of Krypt::ASN1::Boolean }
+          it { subject.b.value.should == true }
+          its(:to_der) { should == der }
+        end
+
+        context "as sequence" do
+          let(:der) { "\x30\x0B\x02\x01\x02\x30\x06\x02\x01\x01\x02\x01\x01" }
+          its(:a) { should == 2 }
+          its(:b) { should be_an_instance_of Krypt::ASN1::Sequence }
+          it { subject.b.value.should be_an_instance_of Array }
+          it { subject.b.value.size.should == 2 }
+          it { subject.b.value.all? { |v| v.instance_of?(Krypt::ASN1::Integer) && v.value == 1 }.should == true }
           its(:to_der) { should == der }
         end
       end
