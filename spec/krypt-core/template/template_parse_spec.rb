@@ -748,5 +748,41 @@ describe "Krypt::ASN1::Template::Sequence" do
         end
       end
     end
+
+    context "asn1_sequence_of" do
+      context "standard" do
+        let(:template) do
+          t = type
+          Class.new do
+            include SEQ
+            asn1_sequence_of :a, t
+          end
+        end
+
+        context "multiple Templates" do
+          let(:template2) do
+            Class.new do
+              include SEQ
+              asn1_integer :a
+            end
+          end
+          let(:type) { template2 }
+          let(:der) { "\x30\x0C\x30\x0A\x30\x03\x02\x01\x01\x30\x03\x02\x01\x01" }
+          its(:a) { should be_an_instance_of Array }
+          it { subject.a.size.should == 2 }
+          it { subject.a.all? { |asn1| asn1.instance_of?(type) && asn1.a == 1 }.should == true }
+          its(:to_der) { should == der }
+        end
+
+        context "multiple Primitives" do
+          let(:type) { Krypt::ASN1::Integer }
+          let(:der) { "\x30\x08\x30\x06\x02\x01\x01\x02\x01\x01" }
+          its(:a) { should be_an_instance_of Array }
+          it { subject.a.size.should == 2 }
+          it { subject.a.all? { |asn1| asn1.instance_of?(type) && asn1.value == 1 }.should == true }
+          its(:to_der) { should == der }
+        end
+      end
+    end
   end
 end
