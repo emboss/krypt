@@ -877,6 +877,215 @@ describe "Krypt::ASN1::Template::Sequence" do
           its(:to_der) { should == der }
         end
       end
+
+      context "optionally and tagged between mandatory" do
+        let(:template) do
+          Class.new do
+            include SEQ
+            asn1_integer :a
+            asn1_any :b, tag: 0, tagging: :IMPLICIT, optional: true
+            asn1_boolean :c
+          end
+        end
+
+        context "present" do
+          let(:der) { "\x30\x09\x02\x01\x01\x80\x01a\x01\x01\xFF" }
+          its(:a) { should == 1 }
+          its(:b) { should be_an_instance_of Krypt::ASN1::ASN1Data }
+          it { subject.b.value.should == "a" }
+          it { subject.b.tag.should == 0 }
+          it { subject.b.tag_class.should == :CONTEXT_SPECIFIC }
+          its(:c) { should == true }
+          its(:to_der) { should == der }
+        end
+
+        context "absent" do
+          let(:der) { "\x30\x06\x02\x01\x01\x01\x01\xFF" }
+          its(:a) { should == 1 }
+          its(:b) { should be_nil }
+          its(:c) { should == true }
+          its(:to_der) { should == der }
+        end
+      end
+
+      context "tagged with default" do
+        let(:null) { Krypt::ASN1::Null.new }
+        context
+        let(:template) do
+          n = null
+          Class.new do
+            include SEQ
+            asn1_integer :a
+            asn1_any :b, tag: 0, tagging: :IMPLICIT, default: n
+            asn1_boolean :c
+          end
+        end
+
+        context "present" do
+          let(:der) { "\x30\x09\x02\x01\x01\x80\x01a\x01\x01\xFF" }
+          its(:a) { should == 1 }
+          its(:b) { should be_an_instance_of Krypt::ASN1::ASN1Data }
+          it { subject.b.value.should == "a" }
+          it { subject.b.tag.should == 0 }
+          it { subject.b.tag_class.should == :CONTEXT_SPECIFIC }
+          its(:c) { should == true }
+          its(:to_der) { should == der }
+        end
+
+        context "absent" do
+          let(:der) { "\x30\x06\x02\x01\x01\x01\x01\xFF" }
+          its(:a) { should == 1 }
+          its(:b) { should == null }
+          its(:c) { should == true }
+          its(:to_der) { should == der }
+        end
+      end
+    end
+
+    context "inner CHOICEs" do
+      context "rejects tagging other than :EXPLICIT" do
+        let(:choice) do
+          Class.new do
+            include Krypt::ASN1::Template::Choice
+            asn1_integer
+          end
+        end
+        let(:template) do
+          c = choice
+          tc = tagging
+          Class.new do
+            include SEQ
+            asn1_template :a, c, tag: 0, tagging: tc
+          end
+        end
+
+        context ":IMPLICIT" do
+          let(:tagging) { :IMPLICIT }
+          let(:der) { "\x30\x03\x80\x01\x01" }
+          it { -> { subject.a.value }.should raise_error asn1error }
+        end
+
+        context ":CONTEXT_SPECIFIC" do
+          let(:tagging) { :CONTEXT_SPECIFIC }
+          let(:der) { "\x30\x03\x80\x01\x01" }
+          it { -> { subject.a.value }.should raise_error asn1error }
+        end
+
+        context ":APPLICATION" do
+          let(:tagging) { :APPLICATION }
+          let(:der) { "\x30\x03\x40\x01\x01" }
+          it { -> { subject.a.value }.should raise_error asn1error }
+        end
+
+        context ":PRIVATE" do
+          let(:tagging) { :PRIVATE }
+          let(:der) { "\x30\x03\xC0\x01\x01" }
+          it { -> { subject.a.value }.should raise_error asn1error }
+        end
+
+        #Can be argued. For now, let's not endorse redundancy
+        context ":UNIVERSAL" do
+          let(:tagging) { :UNIVERSAL }
+          let(:der) { "\x30\x03\x02\x01\x01" }
+          it { -> { subject.a.value }.should raise_error asn1error }
+        end
+
+        context ":EXPLICIT" do
+          let(:tagging) { :EXPLICIT }
+          let(:der) { "\x30\x05\xA0\x03\x02\x01\x01" }
+          it { -> { subject.a.value }.should_not raise_error }
+        end
+      end
+
+      context "at beginning, primitive choices only" do
+        let(:choice) do
+          Class.new do
+            include Krypt::ASN1::Template::Choice
+            asn1_integer
+            asn1_boolean
+          end
+        end
+        let(:template) do
+          c = choice
+          Class.new do
+            include SEQ
+            asn1_template :a, c
+            asn1_octet_string :b
+          end
+        end
+
+        context "match first" do
+          let(:der) { "\x30\x06\x02\x01\x01\x04\x01a" }
+          its(:a) { should be_an_instance_of choice }
+          it { subject.a.type.should == Krypt::ASN1::INTEGER }
+          it { subject.a.tag.should == Krypt::ASN1::INTEGER }
+          it { subject.a.value.should == 1 }
+          its(:b) { should == "a" }
+          its(:to_der) { should == der }
+        end
+
+        context "match second" do
+          let(:der) { "\x30\x06\x01\x01\xFF\x04\x01a" }
+          its(:a) { should be_an_instance_of choice }
+          it { subject.a.type.should == Krypt::ASN1::BOOLEAN }
+          it { subject.a.tag.should == Krypt::ASN1::BOOLEAN }
+          it { subject.a.value.should == true }
+          its(:b) { should == "a" }
+          its(:to_der) { should == der }
+        end
+      end
+
+      context "primitive choices only, explicitly tagged and default value" do
+        let(:choice) do
+          Class.new do
+            include Krypt::ASN1::Template::Choice
+            asn1_integer
+            asn1_boolean
+          end
+        end
+        let(:default_value) do
+          choice.new do |o|
+            o.type = Krypt::ASN1::INTEGER
+            o.value = 42
+          end
+        end
+        let(:template) do
+          c = choice
+          v = default_value
+          Class.new do
+            include SEQ
+            asn1_template :a, c, tag: 0, tagging: :EXPLICIT, default: v
+            asn1_octet_string :b
+          end
+        end
+
+        context "present, match first" do
+          let(:der) { "\x30\x08\xA0\x03\x02\x01\x01\x04\x01a" }
+          its(:a) { should be_an_instance_of choice }
+          it { subject.a.type.should == Krypt::ASN1::INTEGER }
+          it { subject.a.tag.should == 0 }
+          it { subject.a.value.should == 1 }
+          its(:b) { should == "a" }
+          its(:to_der) { should == der }
+        end
+
+        context "present, match second" do
+          let(:der) { "\x30\x08\xA0\x03\x01\x01\xFF\x04\x01a" }
+          its(:a) { should be_an_instance_of choice }
+          it { subject.a.type.should == Krypt::ASN1::BOOLEAN }
+          it { subject.a.tag.should == 0 }
+          it { subject.a.value.should == true }
+          its(:b) { should == "a" }
+          its(:to_der) { should == der }
+        end
+
+        context "absent" do
+          let(:der) { "\x30\x03\x04\x01a" }
+          its(:a) { should == default_value }
+          its(:b) { should == "a" }
+          its(:to_der) { should == der }
+        end
+      end
     end
   end
 end
