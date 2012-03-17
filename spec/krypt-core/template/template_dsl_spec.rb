@@ -211,7 +211,6 @@ describe "Krypt::ASN1::Template::Set" do
 end
 
 describe "Krypt::ASN1::Template::Choice" do
-  let (:choice_value) { Krypt::ASN1::Template::ChoiceValue }
   let (:template) do
     Class.new do
       include Krypt::ASN1::Template::Choice
@@ -232,16 +231,27 @@ describe "Krypt::ASN1::Template::Choice" do
 
   it "allows assignment to 'value' once instantiated" do
     o = template.new
-    o.value = choice_value.new(Krypt::ASN1::INTEGER)
-    o.value.should be_an_instance_of choice_value
+    o.value = 42
+    o.value.should == 42 
+  end
+
+  it "allows assignment to 'type' once instantiated" do
+    o = template.new
+    o.type = Krypt::ASN1::INTEGER
+    o.type.should == Krypt::ASN1::INTEGER
+  end
+
+  it "allows assignment to 'tag' once instantiated" do
+    o = template.new
+    o.tag = Krypt::ASN1::INTEGER
+    o.tag.should == Krypt::ASN1::INTEGER
   end
 
   it "allows assignment to 'value' inside the block" do
     obj = template.new do |o|
-      o.value = choice_value.new(Krypt::ASN1::INTEGER)
+      o.value = 42
     end
-    obj.value.should be_an_instance_of choice_value 
+    obj.value.should == 42 
   end
-
 end
 

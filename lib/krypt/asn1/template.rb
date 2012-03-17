@@ -23,6 +23,7 @@ module Krypt::ASN1
 
     module Choice
       include Template
+
       def self.included(base)
         Template.mod_included_callback(base)
         definition = {
@@ -35,6 +36,8 @@ module Krypt::ASN1
         base.extend Template::ChoiceDefinitions
         base.extend Template::Parser
         base.asn1_attr_accessor :value, :@value
+        base.asn1_attr_accessor :tag, :@tag
+        base.asn1_attr_accessor :type, :@type
       end
     end
 
@@ -118,28 +121,32 @@ module Krypt::ASN1
       extend GeneralDefinitions
       class << self
         define_method :declare_prim do |meth, type|
-          define_method meth do
+          define_method meth do |opts=nil|
             GeneralDefinitions.add_to_definition(self, {
               codec: :PRIMITIVE,
-              type: type
+              type: type,
+              options: opts
             })
           end
         end
 
         define_method :declare_special_typed do |meth, codec|
-          define_method meth do |type|
+          define_method meth do |type, opts=nil|
             raise ArgumentError.new "Type must not be nil" if type == nil
             GeneralDefinitions.add_to_definition(self, {
               codec: codec,
-              type: type
+              type: type,
+              options: opts
             })
           end
         end
 
         define_method :declare_any do
-          define_method :asn1_any do
+          define_method :asn1_any do |opts=nil|
             GeneralDefinitions.add_to_definition(self, {
-              codec: :ANY
+              codec: :ANY,
+              type: Krypt::ASN1::ASN1Data,
+              options: opts
             })
           end
         end
@@ -190,6 +197,7 @@ module Krypt::ASN1
 
             GeneralDefinitions.add_to_definition(self, {
               codec: :ANY,
+              type: Krypt::ASN1::ASN1Data,
               name: iv_name,
               options: opts
             })
@@ -198,18 +206,6 @@ module Krypt::ASN1
       end
 
       init_methods
-    end
-
-    class ChoiceValue
-      attr_accessor :type
-      attr_accessor :tag
-      attr_accessor :value
-        
-      def initialize(type, value = nil, tag=nil)
-        @type = type
-        @value = value
-        @tag = tag
-      end
     end
   end
 end
