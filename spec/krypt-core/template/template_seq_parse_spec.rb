@@ -1035,6 +1035,44 @@ describe "Krypt::ASN1::Template::Sequence" do
         end
       end
 
+      context "with inner tags" do
+        let(:choice) do
+          Class.new do
+            include Krypt::ASN1::Template::Choice
+            asn1_integer tag: 0, tagging: :IMPLICIT
+            asn1_boolean tag: 1, tagging: :EXPLICIT
+          end
+        end
+        let(:template) do
+          c = choice
+          Class.new do
+            include SEQ
+            asn1_template :a, c
+            asn1_octet_string :b
+          end
+        end
+
+        context "match first" do
+          let(:der) { "\x30\x06\x80\x01\x01\x04\x01a" }
+          its(:a) { should be_an_instance_of choice }
+          it { subject.a.type.should == Krypt::ASN1::INTEGER }
+          it { subject.a.tag.should == 0 }
+          it { subject.a.value.should == 1 }
+          its(:b) { should == "a" }
+          its(:to_der) { should == der }
+        end
+
+        context "match second" do
+          let(:der) { "\x30\x08\xA1\x03\x01\x01\xFF\x04\x01a" }
+          its(:a) { should be_an_instance_of choice }
+          it { subject.a.type.should == Krypt::ASN1::BOOLEAN }
+          it { subject.a.tag.should == 1 }
+          it { subject.a.value.should == true }
+          its(:b) { should == "a" }
+          its(:to_der) { should == der }
+        end
+      end
+
       context "primitive choices only, explicitly tagged and default value" do
         let(:choice) do
           Class.new do
@@ -1063,7 +1101,7 @@ describe "Krypt::ASN1::Template::Sequence" do
           let(:der) { "\x30\x08\xA0\x03\x02\x01\x01\x04\x01a" }
           its(:a) { should be_an_instance_of choice }
           it { subject.a.type.should == Krypt::ASN1::INTEGER }
-          it { subject.a.tag.should == 0 }
+          it { subject.a.tag.should == 2 } # it's the tag within the choice, the outer tag doesn't matter
           it { subject.a.value.should == 1 }
           its(:b) { should == "a" }
           its(:to_der) { should == der }
@@ -1073,7 +1111,7 @@ describe "Krypt::ASN1::Template::Sequence" do
           let(:der) { "\x30\x08\xA0\x03\x01\x01\xFF\x04\x01a" }
           its(:a) { should be_an_instance_of choice }
           it { subject.a.type.should == Krypt::ASN1::BOOLEAN }
-          it { subject.a.tag.should == 0 }
+          it { subject.a.tag.should == 1 } # it's the tag within the choice, the outer tag doesn't matter
           it { subject.a.value.should == true }
           its(:b) { should == "a" }
           its(:to_der) { should == der }
@@ -1083,6 +1121,60 @@ describe "Krypt::ASN1::Template::Sequence" do
           let(:der) { "\x30\x03\x04\x01a" }
           its(:a) { should == default_value }
           its(:b) { should == "a" }
+          its(:to_der) { should == der }
+        end
+      end
+
+      context "with inner tagged templates, while outer CHOICE is explicitly tagged" do
+        let(:template2) do
+          Class.new do
+            include Krypt::ASN1::Template::Sequence
+            asn1_integer :a
+          end
+        end
+        let(:template3) do
+          Class.new do
+            include Krypt::ASN1::Template::Sequence
+            asn1_boolean :a
+          end
+        end
+        let(:choice) do
+          t2 = template2
+          t3 = template3
+          Class.new do
+            include Krypt::ASN1::Template::Choice
+            asn1_template t2, tag: 0, tagging: :IMPLICIT
+            asn1_template t3, tag: 1, tagging: :EXPLICIT
+          end
+        end
+        let(:template) do
+          c = choice
+          Class.new do
+            include SEQ
+            asn1_integer :a
+            asn1_template :b, c, tag: 2, tagging: :EXPLICIT
+          end
+        end
+
+        context "match first" do
+          let(:der) { "\x30\x0A\x02\x01\x01\xA2\x05\xA0\x03\x02\x01\x01" }
+          its(:a) { should == 1 }
+          its(:b) { should be_an_instance_of choice }
+          it { subject.b.type.should == template2 }
+          it { subject.b.tag.should == 0 } # it's the tag within the choice, the outer tag doesn't matter
+          it { subject.b.value.should be_an_instance_of template2 }
+          it { subject.b.value.a.should == 1 }
+          its(:to_der) { should == der }
+        end
+
+        context "match second" do
+          let(:der) { "\x30\x0C\x02\x01\x01\xA2\x07\xA1\x05\x30\x03\x01\x01\xFF" }
+          its(:a) { should == 1 }
+          its(:b) { should be_an_instance_of choice }
+          it { subject.b.type.should == template3 }
+          it { subject.b.tag.should == 1 } # it's the tag within the choice, the outer tag doesn't matter
+          it { subject.b.value.should be_an_instance_of template3 }
+          it { subject.b.value.a.should == true }
           its(:to_der) { should == der }
         end
       end
