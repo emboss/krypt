@@ -200,14 +200,44 @@ shared_examples_for "constructed type constructor" do |type|
   end
 end
       
+shared_examples_for "DER-based equality with <=>" do |type, tag|
+  let(:template) do
+    t = type
+    Class.new do
+      include t
+      asn1_integer :a
+    end
+  end
+
+  context "determines equality based on the encoding" do
+    let(:der) { "#{tag}\x03\x02\x01\x01" }
+    let(:v1) { template.parse_der(der) }
+    let(:v2) { template.parse_der(der) }
+    it { v1.should == v2 && v1.eql?(v2).should == false }
+  end
+
+  context "finds a value encoded and reparsed to be equal to itself" do
+    let(:v1) { template.parse_der("#{tag}\x03\x02\x01\x01") }
+    it { v1.should == (template.parse_der(v1.to_der)) }
+  end
+
+  context "when equal in terms of DER but not BER" do
+    let(:v1) { template.parse_der("#{tag}\x83\x00\x00\x03\x02\x01\x01") }
+    let(:v2) { template.parse_der("#{tag}\x03\x02\x01\x01") }
+    it { v1.should_not == v2 }
+  end
+end
+
 describe "Krypt::ASN1::Template::Sequence" do
   it_behaves_like "Krypt::ASN1::Template"
   it_behaves_like "constructed type constructor", Krypt::ASN1::Template::Sequence
+  it_behaves_like "DER-based equality with <=>", Krypt::ASN1::Template::Sequence, "\x30"
 end
 
 describe "Krypt::ASN1::Template::Set" do
   it_behaves_like "Krypt::ASN1::Template"
   it_behaves_like "constructed type constructor", Krypt::ASN1::Template::Set
+  it_behaves_like "DER-based equality with <=>", Krypt::ASN1::Template::Set, "\x31"
 end
 
 describe "Krypt::ASN1::Template::Choice" do
@@ -219,39 +249,41 @@ describe "Krypt::ASN1::Template::Choice" do
     end
   end
 
-  it "takes no-args" do
-    template.new.should be_an_instance_of template
-  end
-
-  it "takes a block and yields the new instance" do
-    template.new do |o|
-      o.should be_an_instance_of template
+  describe "#new" do
+    it "takes no-args" do
+      template.new.should be_an_instance_of template
     end
-  end
 
-  it "allows assignment to 'value' once instantiated" do
-    o = template.new
-    o.value = 42
-    o.value.should == 42 
-  end
+    it "takes a block and yields the new instance" do
+      template.new do |o|
+        o.should be_an_instance_of template
+      end
+    end
 
-  it "allows assignment to 'type' once instantiated" do
-    o = template.new
-    o.type = Krypt::ASN1::INTEGER
-    o.type.should == Krypt::ASN1::INTEGER
-  end
-
-  it "allows assignment to 'tag' once instantiated" do
-    o = template.new
-    o.tag = Krypt::ASN1::INTEGER
-    o.tag.should == Krypt::ASN1::INTEGER
-  end
-
-  it "allows assignment to 'value' inside the block" do
-    obj = template.new do |o|
+    it "allows assignment to 'value' once instantiated" do
+      o = template.new
       o.value = 42
+      o.value.should == 42 
     end
-    obj.value.should == 42 
+
+    it "allows assignment to 'type' once instantiated" do
+      o = template.new
+      o.type = Krypt::ASN1::INTEGER
+      o.type.should == Krypt::ASN1::INTEGER
+    end
+
+    it "allows assignment to 'tag' once instantiated" do
+      o = template.new
+      o.tag = Krypt::ASN1::INTEGER
+      o.tag.should == Krypt::ASN1::INTEGER
+    end
+
+    it "allows assignment to 'value' inside the block" do
+      obj = template.new do |o|
+        o.value = 42
+      end
+      obj.value.should == 42 
+    end
   end
 end
 

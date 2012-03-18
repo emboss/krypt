@@ -1,5 +1,6 @@
 module Krypt::ASN1
   module Template
+    include Comparable
 
     module Sequence
       include Template
@@ -23,7 +24,7 @@ module Krypt::ASN1
       include Template
 
       def self.included(base)
-        Template.mod_included_callback(base)
+        Template._mod_included_callback(base)
         definition = {
           codec: :CHOICE,
           layout: []
@@ -59,7 +60,7 @@ module Krypt::ASN1
     private 
 
     def self.init_cons_definition(base)
-      mod_included_callback(base)
+      _mod_included_callback(base)
       definition = {
         codec: yield,
         layout: [],
@@ -72,7 +73,7 @@ module Krypt::ASN1
     end
 
     def self.init_cons_of_definition(base)
-      mod_included_callback(base)
+      _mod_included_callback(base)
       definition = { codec: yield }
       base.instance_variable_set(:@definition, definition)
       base.extend Template::Accessor
@@ -135,10 +136,10 @@ module Krypt::ASN1
     module Accessor
       def asn1_attr_accessor(name, iv_name)
         define_method name do
-          get_callback(iv_name)
+          _get_callback(iv_name)
         end
         define_method "#{name.to_s}=".to_sym do |value|
-          set_callback(iv_name, value)
+          _set_callback(iv_name, value)
         end
       end
     end

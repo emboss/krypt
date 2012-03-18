@@ -730,7 +730,7 @@ describe Krypt::ASN1::ASN1Data do
       context "when equal" do
         let(:v1) { decoder.decode("\x30\x03\x02\x01\x01") }
         let(:v2) { decoder.decode("\x30\x03\x02\x01\x01") }
-        it { v1.should == v2 }
+        it { v1.should == v2 && v1.eql?(v2).should == false }
       end
 
       context "finds a value encoded and reparsed to be equal to itself" do
