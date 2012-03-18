@@ -87,17 +87,17 @@ describe Krypt::Digest do
         end 
       end
 
-#     context "RIPEMD160" do
-#        context "uppercase" do
-#          let(:algo) { "RIPEMD160" }
-#          its(:name) { should == algo }
-#        end 
-#
-#        context "lowercase" do
-#          let(:algo) { "ripemd160" }
-#          its(:name) { should == "RIPEMD160" }
-#        end 
-#      end
+     context "RIPEMD160" do
+        context "uppercase" do
+          let(:algo) { "RIPEMD160" }
+          its(:name) { should == algo }
+        end 
+
+        context "lowercase" do
+          let(:algo) { "ripemd160" }
+          its(:name) { should == "RIPEMD160" }
+        end 
+      end unless RUBY_PLATFORM =~ /java/
 
       context "MD5" do
         context "uppercase" do
@@ -144,10 +144,10 @@ describe Krypt::Digest do
         its(:name) { should == "SHA512" }
       end
 
-#      context "RIPEMD-160" do
-#        let(:oid) { "1.3.36.3.2.1" }
-#        its(:name) { should == "RIPEMD160" }
-#      end
+      context "RIPEMD-160" do
+        let(:oid) { "1.3.36.3.2.1" }
+        its(:name) { should == "RIPEMD160" }
+      end unless RUBY_PLATFORM =~ /java/
 
       context "MD5" do
         let(:oid) { "1.2.840.113549.2.5" }
@@ -330,10 +330,10 @@ describe Krypt::Digest do
         its(:digest_length) { should == 64 }
       end
 
-#      context "RIPEMD160" do
-#        let(:algo) { "RIPEMD160" }
-#        its(:digest_length) { should == 20 }
-#      end
+      context "RIPEMD160" do
+        let(:algo) { "RIPEMD160" }
+        its(:digest_length) { should == 20 }
+      end unless RUBY_PLATFORM =~ /java/
 
       context "MD5" do
         let(:algo) { "MD5" }
@@ -371,10 +371,10 @@ describe Krypt::Digest do
         its(:block_length) { should == 128 }
       end
 
-#      context "RIPEMD160" do
-#        let(:algo) { "RIPEMD160" }
-#        its(:block_length) { should == 64 }
-#      end
+      context "RIPEMD160" do
+        let(:algo) { "RIPEMD160" }
+        its(:block_length) { should == 64 }
+      end unless RUBY_PLATFORM =~ /java/
 
       context "MD5" do
         let(:algo) { "MD5" }
@@ -413,10 +413,10 @@ describe Krypt::Digest do
         it { klass::SHA512.new.digest(data).should == expected }
       end
 
-#      context "RIPEMD160" do
-#        let(:algo) { "RIPEMD160" }
-#        it { klass::RIPEMD160.new.digest(data).should == expected }
-#      end
+      context "RIPEMD160" do
+        let(:algo) { "RIPEMD160" }
+        it { klass::RIPEMD160.new.digest(data).should == expected }
+      end unless RUBY_PLATFORM =~ /java/
 
       context "MD5" do
         let(:algo) { "MD5" }
@@ -600,74 +600,74 @@ describe Krypt::Digest do
   end
 
   # taken from http://homes.esat.kuleuven.be/~bosselae/ripemd160.html
-#  context "RIPEMD-160 implementation conforms to test vectors" do
-#      let(:instance) { klass::RIPEMD160.new }
-#      let(:binary) { instance.digest(data) }
-#      let(:hex) { instance.hexdigest(data) }
-#
-#    context "empty string" do
-#      let(:data) { "" }
-#      let(:expected) { "9C1185A5C5E9FC54612808977EE8F548B2258D31" }
-#        it { binary.should == [expected].pack("H*") }
-#        it { hex.upcase.should == expected }
-#    end
-#
-#    context "a" do
-#      let(:data) { "a" }
-#      let(:expected) { "0BDC9D2D256B3EE9DAAE347BE6F4DC835A467FFE" }
-#        it { binary.should == [expected].pack("H*") }
-#        it { hex.upcase.should == expected }
-#    end
-#
-#    context "abc" do
-#      let(:data) { "abc" }
-#      let(:expected) { "8EB208F7E05D987A9B044A8E98C6B087F15A0BFC" }
-#        it { binary.should == [expected].pack("H*") }
-#        it { hex.upcase.should == expected }
-#    end
-#
-#    context "message digest" do
-#      let(:data) { "message digest" }
-#      let(:expected) { "5D0689EF49D2FAE572B881B123A85FFA21595F36" }
-#        it { binary.should == [expected].pack("H*") }
-#        it { hex.upcase.should == expected }
-#    end
-#
-#    context "a to z" do
-#      let(:data) { "abcdefghijklmnopqrstuvwxyz" }
-#      let(:expected) { "F71C27109C692C1B56BBDCEB5B9D2865B3708DBC" }
-#        it { binary.should == [expected].pack("H*") }
-#        it { hex.upcase.should == expected }
-#    end
-#
-#    context "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq" do
-#      let(:data) { "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq" }
-#      let(:expected) { "12A053384A9C0C88E405A06C27DCF49ADA62EB2B" }
-#        it { binary.should == [expected].pack("H*") }
-#        it { hex.upcase.should == expected }
-#    end
-#
-#    context "A...Za...z0...9" do
-#      let(:data) { "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" }
-#      let(:expected) { "B0E20B6E3116640286ED3A87A5713079B21F5189" }
-#        it { binary.should == [expected].pack("H*") }
-#        it { hex.upcase.should == expected }
-#    end
-#
-#    context "8 times 1 to 0" do
-#      let(:data) { "1234567890" * 8 }
-#      let(:expected) { "9B752E45573D4B39F4DBD3323CAB82BF63326BFB" }
-#        it { binary.should == [expected].pack("H*") }
-#        it { hex.upcase.should == expected }
-#    end
-#
-#    context "million times 'a'" do
-#      let(:data) { "a" * 10**6 }
-#      let(:expected) { "52783243C1697BDBE16D37F97F68F08325DC1528" }
-#        it { binary.should == [expected].pack("H*") }
-#        it { hex.upcase.should == expected }
-#    end
-#  end
+  context "RIPEMD-160 implementation conforms to test vectors" do
+      let(:instance) { klass::RIPEMD160.new }
+      let(:binary) { instance.digest(data) }
+      let(:hex) { instance.hexdigest(data) }
+
+    context "empty string" do
+      let(:data) { "" }
+      let(:expected) { "9C1185A5C5E9FC54612808977EE8F548B2258D31" }
+        it { binary.should == [expected].pack("H*") }
+        it { hex.upcase.should == expected }
+    end
+
+    context "a" do
+      let(:data) { "a" }
+      let(:expected) { "0BDC9D2D256B3EE9DAAE347BE6F4DC835A467FFE" }
+        it { binary.should == [expected].pack("H*") }
+        it { hex.upcase.should == expected }
+    end
+
+    context "abc" do
+      let(:data) { "abc" }
+      let(:expected) { "8EB208F7E05D987A9B044A8E98C6B087F15A0BFC" }
+        it { binary.should == [expected].pack("H*") }
+        it { hex.upcase.should == expected }
+    end
+
+    context "message digest" do
+      let(:data) { "message digest" }
+      let(:expected) { "5D0689EF49D2FAE572B881B123A85FFA21595F36" }
+        it { binary.should == [expected].pack("H*") }
+        it { hex.upcase.should == expected }
+    end
+
+    context "a to z" do
+      let(:data) { "abcdefghijklmnopqrstuvwxyz" }
+      let(:expected) { "F71C27109C692C1B56BBDCEB5B9D2865B3708DBC" }
+        it { binary.should == [expected].pack("H*") }
+        it { hex.upcase.should == expected }
+    end
+
+    context "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq" do
+      let(:data) { "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq" }
+      let(:expected) { "12A053384A9C0C88E405A06C27DCF49ADA62EB2B" }
+        it { binary.should == [expected].pack("H*") }
+        it { hex.upcase.should == expected }
+    end
+
+    context "A...Za...z0...9" do
+      let(:data) { "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" }
+      let(:expected) { "B0E20B6E3116640286ED3A87A5713079B21F5189" }
+        it { binary.should == [expected].pack("H*") }
+        it { hex.upcase.should == expected }
+    end
+
+    context "8 times 1 to 0" do
+      let(:data) { "1234567890" * 8 }
+      let(:expected) { "9B752E45573D4B39F4DBD3323CAB82BF63326BFB" }
+        it { binary.should == [expected].pack("H*") }
+        it { hex.upcase.should == expected }
+    end
+
+    context "million times 'a'" do
+      let(:data) { "a" * 10**6 }
+      let(:expected) { "52783243C1697BDBE16D37F97F68F08325DC1528" }
+        it { binary.should == [expected].pack("H*") }
+        it { hex.upcase.should == expected }
+    end
+  end unless RUBY_PLATFORM =~ /java/
 
   # taken from http://www.nsrl.nist.gov/testdata/
   context "MD5 implementation conforms to test vectors" do

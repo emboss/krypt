@@ -725,6 +725,51 @@ describe Krypt::ASN1::ASN1Data do
     end
   end
 
+  describe "<=>" do
+    context "determines equality based on equality of the DER encoding" do
+      context "when equal" do
+        let(:v1) { decoder.decode("\x30\x03\x02\x01\x01") }
+        let(:v2) { decoder.decode("\x30\x03\x02\x01\x01") }
+        it { v1.should == v2 }
+      end
+
+      context "finds a value encoded and reparsed to be equal to itself" do
+        let(:v1) { decoder.decode("\x30\x03\x02\x01\x01") }
+        it { v1.should == (decoder.decode(v1.to_der)) }
+      end
+
+      context "when not equal" do
+        let(:v1) { decoder.decode("\x30\x03\x03\x01\x01") }
+        let(:v2) { decoder.decode("\x30\x03\x02\x01\x01") }
+        it { v1.should_not == v2 }
+      end
+
+      context "when equal in terms of DER but not BER" do
+        let(:v1) { decoder.decode("\x30\x83\x00\x00\x03\x02\x01\x01") }
+        let(:v2) { decoder.decode("\x30\x03\x02\x01\x01") }
+        it { v1.should_not == v2 }
+      end
+    end
+
+    context "orders the values by tag" do
+      let(:v1) { decoder.decode("\x02\x01\x01") }
+      let(:v2) { decoder.decode("\x05\x00") }
+      let(:v3) { decoder.decode("\x13\x03abc") }
+      it { v1.should < v2 }
+      it { v2.should < v3 }
+      it { v1.should < v3 } #transitivity
+    end
+
+    context "orders the values in lexographical bit order when tag is equal" do
+      let(:v1) { decoder.decode("\x13\x01\x01") }
+      let(:v2) { decoder.decode("\x13\x03\x00\x00\x00") }
+      let(:v3) { decoder.decode("\x13\x05\x00\x00\x00\x00\x00") }
+      it { v1.should < v2 }
+      it { v2.should < v3 }
+      it { v1.should < v3 } 
+    end
+  end
+
   describe "extracted from ASN1" do
     subject { decoder.send(method, "#{tag}#{length}#{value}") }
     
