@@ -1,25 +1,25 @@
-module Krypt::ASN1
+module Krypt
   module X509
 
     class Certificate
-      include Krypt::ASN1::Template::Sequence
+      include ASN1::Template::Sequence
 
       class SubjectPublicKeyInfo
-        include Krypt::ASN1::Template::Sequence
+        include ASN1::Template::Sequence
 
-        asn1_template :algorithm, Krypt::ASN1::AlgorithmIdentifier
+        asn1_template :algorithm, ASN1::AlgorithmIdentifier
         asn1_bit_string :subject_pkey
       end
 
       class TBSCertificate
-        include Krypt::ASN1::Template::Sequence
+        include ASN1::Template::Sequence
 
         asn1_integer :version, tag: 0, tagging: :EXPLICIT, default: 0
         asn1_integer :serial
-        asn1_template :algorithm, Krypt::ASN1::AlgorithmIdentifier
-        asn1_template :issuer, Krypt::ASN1::DistinguishedName
+        asn1_template :algorithm, ASN1::AlgorithmIdentifier
+        asn1_template :issuer, ASN1::DistinguishedName
         asn1_template :validity, X509::Validity
-        asn1_template :subject, Krypt::ASN1::DistinguishedName
+        asn1_template :subject, ASN1::DistinguishedName
         asn1_template :subject_pkey, SubjectPublicKeyInfo
         asn1_bit_string :issuer_id, tag: 1, tagging: :IMPLICIT, optional: true
         asn1_bit_string :subject_id, tag: 2, tagging: :IMPLICIT, optional: true
@@ -27,7 +27,7 @@ module Krypt::ASN1
       end
 
       asn1_template :tbs_cert, TBSCertificate
-      asn1_template :algorithm, Krypt::ASN1::AlgorithmIdentifier
+      asn1_template :algorithm, ASN1::AlgorithmIdentifier
       asn1_bit_string :signature
     end
 

@@ -1181,3 +1181,4 @@ describe "Krypt::ASN1::Template::Sequence" do
     end
   end
 end
+
