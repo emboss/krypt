@@ -1,6 +1,4 @@
 module Krypt::ASN1
-  # available options { optional: false, tag: nil, tagging: nil, default: nil }
-  # definition { type, name, inner_def, options, parser, encoder }
   module Template
 
     module Sequence
@@ -28,7 +26,6 @@ module Krypt::ASN1
         Template.mod_included_callback(base)
         definition = {
           codec: :CHOICE,
-          options: nil,
           layout: []
         }
         base.instance_variable_set(:@definition, definition)
@@ -41,18 +38,47 @@ module Krypt::ASN1
       end
     end
 
+    module SequenceOf
+      include Template
+      def self.included(base)
+        Template.init_cons_of_definition(base) do
+          :SEQUENCE_OF
+        end
+      end
+    end
+
+    module SetOf
+      include Template
+      def self.included(base)
+        Template.init_cons_of_definition(base) do
+          :SET_OF
+        end
+      end
+    end
+
+    private 
+
     def self.init_cons_definition(base)
       mod_included_callback(base)
       definition = {
         codec: yield,
-        options: nil,
         layout: [],
         min_size: 0
       }
       base.instance_variable_set(:@definition, definition)
       base.extend Template::Accessor
-      base.extend Template::ConstructiveDefinitions
+      base.extend Template::ConstructedDefinitions
       base.extend Template::Parser
+    end
+
+    def self.init_cons_of_definition(base)
+      mod_included_callback(base)
+      definition = { codec: yield }
+      base.instance_variable_set(:@definition, definition)
+      base.extend Template::Accessor
+      base.extend Template::ConstructedOfDefinitions
+      base.extend Template::Parser
+      base.asn1_attr_accessor :value, :@value
     end
 
     module GeneralDefinitions
@@ -155,7 +181,7 @@ module Krypt::ASN1
       init_methods
     end 
 
-    module ConstructiveDefinitions
+    module ConstructedDefinitions
       extend GeneralDefinitions
       class << self
         define_method :declare_prim do |meth, type|
@@ -206,6 +232,14 @@ module Krypt::ASN1
       end
 
       init_methods
+    end
+
+    module ConstructedOfDefinitions
+      def asn1_type(type)
+        raise ArgumentError.new "Type must not be nil" if type == nil
+        cur_def = instance_variable_get(:@definition)
+        cur_def[:type] = type
+      end
     end
   end
 end
