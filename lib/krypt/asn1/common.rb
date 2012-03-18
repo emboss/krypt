@@ -64,7 +64,6 @@ module Krypt::ASN1
     asn1_object_id :algorithm
     asn1_any :params, optional: true
 
-
     def self.algorithm_null_params(name)
       AlgorithmIdentifier.new do |alg|
         alg.algorithm = name
@@ -73,18 +72,18 @@ module Krypt::ASN1
     end
     class << self; private :algorithm_null_params; end
 
-    MD5 = algorithm_null_params('1.2.840.113549.2.5')
-    RIPEMD160 = algorithm_null_params('1.3.36.3.2.1')
-    SHA1 = algorithm_null_params('1.3.14.3.2.26')
-    SHA224 = algorithm_null_params('2.16.840.1.101.3.4.2.4')
-    SHA256 = algorithm_null_params('2.16.840.1.101.3.4.2.1')
-    SHA384 = algorithm_null_params('2.16.840.1.101.3.4.2.2')
-    SHA512 = algorithm_null_params('2.16.840.1.101.3.4.2.3')
+    MD5        = algorithm_null_params('1.2.840.113549.2.5')
+    RIPEMD160  = algorithm_null_params('1.3.36.3.2.1')
+    SHA1       = algorithm_null_params('1.3.14.3.2.26')
+    SHA224     = algorithm_null_params('2.16.840.1.101.3.4.2.4')
+    SHA256     = algorithm_null_params('2.16.840.1.101.3.4.2.1')
+    SHA384     = algorithm_null_params('2.16.840.1.101.3.4.2.2')
+    SHA512     = algorithm_null_params('2.16.840.1.101.3.4.2.3')
 
-    RSA = algorithm_null_params('1.2.840.113549.1.1.1')
+    RSA        = algorithm_null_params('1.2.840.113549.1.1.1')
 
-    RSA_MD5 = algorithm_null_params('1.2.840.113549.1.1.4')
-    RSA_SHA1 = algorithm_null_params('1.2.840.113549.1.1.5')
+    RSA_MD5    = algorithm_null_params('1.2.840.113549.1.1.4')
+    RSA_SHA1   = algorithm_null_params('1.2.840.113549.1.1.5')
     RSA_SHA224 = algorithm_null_params('1.2.840.113549.1.1.14')
     RSA_SHA256 = algorithm_null_params('1.2.840.113549.1.1.11')
     RSA_SHA384 = algorithm_null_params('1.2.840.113549.1.1.12')
