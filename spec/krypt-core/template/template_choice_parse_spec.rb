@@ -91,17 +91,22 @@ describe "Krypt::ASN1::Template::Choice" do
       end
 
       context "when parsing them" do
-        let(:der) { "\x30\x04\x00\x00\x22\x99" }
+        let(:der) { "\x02\x00" }
         it { -> { subject }.should_not raise_error }
       end
 
       context "and encodes them again exactly as received" do
-        let(:der) { "\x30\x04\x00\x00\x22\x99" }
+        let(:der) { "\x02\x00" }
         its(:to_der) { should == der }
       end
 
       context "but raises an error when accessing the fields" do
-        let(:der) { "\x30\x04\x00\x00\x22\x99" }
+        let(:der) { "\x02\x00" }
+        it { -> { subject.value }.should raise_error asn1error }
+      end
+
+      context "but raises an error if the tag does not match" do
+        let(:der) { "\x01\x01\xFF" }
         it { -> { subject.value }.should raise_error asn1error }
       end
     end

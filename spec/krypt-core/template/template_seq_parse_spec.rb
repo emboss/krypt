@@ -99,6 +99,11 @@ describe "Krypt::ASN1::Template::Sequence" do
         let(:der) { "\x30\x04\x00\x00\x22\x99" }
         it { -> { subject.a }.should raise_error asn1error }
       end
+
+      context "but raises an error if the tag doesn't match" do
+        let(:der) { "\x31\x06\x02\x01\x01\x04\x01a" }
+        it { -> { subject.a }.should raise_error asn1error }
+      end
     end
 
     context "tagged field" do
@@ -1176,6 +1181,56 @@ describe "Krypt::ASN1::Template::Sequence" do
           it { subject.b.value.should be_an_instance_of template3 }
           it { subject.b.value.a.should == true }
           its(:to_der) { should == der }
+        end
+      end
+
+      context "integer and SEQUENCE OF template" do
+        let(:template2) do
+          Class.new do
+            include Krypt::ASN1::Template::Sequence
+            asn1_integer :a
+          end
+        end
+        let(:seqof) do
+          t2 = template2
+          Class.new do
+            include Krypt::ASN1::Template::SequenceOf
+            asn1_type t2
+          end
+        end
+        let(:choice) do
+          sof = seqof
+          Class.new do
+            include Krypt::ASN1::Template::Choice
+            asn1_integer
+            asn1_template sof
+          end
+        end
+        let(:template) do
+          c = choice
+          Class.new do
+            include SEQ
+            asn1_template :a, c
+          end
+        end
+
+        context "match integer" do
+          let(:der) { "\x30\x03\x02\x01\x01" }
+          its(:a) { should be_an_instance_of choice }
+          it { subject.a.tag.should == Krypt::ASN1::INTEGER }
+          it { subject.a.type.should == Krypt::ASN1::INTEGER }
+          it { subject.a.value.should == 1 }
+        end
+
+        context "match SEQUENCE OF template" do
+          let(:der) { "\x30\x0C\x30\x0A\x30\x03\x02\x01\x01\x30\x03\x02\x01\x01" }
+          its(:a) { should be_an_instance_of choice }
+          it { subject.a.tag.should == Krypt::ASN1::SEQUENCE }
+          it { subject.a.type.should == seqof }
+          it { subject.a.value.should be_an_instance_of seqof }
+          it { subject.a.value.value.should be_an_instance_of Array }
+          it { subject.a.value.value.size.should == 2 }
+          it { subject.a.value.value.all? { |v| v.instance_of?(template2) && v.a == 1 }.should == true }
         end
       end
     end
