@@ -19,12 +19,13 @@ module Krypt::Hex
 
     #
     # call-seq:
-    #    in.read([len=nil], [buf=nil]) -> String or nil
+    #    in.read([len=nil]) -> String or nil
     #
     # Reads from the underlying IO and hex-encodes the data.
-    # Please see IO#read for details.
+    # Please see IO#read for details. Note that in-place reading into
+    # a buffer is not supported.
     #
-    def read(len=nil, buf=nil)
+    def read(len=nil)
       data = @io.read(len, buf)
       Krypt::Hex.encode(data)
     end
@@ -65,9 +66,10 @@ module Krypt::Hex
     #    in.read([len=nil], [buf=nil]) -> String or nil
     #
     # Reads from the underlying IO and hex-decodes the data.
-    # Please see IO#read for further details.
+    # Please see IO#read for further details. Note that in-place reading into
+    # a buffer is not supported.
     #
-    def read(len=nil, buf=nil)
+    def read(len=nil)
       len *=2 if len #hex length is twice the original length
       data = @io.read(len, buf)
       return nil unless data
