@@ -15,14 +15,7 @@ See the file 'LICENSE' for further details.
 
 =end
 
-unless Kernel.respond_to? :private_constant
-  module Kernel
-    def private_constant(*)
-      # TODO delete when sufficiently supported
-      nil
-    end
-  end
-end
+require_relative 'krypt_missing'
 
 require 'krypt-core'
 
