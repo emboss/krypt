@@ -49,4 +49,36 @@ describe Krypt::Hex do
       end
     end
   end
+
+  describe "decode" do
+    context "RFC 4648 test vectors" do
+      specify "empty string" do
+        mod.decode("").should == ""
+      end
+
+      specify "f" do
+        mod.decode("66").should == "f"
+      end
+
+      specify "fo" do
+        mod.decode("666f").should == "fo"
+      end
+
+      specify "foo" do
+        mod.decode("666f6f").should == "foo"
+      end
+
+      specify "foob" do
+        mod.decode("666f6f62").should == "foob"
+      end
+
+      specify "fooba" do
+        mod.decode("666f6f6261").should == "fooba"
+      end
+
+      specify "foobar" do
+        mod.decode("666f6f626172").should == "foobar"
+      end
+    end
+  end
 end unless RUBY_PLATFORM =~ /java/ # TODO
