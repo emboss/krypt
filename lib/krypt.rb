@@ -17,6 +17,13 @@ See the file 'LICENSE' for further details.
 
 require 'krypt-core'
 
+unless Kernel.respond_to? :private_constant
+  def Kernel.private_constant(*)
+    # TODO delete when sufficiently supported
+    nil
+  end
+end
+
 require_relative 'krypt/asn1'
 require_relative 'krypt/x509'
 require_relative 'krypt/codec'
