@@ -1,4 +1,4 @@
-source :rubygems
+source 'https://rubygems.org'
 
 gem 'krypt-provider-openssl', :platforms => :ruby,  :git => "git://github.com/emboss/krypt-provider-openssl.git"
 gem 'krypt-core-c',           :platforms => :ruby,  :git => "git://github.com/emboss/krypt-core-c.git"
