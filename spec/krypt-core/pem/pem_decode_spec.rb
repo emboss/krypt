@@ -7,7 +7,7 @@ require_relative '../resources'
 describe Krypt::PEM do
   let(:mod) { Krypt::PEM }
   let(:pemerror) { Krypt::PEM::PEMError }
-  let(:intb64) { Base64.encode64("\x02\x01\x01") }
+  let(:intb64) { ::Base64.encode64("\x02\x01\x01") }
 
   def create_pem_b64(b64, name)
     "-----BEGIN #{name}-----\n#{b64}-----END #{name}-----\n"
@@ -45,7 +45,7 @@ describe Krypt::PEM do
 
       context "decodes long PEM values" do
         let(:der) { "\x04\x82\x4E\x20" + "\x01" * 20_000 }
-        let(:value) { create_pem_b64("#{Base64.encode64(der)}", "OCTET STRING") }
+        let(:value) { create_pem_b64("#{::Base64.encode64(der)}", "OCTET STRING") }
         its(:size) { should == 1 }
         it { subject[0].should == der }
       end
@@ -126,7 +126,7 @@ describe Krypt::PEM do
       end
 
       context "CRLF only" do
-        let(:value) { "-----BEGIN A-----\r\n#{Base64.encode64("\x02\x01\x01")}\r\n-----END A-----\r\n" }
+        let(:value) { "-----BEGIN A-----\r\n#{::Base64.encode64("\x02\x01\x01")}\r\n-----END A-----\r\n" }
         it { subject[0].should == "\x02\x01\x01" }
       end
 
@@ -190,13 +190,13 @@ describe Krypt::PEM do
     context "does not expect line breaks for Base64 content" do
       context "in small data" do
         let(:der) { "\x04\x82\x03\xE8" + "\x01" * 80 }
-        let(:value) { "-----BEGIN ABC-----\n#{Base64.strict_encode64(der)}\n-----END ABC-----" }
+        let(:value) { "-----BEGIN ABC-----\n#{::Base64.strict_encode64(der)}\n-----END ABC-----" }
         it { subject[0].should == der }
       end
 
       context "in large data" do
         let(:der) { "\x04\x82\x4E\x20" + "\x01" * 20_000 }
-        let(:value) { "-----BEGIN ABC-----\n#{Base64.strict_encode64(der)}\n-----END ABC-----" }
+        let(:value) { "-----BEGIN ABC-----\n#{::Base64.strict_encode64(der)}\n-----END ABC-----" }
         it { subject[0].should == der }
       end
     end

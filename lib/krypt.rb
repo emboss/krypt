@@ -16,9 +16,11 @@ See the file 'LICENSE' for further details.
 =end
 
 unless Kernel.respond_to? :private_constant
-  def Kernel.private_constant(*)
-    # TODO delete when sufficiently supported
-    nil
+  module Kernel
+    def private_constant(*)
+      # TODO delete when sufficiently supported
+      nil
+    end
   end
 end
 
