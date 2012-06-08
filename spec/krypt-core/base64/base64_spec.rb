@@ -49,5 +49,38 @@ describe Krypt::Base64 do
       end
     end
   end
+
+  describe "decode" do
+    context "RFC 4648 test vectors" do
+      specify "empty string" do
+        mod.decode("").should == ""
+      end
+
+      specify "f" do
+        mod.decode("Zg==").should == "f"
+      end
+
+      specify "fo" do
+        mod.decode("Zm8=").should == "fo"
+      end
+
+      specify "foo" do
+        mod.decode("Zm9v").should == "foo"
+      end
+
+      specify "foob" do
+        mod.decode("Zm9vYg==").should == "foob"
+      end
+
+      specify "fooba" do
+        mod.decode("Zm9vYmE=").should == "fooba"
+      end
+
+      specify "foobar" do
+        mod.decode("Zm9vYmFy").should == "foobar"
+      end
+    end
+  end
+
 end unless RUBY_PLATFORM =~ /java/ # TODO
 
