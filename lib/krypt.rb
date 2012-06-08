@@ -15,14 +15,14 @@ See the file 'LICENSE' for further details.
 
 =end
 
-require 'krypt-core'
-
 unless Kernel.respond_to? :private_constant
   def Kernel.private_constant(*)
     # TODO delete when sufficiently supported
     nil
   end
 end
+
+require 'krypt-core'
 
 require_relative 'krypt/asn1'
 require_relative 'krypt/x509'
