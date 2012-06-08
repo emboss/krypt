@@ -14,42 +14,60 @@ describe Krypt::Base64::Decoder do
     io.string
   end
 
+  def read_string(s)
+    io = StringIO.new(s)
+    b64 = klass.new(io)
+    begin
+      b64.read
+    ensure
+      b64.close
+    end
+  end
+
   describe "new" do
     it "mandates a single parameter, the underlying IO" do
       klass.new(StringIO.new).should be_an_instance_of klass
     end
   end
 
-  describe "#write" do
+  shared_examples_for "RFC 4648 decode" do |meth|
     context "RFC 4648 test vectors" do
       specify "empty string" do
-        write_string("").should == ""
+        send(meth, "").should == ""
       end
 
       specify "f" do
-        write_string("Zg==").should == "f"
+        send(meth, "Zg==").should == "f"
       end
 
       specify "fo" do
-        write_string("Zm8=").should == "fo"
+        send(meth, "Zm8=").should == "fo"
       end
 
       specify "foo" do
-        write_string("Zm9v").should == "foo"
+        send(meth, "Zm9v").should == "foo"
       end
 
       specify "foob" do
-        write_string("Zm9vYg==").should == "foob"
+        send(meth, "Zm9vYg==").should == "foob"
       end
 
       specify "fooba" do
-        write_string("Zm9vYmE=").should == "fooba"
+        send(meth, "Zm9vYmE=").should == "fooba"
       end
 
       specify "foobar" do
-        write_string("Zm9vYmFy").should == "foobar"
+        send(meth, "Zm9vYmFy").should == "foobar"
       end
     end
+  end
+
+  describe "#read" do
+    it_behaves_like "RFC 4648 decode", :read_string
+  end
+
+  describe "#write" do
+    it_behaves_like "RFC 4648 decode", :write_string
   end
 
 end unless RUBY_PLATFORM =~ /java/ # TODO
