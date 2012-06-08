@@ -1,6 +1,9 @@
+require_relative 'base_codec'
+
 module Krypt::Base64
 
   module Base64Impl
+    include Krypt::BaseCodec
 
     def compute_len(len, a, b)
       len -= @buf.size if @buf
@@ -20,41 +23,11 @@ module Krypt::Base64
       compute_len(len, 4, 3)
     end
 
-    def generic_read(len, read_len)
-      data = yield @io.read(read_len)
-      if @buf
-        data = data || ""
-        data = @buf << data
-      end
-      return data unless len
-      dlen = data.size
-      remainder = dlen - len
-      update_buffer(data, dlen, remainder)
-      data
-    end
-
-    def generic_write(data, blk_size)
-      @write = true
-      data = @buf ? @buf << data : data.dup
-      dlen = data.size
-      remainder = dlen % blk_size
-      update_buffer(data, dlen, remainder)
-      @io.write(yield data) if data.size > 0
-    end
-
     def generic_close
       if @write
         @io.write(Krypt::Base64.encode(@buf)) if @buf
       else
         raise Krypt::Base64::Base64Error.new("Remaining bytes in buffer") if @buf
-      end
-    end
-
-    def update_buffer(data, dlen, remainder)
-      if remainder > 0
-        @buf = data.slice!(dlen - remainder, remainder)
-      else
-        @buf = nil
       end
     end
   end

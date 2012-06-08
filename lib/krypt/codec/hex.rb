@@ -1,4 +1,25 @@
+require_relative 'base_codec'
+
 module Krypt::Hex
+
+  module HexImpl
+    include Krypt::BaseCodec
+
+    def compute_encode_read_len(len)
+      len
+    end
+
+    def compute_decode_read_len(len)
+      len * 2
+    end
+
+    def generic_close
+      raise Krypt::Hex::HexError.new("Remaining bytes in buffer") if @buf
+    end
+  end
+
+  private_constant :HexImpl
+
 
   # Hex-encodes any data written or read from it in the process.
   #
@@ -16,6 +37,7 @@ module Krypt::Hex
   # hex.close
   #
   class Encoder < Krypt::IOFilter
+    include HexImpl
 
     #
     # call-seq:
@@ -26,8 +48,8 @@ module Krypt::Hex
     # a buffer is not supported.
     #
     def read(len=nil)
-      data = @io.read(len, buf)
-      Krypt::Hex.encode(data)
+      read_len = len ? compute_encode_read_len(len) : nil
+      generic_read(len, read_len) { |data| Krypt::Hex.encode(data) }
     end
 
     #
@@ -38,7 +60,7 @@ module Krypt::Hex
     # Please see IO#write for further details.
     #
     def write(data)
-      @io.write(Krypt::Hex.encode(data))
+      generic_write(data, 1) { |data| Krypt::Hex.encode(data) }
     end
     alias << write
 
@@ -60,6 +82,7 @@ module Krypt::Hex
   # hex.close # => contents in file will be decoded
   #
   class Decoder < Krypt::IOFilter
+    include HexImpl
 
     #
     # call-seq:
@@ -70,14 +93,8 @@ module Krypt::Hex
     # a buffer is not supported.
     #
     def read(len=nil)
-      len *=2 if len #hex length is twice the original length
-      data = @io.read(len, buf)
-      return nil unless data
-      if (prefix = preprocess(data))
-        prefix << Krypt::Hex.decode(data)
-      else
-        Krypt::Hex.decode(data)
-      end
+      read_len = len ? compute_decode_read_len(len) : nil
+      generic_read(len, read_len) { |data| Krypt::Hex.decode(data) }
     end
 
     #
@@ -88,34 +105,13 @@ module Krypt::Hex
     # Please see IO#write for further details.
     #
     def write(data)
-      return 0 unless data
-      if (prefix = preprocess(data))
-        @io.write(prefix)
-      end
-      @io.write(Krypt::Hex.decode(data))
-      data.size
+      generic_write(data, 2) { |data| Krypt::Hex.decode(data) }
     end
     alias << write
 
     def close
-      raise HexError.new("Remaining byte in buffer") if @buf
+      generic_close
       super
-    end
-
-    private
-
-    def preprocess(data)
-      ret = nil
-      if @buf
-        @buf << data.slice!(0)
-        ret = Krypt::Hex.decode(@buf)
-        @buf = nil
-      end
-      len = data.size
-      if len % 2 == 1
-        @buf = data.slice!(len - 1)
-      end
-      ret
     end
 
   end

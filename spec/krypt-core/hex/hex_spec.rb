@@ -80,5 +80,12 @@ describe Krypt::Hex do
         mod.decode("666f6f626172").should == "foobar"
       end
     end
+
+    it "ignores case for a-f" do
+      str = "666f6f626172"
+      dec = "foobar"
+      mod.decode(str).should == dec
+      mod.decode(str.upcase).should == dec 
+    end
   end
 end unless RUBY_PLATFORM =~ /java/ # TODO

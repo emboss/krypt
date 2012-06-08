@@ -30,7 +30,7 @@ describe Krypt::Base64::Encoder do
     end
   end
 
-  shared_examples_for "RFC 4648 encode" do |meth|
+  shared_examples_for "RFC 4648 Base64 encode" do |meth|
     context "RFC 4648 test vectors" do
       specify "empty string" do
         send(meth, "").should == ""
@@ -63,11 +63,11 @@ describe Krypt::Base64::Encoder do
   end
 
   describe "#read" do
-    it_behaves_like "RFC 4648 encode", :read_string
+    it_behaves_like "RFC 4648 Base64 encode", :read_string
   end
 
   describe "#write" do
-    it_behaves_like "RFC 4648 encode", :write_string
+    it_behaves_like "RFC 4648 Base64 encode", :write_string
   end
   
 end unless RUBY_PLATFORM =~ /java/ # TODO
