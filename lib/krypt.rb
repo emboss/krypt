@@ -19,4 +19,5 @@ require 'krypt-core'
 
 require_relative 'krypt/asn1'
 require_relative 'krypt/x509'
+require_relative 'krypt/codec'
 
