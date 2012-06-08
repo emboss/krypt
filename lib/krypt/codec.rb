@@ -20,12 +20,22 @@ module Krypt
     
     #
     # call-seq: 
-    #    IOFilter.new(io) -> IOFilter
+    #    IOFilter.new(io) [{ |filter| block }] -> IOFilter
     #
     # Constructs a new IOFilter with +io+ as its underlying IO. 
+    # Takes an optional block which is yielded the IOFilter +filter+.
+    # After execution of the block, it is guaranteed that IOFilter#close
+    # gets called on the IOFilter.
     #
     def initialize(io)
       @io = io
+      if block_given?
+        begin
+          yield self
+        ensure
+          close
+        end
+      end
     end
 
     #
@@ -39,41 +49,7 @@ module Krypt
     end
   end
 
-  module BaseCodec
-
-    def generic_read(len, read_len)
-      data = @io.read(read_len)
-      data = yield data if data
-      if @buf
-        data = data || ""
-        data = @buf << data
-      end
-      return data unless len && data
-      dlen = data.size
-      remainder = dlen - len
-      update_buffer(data, dlen, remainder)
-      data
-    end
-
-    def generic_write(data, blk_size)
-      return 0 unless data
-      @write = true
-      data = @buf ? @buf << data : data.dup
-      dlen = data.size
-      remainder = dlen % blk_size
-      update_buffer(data, dlen, remainder)
-      @io.write(yield data) if data.size > 0
-    end
-
-    def update_buffer(data, dlen, remainder)
-      if remainder > 0
-        @buf = data.slice!(dlen - remainder, remainder)
-      else
-        @buf = nil
-      end
-    end
-  end
-
+  
 end
 
 require_relative 'codec/hex'
