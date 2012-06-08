@@ -2,7 +2,7 @@ require_relative 'base_codec'
 
 module Krypt::Hex
 
-  module HexImpl
+  module HexImpl #:nodoc:
     include Krypt::BaseCodec
 
     def compute_encode_read_len(len)
@@ -23,18 +23,20 @@ module Krypt::Hex
 
   # Hex-encodes any data written or read from it in the process.
   #
-  # === Example: Hex-encoded data and writing it to a file
-  # f = File.open("hex", "wb")
-  # hex = Krypt::Hex::Encoder.new(f)
-  # hex << "one"
-  # hex << "two"
-  # hex.close # => contents in file will be encoded
+  # === Example: Hex-encode data and write it to a file
+  #
+  #  f = File.open("hex", "wb")
+  #  hex = Krypt::Hex::Encoder.new(f)
+  #  hex << "one"
+  #  hex << "two"
+  #  hex.close # => contents in file will be encoded
   #
   # === Example: Reading from a file and hex-encoding the data
-  # f = File.open("document", "rb")
-  # hex = Krypt::Hex::Encoder.new(f)
-  # hexdata = hex.read # => result is encoded
-  # hex.close
+  #
+  #  f = File.open("document", "rb")
+  #  hex = Krypt::Hex::Encoder.new(f)
+  #  hexdata = hex.read # => result is encoded
+  #  hex.close
   #
   class Encoder < Krypt::IOFilter
     include HexImpl
@@ -69,17 +71,19 @@ module Krypt::Hex
   # Hex-decodes any data written or read from it in the process.
   #
   # === Example: Reading and decoding hex-encoded data from a file
-  # f = File.open("hex", "rb")
-  # hex = Krypt::Hex::Decoder.new(f)
-  # plain = hex.read # => result is decoded
-  # hex.close
+  #
+  #  f = File.open("hex", "rb")
+  #  hex = Krypt::Hex::Decoder.new(f)
+  #  plain = hex.read # => result is decoded
+  #  hex.close
   #
   # === Example: Writing to a file while hex-decoding the data
-  # f = File.open("document", "wb")
-  # hex = Krypt::Hex::Decoder.new(f)
-  # hexdata = ... #some hex-encoded data
-  # hex << hexdata
-  # hex.close # => contents in file will be decoded
+  #
+  #  f = File.open("document", "wb")
+  #  hex = Krypt::Hex::Decoder.new(f)
+  #  hexdata = ... #some hex-encoded data
+  #  hex << hexdata
+  #  hex.close # => contents in file will be decoded
   #
   class Decoder < Krypt::IOFilter
     include HexImpl

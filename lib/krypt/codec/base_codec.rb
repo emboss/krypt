@@ -1,4 +1,4 @@
-module Krypt::BaseCodec
+module Krypt::BaseCodec #:nodoc:
     
   def generic_read(len, read_len)
     data = @io.read(read_len)
