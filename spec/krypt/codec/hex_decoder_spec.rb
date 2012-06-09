@@ -28,6 +28,27 @@ describe Krypt::Hex::Decoder do
     it "mandates a single parameter, the underlying IO" do
       klass.new(StringIO.new).should be_an_instance_of klass
     end
+
+    context "takes a block after whose execution the IO is closed" do
+      specify "successful execution of the block" do
+        io = StringIO.new
+        klass.new(io) do |hex|
+          hex << "42"
+        end
+        io.closed?.should == true
+      end
+
+      specify "failed execution of the block" do
+        io = StringIO.new
+        begin
+          klass.new(io) do |hex|
+            raise RuntimeError.new 
+          end
+        rescue RuntimeError
+          io.closed?.should == true
+        end
+      end
+    end
   end
 
   shared_examples_for "RFC 4648 hex decode" do |meth|
