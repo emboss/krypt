@@ -91,4 +91,4 @@ describe Krypt::Hex::Decoder do
     it_behaves_like "RFC 4648 hex decode", :write_string
   end
 
-end unless RUBY_PLATFORM =~ /java/ # TODO
+end

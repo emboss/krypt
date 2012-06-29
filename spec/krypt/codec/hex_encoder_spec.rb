@@ -91,4 +91,4 @@ describe Krypt::Hex::Encoder do
     it_behaves_like "RFC 4648 hex encode", :write_string
   end
 
-end unless RUBY_PLATFORM =~ /java/ # TODO
+end
