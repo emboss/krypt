@@ -1,6 +1,6 @@
 == krypt
 
-{<img src="https://secure.travis-ci.org/emboss/krypt.png" />}[http://travis-ci.org/emboss/krypt]
+{<img src="https://secure.travis-ci.org/krypt/krypt.png" />}[http://travis-ci.org/krypt/krypt]
 
 The goal of krypt is to provide a platform- and
 library-independent cryptography API for the Ruby
@@ -26,14 +26,14 @@ offers new features that are not offered by others today.
 The C implementation of the krypt-core API to be used
 with all C-based Rubies. The repository can be found at
 
-https://github.com/emboss/krypt-core-c.
+https://github.com/krypt/krypt-core-c.
 
 == krypt-core-java
 
 Realizes the krypt-core API in Java to be used by Jruby 
 (http://www.jruby.org). The repository can be found at 
 
-https://github.com/emboss/krypt-core-java.
+https://github.com/krypt/krypt-core-java.
 
 == krypt-core-ruby
 
@@ -41,7 +41,7 @@ An all Ruby implementation of krypt-core. Access to
 the native krypt-provider libraries is realized via FFI.
 The repository can be found at
 
-https://github.com/emboss/krypt-core-ruby.
+https://github.com/krypt/krypt-core-ruby.
 
 == krypt-provider-openssl
 
@@ -50,7 +50,7 @@ utilizes OpenSSL (http://www.openssl.org). Can also be used
 by JRuby via krypt-core-ruby and FFI. The repository
 is at
 
-https://github.com/emboss/krypt-provider-openssl.
+https://github.com/krypt/krypt-provider-openssl.
 
 == krypt-provider-jce
 
@@ -59,5 +59,5 @@ to be used by JRuby. The implementation is based on the
 Java Cryptography Extensions, the JDK built-in cryptography
 library. The repository is at
 
-https://github.com/emboss/krypt-provider-jce.
+https://github.com/krypt/krypt-provider-jce.
 
