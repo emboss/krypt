@@ -1,6 +1,8 @@
-== krypt
+http://emboss.github.com/images/krypt-logo.png
 
 {<img src="https://secure.travis-ci.org/krypt/krypt.png" />}[http://travis-ci.org/krypt/krypt]
+
+== krypt. semper pi.
 
 The goal of krypt is to provide a platform- and
 library-independent cryptography API for the Ruby
