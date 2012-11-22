@@ -1,4 +1,7 @@
-![krypt](http://emboss.github.com/images/krypt-logo.png)
+<p align="center">
+  <img src="http://emboss.github.com/images/krypt-logo.png" alt="krypt" />
+</p>
+
 =========
 [![Build Status](https://secure.travis-ci.org/krypt/krypt.png)](http://travis-ci.org/krypt/krypt)
 
