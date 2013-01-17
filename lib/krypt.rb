@@ -4,9 +4,9 @@
 
 krypt - Modern platform- and library-independent cryptography for Ruby 
 
-Copyright (C) 2011, 2012
+Copyright (C) 2011-2013
 Hiroshi Nakamura <nahi@ruby-lang.org>
-Martin Bosslet <martin.bosslet@googlemail.com>
+Martin Bosslet <martin.bosslet@gmail.com>
 All rights reserved.
 
 = License
