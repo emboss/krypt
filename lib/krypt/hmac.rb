@@ -44,15 +44,16 @@ module Krypt
     private
 
       def process_key(key)
-        key_size = key.size
         block_len = @digest.block_length
 
-        if key_size < block_len
-          key.dup.tap do |new_key|
-            (block_len - key_size).times { new_key << 0 }
+        if key.size > block_len
+          key = @digest.digest(key)
+        end
+
+        if key.size < block_len
+          new_key = key.dup.tap do |new_key|
+            (block_len - key.size).times { new_key << 0 }
           end
-        elsif key_size > block_len
-          @digest.digest(key)
         else
           key
         end

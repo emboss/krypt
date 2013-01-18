@@ -13,16 +13,16 @@ describe "Krypt::PBKDF2" do
   end
 
   describe "#generate_hex" do
-    it "returns a String with binary encoding" do
+    it "returns a String with US-ASCII encoding" do
       pbkdf = pb.new(Krypt::Digest::SHA1.new)
       pbkdf.generate_hex("pwd", "salt", 1, 20).encoding.should == Encoding::US_ASCII
     end
   end
 
   context "conforms to RFC6070 test vectors" do
-      let(:instance) { pb.new(Krypt::Digest::SHA1.new) }
-      let(:binary) { instance.generate(pwd, salt, iter, len) }
-      let(:hex) { instance.generate_hex(pwd, salt, iter, len) }
+    let(:instance) { pb.new(Krypt::Digest::SHA1.new) }
+    let(:binary) { instance.generate(pwd, salt, iter, len) }
+    let(:hex) { instance.generate_hex(pwd, salt, iter, len) }
 
     context "#1" do
       let(:pwd) { "password" }
