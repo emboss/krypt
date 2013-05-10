@@ -1,4 +1,4 @@
-require 'krypt-core'
+require 'krypt'
 require 'openssl'
 require 'benchmark'
 
