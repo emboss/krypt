@@ -23,6 +23,6 @@ Gem::Specification.new do |s|
   s.license = 'MIT'
 
   s.add_dependency 'ffi'
-  s.add_dependency 'krypt-core', '0.0.1'
+  s.add_dependency 'krypt-core', Krypt::VERSION
 
 end
